@@ -1,0 +1,47 @@
+<!-- Small boxes (Stat box) -->
+<div class="row">
+    <div class="col-md-12">
+        <!-- Line chart -->
+        <div class="box box-default">
+            <div class="row">
+                {% for item in form_data.vendor_dimentions %}
+                    <div class="col-md-2 col-sm-6 col-xs-12">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-aqua"><i class="ion ion-ios-cart-outline"></i></span>
+
+                            <div class="info-box-content">
+                                <span class="info-box-text">{{ item.title }}</span>
+                                <span class="info-box-number"><a href="{{ item.url }}">
+                            {{ item.number }}
+                        </a></span>
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- ./col -->
+            <div class="row">
+                {% for item in form_data.exceed_dimentions %}
+                    <div class="col-lg-1 col-md-2 col-sm-3 col-xs-4">
+                        <!-- small box -->
+                        <div class="small-box {{ item.style }}">
+                            <div class="inner">
+                                <h3>{{ item.number }}</h3>
+                                <p>{{ item.title }}</p>
+                            </div>
+                            <div class="icon">
+                                <i class="ion"></i>
+                            </div>
+                            <a href="{{ item.url }}" class="small-box-footer">查看列表
+                                <i class="fa fa-arrow-circle-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- ./col -->
+        </div>
+    </div>
+</div>

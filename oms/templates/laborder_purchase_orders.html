@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        #tableContent td, #tableContent th {
+            line-height: 33px;
+        }
+
+        #tableContent .chk_item input {
+            position: relative;
+            top: 3px
+        }
+
+        #chk_all {
+            position: relative;
+            top: 3px
+        }
+    </style>
+{% endblock %}
+{% block h1 %}Lab Orders{% endblock %}
+{% block small %}采购订单{% endblock %}
+{% block content %}
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            过滤器 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+
+            {% for vc in vendors_choices %}
+             <li><a href="{{ requestUrl }}?filter={{vc.key}}">
+                {% ifequal filter vc.key %}*{% endifequal %}{{ vc.value }}
+            </a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!--Actions-->
+    <div class="cl">
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" id="generate_csv" target='view_window'>生成采购订单</a>
+        </div>
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" id="generate_csv_wx" target='view_window'>生成采购订单-伟星</a>
+        </div>
+        <div style="float: left;margin-left: 5px;">
+            <div class="checkbox">
+                <label>
+                    <input id="chk_delivery" type="checkbox" checked disabled> 仅下达[镜架出库]
+                </label>
+            </div>
+        </div>
+        <div id="is_chk_full" style="float:left;margin-left:25px;display:none">
+            <div class="checkbox">
+                <label>
+                    <input id="full_ipt" type="checkbox"> 选择全部<span id="data_total">{{ page_info.total }}</span>条数据
+                </label>
+            </div>
+        </div>
+        <div style="float:right;">
+            <a class="btn btn-block btn-default" id="generated_page" href="/oms/purchase_orders/">已生成的采购订单</a>
+        </div>
+
+    </div>
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th class="chk_all"><input id="chk_all" type="checkbox"></th>
+                <th>#</th> <!-- laborder_purchase_order的ID -->
+                <th>镜架</th>
+                <th>订单号</th>
+                <th>数量</th>
+                <th>车房片</th>
+                <th>订单日期</th>
+                <th>订单下达日期</th>
+                <th>订单状态</th>
+                <th>VD</th>
+                <th>是否已生成采购单</th>
+                <th>
+                    <div class="btn-group">
+                        <button class="btn btn-default p_type_btn" data_type="LENS" id="all_btn">镜片</button>
+                        <button data-toggle="dropdown" class="btn btn-default dropdown-toggle">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for key, value in p_type.items %}
+                                <li><a class="p_type_ctrl" data_type="{{ key }}">{{ value }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for lbo in lbos %}
+                <tr>
+                    <td class="chk_item">
+                        <input class="{% ifequal lbo.is_procured False %}procured{% else %}invalid{% endifequal %}"
+                               name="chk_items" value="{{ lbo.id }}" type="checkbox">
+                    </td>
+                    <td>{{ lbo.id }}</td>
+                    <td>{{ lbo.frame }}</td>
+                    <td>{{ lbo.lab_number }}</td>
+                    <td>{{ lbo.quantity }}</td>
+                    <td>{{ lbo.lens_type }}</td>
+                    <td>{{ lbo.order_date }}</td>
+                    <td>{{ lbo.create_at }}</td>
+                    <td>{{ lbo.get_status_display }}</td>
+                    <td>{{ lbo.vendor }}</td>
+                    <td class="is_gnr" style="text-indent:2em;">{% ifequal lbo.is_procured False %}NO{% else %}
+                        Generated{% endifequal %}</td>
+                    <td class="btn_group_td">
+                        <div class="btn-group">
+                            <button class="btn btn-default p_type_btn" data_type="LENS">镜片</button>
+                            <button data-toggle="dropdown" class="btn btn-default dropdown-toggle">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% for key, value in p_type.items %}
+                                    <li><a class="p_type_a" data_type="{{ key }}">{{ value }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            <li class="item"><a>Total&nbsp;:&nbsp;{{ page_info.all_num }}</a></li>
+            {% if lbos.has_previous %}
+                <li class="previous"><a
+                        href="{{ requestUrl }}?page={{ lbos.previous_page_number }}&filter={{ filter }}">previous</a>
+                </li>
+            {% else %}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {% for num in paginator.page_range %}
+                {% if num == currentPage %}
+                    <li class="item active"><a href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="item"><a href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if lbos.has_next %}
+                <li class="next"><a
+                        href="{{ requestUrl }}?page={{ lbos.next_page_number }}&filter={{ filter }}">next</a></li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    <!--paginator end-->
+{% endblock %}
+{% block jquery %}
+    <script>
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 获取url参数
+        function getQueryVariable(variable) {
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == variable) {
+                    return pair[1];
+                }
+            }
+            return (false);
+        }
+
+        // 获取所有选中的
+        function get_select() {
+            var purchase_order_id_list = new Array();
+            $("[name='chk_items']:checked").each(function (i) {
+                let _self = $(this);
+                let lab_type = _self.parents().filter("tr").find("td.btn_group_td button.p_type_btn").attr("data_type");
+                let lab_info = _self.val() + "." + lab_type;
+                purchase_order_id_list.push(lab_info);
+            });
+            return purchase_order_id_list;
+        }
+
+        // 生成采购订单
+        function generate_csv(uri) {
+            let is_full = "";
+            let num_span = $("#data_total");
+            let data_total = parseInt(num_span.text());
+            let purchase_order_id_list = get_select();
+            let all_type = $("#all_btn").attr("data_type");
+            if ($("#full_ipt").prop("checked")) {
+                is_full = "True";
+            } else {
+                is_full = "False";
+            }
+
+            $.ajax({
+                url: "/oms/" + uri + "/",
+                type: "POST",
+                traditional: true,
+                data: {
+                    'vd': {{ page_info.vd }},
+                    'is_full': is_full,
+                    'id_list': purchase_order_id_list,
+                    'all_type': all_type
+                },
+                success: function (res) {
+                    if (res.code == '0') {
+                        $(window).attr("location", "/oms/" + uri + "/?lopo_id=" + res.message);
+                        $("[name='chk_items']:checked").each(function (i) {
+                            data_total -= 1;
+                            $(this).parents().filter("tr").find("td.is_gnr").html("Generated");
+                            $(this).attr("checked", false);
+                            $(this).prop("disabled", true);
+                            $(this).removeClass("procured");
+                            $(this).addClass("invalid");
+                        });
+                        num_span.html(data_total);
+                    } else {
+                        layer.alert(res.message);
+                    }
+                }
+            });
+        }
+
+        // 生成采购单
+        $("#generate_csv").click(function () {
+            generate_csv("laborder_purchase_generate_csv");
+        });
+
+        // 生成采购单 伟星 generate_csv_wx
+        $("#generate_csv_wx").click(function () {
+            generate_csv("laborder_purchase_generate_csv_wx");
+        });
+
+        // 复选框操作
+        $(document).ready(function () {
+            // 为页面跳转加参数
+            let vd = getQueryVariable("filter");
+            let href = $("#generated_page").attr("href");
+            href = href + "?filter=" + vd;
+            $("#generated_page").attr("href", href);
+
+            $("[name='chk_items']").filter(".invalid").prop("disabled", true);
+            var check = $("[name='chk_items']").filter(".procured");
+            var checkall = $("th.chk_all");
+            var full_ipt = document.getElementById("full_ipt");
+            var all_chk_ipt = document.getElementById("chk_all");
+
+            var i, d = 0;
+            all_chk_ipt.checked = false;
+            full_ipt.checked = false;
+            for (i = 0; i < check.length; i++) {
+                check[i].checked = false;
+            }
+            check.on("change", function () {
+                full_ipt.checked = false;
+                if (!this.checked) {
+                    d--;
+                } else {
+                    d++;
+                }
+                if (d < check.length) {
+                    all_chk_ipt.checked = false;
+                } else {
+                    all_chk_ipt.checked = true;
+                }
+            });
+            checkall.on("click", function () {
+                check = $("[name='chk_items']").filter(".procured");
+                if (all_chk_ipt.checked) {
+                    d = check.length;
+                    $("#is_chk_full").css("display", "block");
+                    for (i = 0; i < check.length; i++) {
+                        if (!check[i].checked) {
+                            check[i].checked = true;
+                        }
+                    }
+                } else {
+                    d = 0;
+                    $("#full_ipt").attr("checked", false);
+                    $("#is_chk_full").css("display", "none");
+                    for (i = 0; i < check.length; i++) {
+                        if (check[i].checked) {
+                            check[i].checked = false;
+                        }
+                    }
+                }
+            });
+
+            $("#full_ipt").on("click", function () {
+                if ($("#full_ipt").prop("checked")) {
+                    chg_all_btn();
+                    let pur_type = $("#all_btn").text();
+                    layer.alert("选择【全部可勾选订单】，生成采购订单类型全部为【" + pur_type + "】.", {title: "注意"});
+                }
+            });
+        });
+
+        function chg_all_btn() {
+            let btn_arr = $("#tableContent td.btn_group_td button.p_type_btn");
+            btn_arr.text($("#all_btn").text());
+            btn_arr.attr("data_type", $("#all_btn").attr("data_type"));
+        }
+
+        $(".p_type_a").click(function () {
+            let full_ipt = document.getElementById("full_ipt");
+            full_ipt.checked = false;
+            let _self = $(this);
+            let inner_btn = _self.parents().filter(".btn-group").find(".p_type_btn");
+            inner_btn.text(_self.text());
+            inner_btn.attr("data_type", _self.attr("data_type"));
+        });
+
+        $(".p_type_ctrl").click(function () {
+            let full_ipt = document.getElementById("full_ipt");
+            full_ipt.checked = false;
+            let _self = $(this);
+            let inner_btn = _self.parents().filter(".btn-group").find(".p_type_btn");
+            inner_btn.text(_self.text());
+            inner_btn.attr("data_type", _self.attr("data_type"));
+            chg_all_btn();
+        });
+
+
+    </script>
+{% endblock %}

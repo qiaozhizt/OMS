@@ -1,0 +1,265 @@
+<!-- /.box-body -->
+<!-- /.box-footer -->
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box box-default">
+            <div class="box-body">
+
+                <div style="float: left;margin-left: 5px;">
+                    <button id="btn_order_matching" name="btn_order_matching" type="button"
+                            class="btn btn-de btn-default active btn-flat">暂缓发货
+                    </button>
+                </div>
+
+                <div style="float: left;margin-left: 5px;">
+                    <button id="btn_convert_express" name="btn_convert_express" type="button"
+                            class="btn btn-default btn active btn-flat">转加急
+                    </button>
+                </div>
+
+                <div style="float: left;margin-left: 5px;">
+                    <button id="btn_convert_standard" name="btn_convert_standard" type="button"
+                            class="btn btn-default btn active btn-flat">转回普通
+                    </button>
+                </div>
+
+                <div style="float: left;margin-left: 5px;">
+                    <button id="btn_convert_east" name="btn_convert_east" type="button"
+                            class="btn btn-default btn active btn-flat">转为东部
+                    </button>
+                </div>
+
+                <div style="float: left;margin-left: 5px;">
+                    <button id="btn_convert_west" name="btn_convert_west" type="button"
+                            class="btn btn-default btn active btn-flat">转为西部
+                    </button>
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box -->
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <!-- Line chart -->
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <i class="fa fa-hourglass-half"></i>
+
+                <h3 class="box-title">订单详情</h3>
+
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div class="col-md-8">
+                    <table class="table table-hover table-striped">
+                        <tr>
+                            <th>发货方向</th>
+                            <th>工厂发货方式</th>
+                            <th>镜架</th>
+                            <th>镜架数量</th>
+                            <th>已拣配</th>
+                            <th>生产周期[天数]</th>
+                            <th>Tag</th>
+                        </tr>
+                        <tr>
+                            <th>
+
+                            <span class="label-default"
+                                  style="font-size: xx-large">&nbsp&nbsp{{ obj.pre_delivery_entity.current_line.ship_region }}&nbsp&nbsp</span>
+                            </th>
+                            <th> <span class="label-default"
+                                       style="font-size: xx-large">&nbsp&nbsp{{ obj.current_lab_order_entity.get_act_ship_direction_display }}&nbsp&nbsp</span>
+                            </th>
+
+                            <th><span style="font-size:xx-large">{{ obj.current_lab_order_entity.frame }}</span></th>
+
+                            <th><span class="label-default"
+                                      style="font-size:xx-large">&nbsp{{ obj.get_items_count }}&nbsp</span></th>
+                            <th><span class="label-default"
+                                      style="font-size:xx-large">&nbsp{{ delivery.get_glasses_picked_count }}&nbsp</span>
+                            </th>
+
+                            <th>
+                            <span class="label-danger"
+                                  style="font-size: xx-large">&nbsp&nbsp{{ obj.current_lab_order_entity.days_of_production_by_order }}&nbsp&nbsp</span>
+                            </th>
+                             <th><span class="label-default"
+                                      style="font-size:xx-large">&nbsp{{ obj.current_lab_order_entity.tag }}&nbsp</span>
+                            </th>
+                        </tr>
+
+                        <tr style="display:none">
+                            <th></th>
+                            <th>订单号</th>
+                            <th>工厂订单</th>
+                            <th>订单日期</th>
+                        </tr>
+
+                        <tr style="display:none">
+                            <td></td>
+                            <th><span style="font-size:large;align-content: center">
+                            {{ obj.pg_order_entity.order_number }}</span>
+                            </th>
+                            <th><span style="font-size: large">{{ obj.current_lab_order_entity.lab_number }}</span></th>
+
+                            <th>{{ obj.pg_order_entity.order_date }}</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th>发货备注</th>
+                            <td colspan="7">{{ obj.current_lab_order_entity.comments_ship }}</td>
+                        </tr>
+
+                        <tr style="display:none">
+                            <td></td>
+                            <th>订单备注</th>
+                            <td colspan="7">{{ obj.current_lab_order_entity.comments }}</td>
+                        </tr>
+
+
+                    </table>
+                </div>
+                <div class="col-md-4">
+                    <table class="table table-hover table-striped">
+                        <tr>
+                            <th>订单号</th>
+                            <th>状态</th>
+                            <th>仓位号</th>
+                        </tr>
+                        {% for ob in delivery.current_line.get_relation_lab_orders %}
+                            {% if ob.flag == 'LBO' %}
+                                <tr {% ifnotequal ob.lab.get_can_ship True %} class="label-danger" {% endifnotequal %}>
+                                    <td>
+                                        {% ifnotequal ob.lab.get_can_ship True %}
+                                            <span class="label-danger">/* 禁止发货 */</span>
+                                        {% endifnotequal %}
+                                        {{ ob.lab.lab_number }}</td>
+                                    <td>{{ ob.lab.get_status_display }}</td>
+                                    <td style="color: red">{{ ob.lab.locker_number }}</td>
+                                </tr>
+                            {% elif ob.flag == 'ACCS'  %}
+                                <tr {% if ob.lab.status != 'Packed' and ob.lab.status != 'Shipped' %} class="label-danger" {% endif %}>
+                                    <td>
+                                        {% if ob.lab.status != 'Packed' and ob.lab.status != 'Shipped' %}
+                                            <span class="label-danger">/*Accs附件订单 禁止发货 */</span>
+                                        {% endif %}
+                                        {{ ob.lab.accs_order_number }}</td>
+                                    <td>{{ ob.lab.get_status_display }}</td>
+                                    <td style="color: red">{{ ob.lab.get_warehouse_display }}</td>
+                                </tr>
+                            {% endif %}
+
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+            <!-- /.box-body-->
+        </div>
+        <!-- /.box -->
+    </div>
+    <!-- /.col -->
+    <!-- /.col -->
+</div>
+<!-- /.row -->
+
+{% include 'delivery_detail.pspf.html' %}
+
+{% block jquery %}
+    <script>
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == 13) {
+                $("#btnSearch").click();
+            }else if(event.keyCode == 32){
+                $("#btn_order_matching").click();
+            }
+            });
+        $("#btn_order_matching").click(function () {
+            var window = layer.load(3); //换了种风格
+            var url = "{% url 'pre_delivery_update_status_final_inspection_line' %}";
+            var redirect_url = "{% url 'pre_delivery' %}";
+            //return reverse('pre_delivery') + '?pg_entity=%s' % entity
+            var delivery_id = "{{ delivery.id }}";
+            var delivery_line_id = "{{ delivery.current_line.id }}";
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    entity: delivery_id,
+                    line_id: delivery_line_id,
+                },
+                async: true
+            }).done(function (response) {
+                 var obj = JSON.parse(response);
+                 if (obj.code == 0) {
+                    layer.msg('<span style="font-size:30px">此操作已成功! 仓位号：'+obj.message+'</span>');
+                    setTimeout(function () {
+                        // add your code
+                        // location.reload();
+                        layer.close(window);
+                        location.href = redirect_url + '?pd_entity=' + delivery_id;
+                    }, 2 * 1000);//延迟5000毫米
+                }
+                else {
+                    layer.alert('<span style="font-size:30px">操作失败! 错误消息: ' + response+'</span>');
+                    returnData = response;
+                    layer.close(window);
+                }
+            });
+        });
+
+        $("#btn_convert_express").click(function () {
+            pre_delivery_convert('EXPRESS');
+        });
+        $("#btn_convert_standard").click(function () {
+            pre_delivery_convert('STANDARD');
+        });
+        $("#btn_convert_east").click(function () {
+            pre_delivery_convert('E');
+        });
+        $("#btn_convert_west").click(function () {
+            pre_delivery_convert('W');
+        });
+
+        function pre_delivery_convert(conv) {
+            var window = layer.load(3); //换了种风格
+            var url = "{% url 'pre_delivery_convert' %}";
+            var redirect_url = "{% url 'pre_delivery' %}";
+            //return reverse('pre_delivery') + '?pg_entity=%s' % entity
+            var delivery_id = "{{ delivery.id }}";
+            var delivery_line_id = "{{ delivery.current_line.id }}";
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    entity: delivery_id,
+                    line_id: delivery_line_id,
+                    convert: conv,
+                },
+                async: true
+            }).done(function (response) {
+                if (response == '0') {
+                    layer.msg('此操作已成功!');
+                    setTimeout(function () {
+                        // add your code
+                        // location.reload();
+                        layer.close(window);
+                        location.href = redirect_url + '?pd_entity=' + delivery_id;
+                    }, 2 * 1000);//延迟5000毫米
+                }
+                else {
+                    layer.alert('操作失败! 错误消息: ' + response);
+                    returnData = response;
+                    layer.close(window);
+                }
+            });
+        };
+    </script>
+{% endblock %}

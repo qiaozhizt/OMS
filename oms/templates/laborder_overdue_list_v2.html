@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Lab Orders<span class="label label-default">{{ form_data.total }}</span>{% endblock %}
+{% block small %}超期订单{% endblock %}
+{% block content %}
+
+
+    <div id="laborder_detail" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            <div id="laborder_content"></div>
+        </div>
+    </div>
+
+    <!-- Overdue Orders Report Summary -->
+    <div class="row">
+        <div class="col-lg-12 col-md-12 column">
+            <div class="box box-danger">
+                <div class="box-header with-border">
+                    <h4 class="box-title">汇总</h4>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body" id="cont_d" style="margin: 0 auto">
+                    <div class="row">
+                        {% for item in form_data.overdue_orders_summary %}
+                            <div class="col-lg-1 col-md-2 col-sm-3 col-xs-4">
+                                <!-- small box -->
+                                <div class="small-box label-primary">
+                                    <div class="inner">
+                                        <h3>{{ item.qty }}</h3>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="ion "></i>
+                                    </div>
+                                    <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'status' }}&status={{ item.status }}"
+                                       class="small-box-footer">{{ item.status_cn }} <i
+                                            class="fa fa-arrow-circle-right"></i></a>
+                                </div>
+                            </div>
+
+                        {% endfor %}
+                        {% ifnotequal form_data.status 'all' %}
+                            <div class="col-lg-1 col-md-2 col-sm-3 col-xs-4">
+                                <!-- small box -->
+                                <div class="small-box label-info">
+                                    <div class="inner">
+                                        <h3>{{ form_data.total }}</h3>
+                                    </div>
+                                    <div class="icon">
+                                        <i class="ion "></i>
+                                    </div>
+                                    <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'status' }}&status=all"
+                                       class="small-box-footer"> 查看全部状态 <i
+                                            class="fa fa-arrow-circle-right"></i></a>
+                                </div>
+                            </div>
+                        {% endifnotequal %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ending -->
+
+    <!-- Overdue Orders Report List -->
+    <div class="row">
+        <div class="col-lg-12 col-md-12 column">
+            <div class="box box-warning">
+                <div class="box-header with-border">
+                    <h4 class="box-title">明细</h4>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body" id="cont_d" style="margin: 0 auto">
+                    <!-- ./col -->
+                    <div class="row">
+                        <div class="form-group">
+
+                            <div class="box-body" id="cont_d" style="margin: 0 auto">
+                                <div style="float: left;margin-left: 20px;">{% include 'search.html' %}</div>
+
+                                <div class="btn-group" id="vendor" style="float: left;margin-left: 10px;">
+                                    <button class="btn btn-default btn dropdown-toggle" type="button"
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true"
+                                            aria-expanded="false">
+                                        Overdue Days [{{ form_data.overdue_days }}]<span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'overdue_days' }}&overdue_days=2">
+                                                {% if form_data.overdue_days == '2' %}
+                                                    *
+                                                {% endif %}
+                                                超2天
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'overdue_days' }}&overdue_days=3">
+                                                {% if form_data.overdue_days == '3' %}
+                                                    *
+                                                {% endif %}
+                                                超3天
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'overdue_days' }}&overdue_days=4">
+                                                {% if form_data.overdue_days == '4' %}
+                                                    *
+                                                {% endif %}
+                                                超4天
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'overdue_days' }}&overdue_days=5">
+                                                {% if form_data.overdue_days == '5' %}
+                                                    *
+                                                {% endif %}
+                                                超5天
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'overdue_days' }}&overdue_days=7">
+                                                {% if form_data.overdue_days == '7' %}
+                                                    *
+                                                {% endif %}
+                                                超7天以上
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="btn-group" id="priority" style="float: left;margin-left: 5px;">
+                                    <button class="btn btn-default btn dropdown-toggle" type="button"
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true"
+                                            aria-expanded="false">
+                                        Priority [{{ form_data.vendor }}]<span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'priority' }}&priority=all">
+                                                {% if form_data.priority == 'all' %}
+                                                    *
+                                                {% endif %}
+                                                ALL
+                                            </a>
+                                        </li>
+                                        {% for vd in form_data.priority_list %}
+                                            <li>
+                                                <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'priority' }}&priority={{ vd.key }}">
+                                                    {% ifequal form_data.priority vd.key %}
+                                                        *
+                                                    {% endifequal %}
+                                                    {{ vd.value }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+
+                                <div class="btn-group" id="ship_direction" style="float: left;margin-left: 5px;">
+                                    <button class="btn btn-default btn dropdown-toggle" type="button"
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true"
+                                            aria-expanded="false">
+                                        Ship Direction [{{ form_data.ship_direction }}]<span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'ship_direction' }}&ship_direction=all">
+                                                {% if form_data.ship_direction == 'all' %}
+                                                    *
+                                                {% endif %}
+                                                ALL
+                                            </a>
+                                        </li>
+                                        {% for vd in form_data.ship_direction_list %}
+                                            <li>
+                                                <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'ship_direction' }}&ship_direction={{ vd.key }}">
+                                                    {% ifequal form_data.ship_direction vd.key %}
+                                                        *
+                                                    {% endifequal %}
+                                                    {{ vd.value }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+
+                                <div class="btn-group" id="vendor" style="float: left;margin-left: 5px;">
+                                    <button class="btn btn-default btn dropdown-toggle" type="button"
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true"
+                                            aria-expanded="false">
+                                        Vendor [{{ form_data.vendor }}]<span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'vendor' }}&vendor=all">
+                                                {% if form_data.vendor == 'all' %}
+                                                    *
+                                                {% endif %}
+                                                ALL
+                                            </a>
+                                        </li>
+                                        {% for vd in form_data.vendor_list %}
+                                            <li>
+                                                <a href="{{ requestUrl }}?{{ query_string_complex|get_query_string_exclude_self:'vendor' }}&vendor={{ vd.key }}">
+                                                    {% ifequal form_data.vendor vd.key %}
+                                                        *
+                                                    {% endifequal %}
+                                                    {{ vd.value }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+
+                                <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+                                    <button id="overdue_order_csv" class="btn btn-warning btn dropdown-toggle"
+                                            type="button">导出 CSV
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div id="tableContent">
+                            <table class="table table-striped table-hover table-responsive">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>订单号</th>
+                                    <th>优先级</th>
+                                    <th>发货方向</th>
+                                    <th>状态</th>
+                                    <th>VD状态</th>
+                                    <th>镜架</th>
+                                    <th>实际镜片</th>
+                                    <th>Web订单</th>
+                                    <th>工厂订单</th>
+                                    <th>委外订单</th>
+                                    <th>委外时长</th>
+                                    <th>暂停时长</th>
+                                    <th>总时长</th>
+                                    <th>VD</th>
+                                    <th>目前进程</th>
+                                    <th>超期原因</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for item in list %}
+                                    <tr>
+                                        <td></td>
+                                        <td><a name="lbo_details"
+                                               href="javascript:void(0)"
+                                               id="{{ item.lab_number }}"
+                                        >{{ item.lab_number }}</a></td>
+                                        <td>{{ item.priority }}</td>
+                                        <td>{{ item.ship_direction_cn }}</td>
+                                        <td>{{ item.status_cn }}</td>
+                                        <td>{{ item.vendor_order_status_value }}</td>
+                                        <td>{{ item.frame }}</td>
+                                        <td>{{ item.act_lens_name }}</td>
+                                        <td>{{ item.order_created_at }}</td>
+                                        <td>{{ item.job_created_at }}</td>
+                                        <td>{{ item.po_created_at }}</td>
+                                        <td>{{ item.diff }}</td>
+                                        <td>{% if item.exclude_days %}{{ item.exclude_days }}{% else %} 0 {% endif %}</td>
+                                        <td>{{ item.diff_od }}</td>
+                                        <td>{{ item.vendor }}</td>
+                                        <td>{{ item.cur_progress }}</td>
+                                        <td>{{ item.overdue_reasons }}</td>
+                                    </tr>
+
+                                    <tr class="lab_order_details" style="display:none">
+                                        <td colspan="22">
+                                            <div name="details">
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr style="display:none">
+                                        <td colspan="22">
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!--paginator-->
+                        <div style="width: 100%;text-align: center;">
+                            {% include 'page_number.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ending -->
+
+
+    <div class="row">
+
+
+        <div class="col-lg-12 col-md-12 column">
+
+        </div>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        // 点击 行上的 Vendor List，更新 Vendor；无确认需求
+        $("a[name='lbo_details']").each(function () {
+            $(this).bind("click", function () {
+
+                var index = layer.load(2); //换了种风格
+                var item_content = this;
+                var id = $(this).attr('id');
+
+                //if ($(this).parents("tr").next().css('display') != 'none') {
+                //$(this).parents("tr").next().toggle(200);
+                //return true;
+                //}
+
+                var _html = [];
+                var url = "{% url 'laborder_detail_pspf' %}";
+                $.ajax({
+                    url: url,
+                    type: 'post',
+                    data: {
+                        "lab_number": id,
+                    },
+                    success: function (arg) {
+                        _html.push(arg);
+                        $(item_content).parents("tr").next().find("td").find("div[name='details']").html(_html.join(''));
+                        layer.close(index);
+                    }
+                });
+                //$(this).parents("tr").next().find("td").html(_html);
+                $(this).parents("tr").next().toggle(400);
+            });
+        });
+        var date = new Date();	 //获取当前的日期
+        var preDate = new Date(date.getTime() - 24 * 60 * 60 * 1000);  //一年以前的日期
+        laydate.render({
+            elem: '#delay_time', //指定元素
+            type: "datetime",
+            value: preDate
+        });
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                url = "{% url 'overdue_orders_v2' %}";
+                location.href = url + '?lab_number=' + order_number;
+            }
+        });
+        $(".btn_done").click(function () {
+            var lab_number = $(this).attr('data');
+            $("#lab_number").val(lab_number);
+        });
+
+        function query_string(me) {
+            paras = [];
+            qs = location.href;
+
+            qss = qs.split('&');
+
+            count = qss.length;
+            for (i = 0; i < count; i++) {
+                q = qss[i];
+                ps = q.split('=');
+                p = ps[0];
+                if (p != me && p != 'amp;' + me && ps[0] != '') {
+                    paras.push('&' + ps[0].replace('amp;', '') + '=' + ps[1]);
+                }
+            }
+
+            location_new = paras.join('').substr(1);
+            return location_new;
+        }
+        ;
+
+        $("#overdue_order_csv").click(function () {
+            window.location.href = "{% url 'overdue_orders_csv_v2' %}?lab_number={{ lab_number }}&vendor={{ vendor }}&filter={{ filter }}&status={{ status }}"
+        });
+
+    </script>
+{% endblock %}

@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders{% endblock %}
+{% block small %}采购订单{% endblock %}
+{% block content %}
+
+    <!--Actions-->
+    <div class="cl">
+        <div style="float: left;margin-right: 3px;margin-left:10px;">
+            <button id="btn_back" type="button" class="btn btn-default btn" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" id="generate_csv" target='view_window'>生成采购订单</a>
+        </div>
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" id="generate_csv_wx" target='view_window'>生成采购订单-伟星</a>
+        </div>
+        {% if perms.oms.WX_ORDER %}
+            <div style="float: left;margin-left: 20px;">
+                <a class="btn btn-block btn-default" id="generate_order_wx">下单-伟星</a>
+            </div>
+        {% endif %}
+        {% if perms.oms.WX_ORDER %}
+            <div style="float: left;margin-left: 20px;">
+                <a class="btn btn-block btn-default" id="generate_stock_order_wx">下单-伟星（库存片）</a>
+            </div>
+        {% endif %}
+        {% if perms.oms.WX_ORDER %}
+            <div style="float: left;margin-left: 20px;">
+                <a class="btn btn-block btn-default" id="generate_order_wc">下单-五彩</a>
+            </div>
+        {% endif %}
+        <div style="float: left;margin-left: 20px;">
+            <a class="btn btn-block btn-default" id="push_to_mrp">推送此清单到MRP系统</a>
+        </div>
+        {% if lbos.0.0.vendor == '2' or lbos.0.0.vendor == '4' or lbos.0.0.vendor == '7' or lbos.0.0.vendor == '9' %}
+            <div style="float: left;margin-left: 20px;">
+                <a class="btn btn-block btn-default" id="updata_status">更新全部订单状态为镜片生产</a>
+            </div>
+        {% endif %}
+    </div>
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover text-center">
+            <thead>
+            <tr>
+                <th>#</th> <!-- laborder_purchase_order的ID -->
+                <th>镜架</th>
+                <th>订单号</th>
+                <th>数量</th>
+                <th>车房片</th>
+                <th>订单日期</th>
+                <th>订单下达日期</th>
+                <th>订单状态</th>
+                <th>是否已下单</th>
+                <th>手动下单后设置</th>
+                <th>VD</th>
+                <th>供应商单号</th>
+                <th>备注</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for lbo in lbos %}
+                <tr>
+                    <td>{{ lbo.0.id }}</td>
+                    <td>{{ lbo.0.frame }}</td>
+                    <td>{{ lbo.0.lab_number }}</td>
+                    <td>{{ lbo.0.quantity }}</td>
+                    <td>{{ lbo.0.lens_type }}</td>
+                    <td>{{ lbo.0.order_date }}</td>
+                    <td>{{ lbo.0.create_at }}</td>
+                    <td>{{ lbo.0.get_status_display }}</td>
+                    <td style="text-indent:30px">
+                        {% ifequal lbo.1 True %}
+                            <img src="{% static "image/icon-yes.svg" %}">
+                        {% endifequal %}
+                        {% ifequal lbo.1 False %}
+                            <img src="{% static "image/icon-no.svg" %}">
+                        {% endifequal %}
+                    </td>
+                    <td>
+                        {% ifequal lbo.1 False %}
+                            <input class="btn btn-default set_to_success" type="button" value="设置为已下单" lab_number="{{ lbo.0.lab_number }}">
+                        {% endifequal %}
+                    </td>
+                    <td>{{ lbo.0.vendor }}</td>
+                    <td>{{ lbo.0.vendor_order_reference }}</td>
+                    <td>{{ lbo.1.comments }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            <li class="item"><a>Total&nbsp;:&nbsp;{{ page_info.total }}</a></li>
+            {% if lbos.has_previous %}
+                <li class="previous"><a
+                        href="{{ requestUrl }}?page={{ lbos.previous_page_number }}&lid={{ page_info.lid }}">previous</a>
+                </li>
+            {% else %}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {% for num in paginator.page_range %}
+                {% if num == currentPage %}
+                    <li class="item active"><a
+                            href="{{ requestUrl }}?page={{ num }}&lid={{ page_info.lid }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="item"><a href="{{ requestUrl }}?page={{ num }}&lid={{ page_info.lid }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if lbos.has_next %}
+                <li class="next"><a
+                        href="{{ requestUrl }}?page={{ lbos.next_page_number }}&lid={{ page_info.lid }}">next</a></li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    <!--paginator end-->
+
+    <div id="set_success_div" class="text-center" style="display:none;">
+        <p>&nbsp</p>
+        车房返回的订单号：<input class="input-append" type="text" id="rx_lab_number">
+    </div>
+{% endblock %}
+
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 生成采购单
+        $("#generate_csv").click(function () {
+            $(window).attr("location", "/oms/laborder_purchase_generate_csv/?lopo_id=" + {{ page_info.lid }});
+        });
+
+        // 生成采购单 伟星 generate_csv_wx
+        $("#generate_csv_wx").click(function () {
+            if ("{{ can_print_wx }}" == "False") {
+                var idx = layer.alert("此工厂不支持【装配】类型采购订单，点【确定】并【保存文件】后请手动修改数据", {
+                    yes: function () {
+                        layer.close(idx);
+                        $(window).attr("location", "/oms/laborder_purchase_generate_csv_wx/?lopo_id=" + {{ page_info.lid }});
+                    }
+                });
+            } else {
+                $(window).attr("location", "/oms/laborder_purchase_generate_csv_wx/?lopo_id=" + {{ page_info.lid }});
+            }
+        });
+
+        // 分批请求 伟星下单接口
+        function wx_ajax_request(list, idx_hold) {
+            var sub_list = list.splice(0, 10);
+            console.log(sub_list)
+            if (sub_list.length > 0) {
+                $.ajax({
+                    url: "{% url 'wx_purchasing_order' %}",
+                    method: "POST",
+                    traditional: true, // Django 接收数组
+                    data: {"sub_list": sub_list},
+                    success: function (res) {
+                        if (res.code == "-1") {
+                            $("#res_t_head").prepend(res.message);
+                            layer.close(idx_hold);
+                            return false;
+                        } else {
+                            $("#res_t_head").prepend(res);
+                        }
+                        wx_ajax_request(list, idx_hold);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            } else {
+                layer.close(idx_hold);
+            }
+        }
+
+        // 单个请求 五彩下单接口
+        function wc_ajax_request(list, idx_hold) {
+            var sub_list = list.splice(0, 1);
+            if (sub_list.length > 0) {
+                $.ajax({
+                    url: "{% url 'wc_purchasing_order' %}",
+                    method: "POST",
+                    traditional: true, // Django 接收数组
+                    data: {"sub_list": sub_list},
+                    success: function (res) {
+                        if (res.code === "-1") {
+                            $("#res_t_head").prepend(res.message);
+                            layer.close(idx_hold);
+                            return false;
+                        } else {
+                            $("#res_t_head").prepend(res);
+                        }
+                        wc_ajax_request(list, idx_hold);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            } else {
+                layer.close(idx_hold);
+            }
+        }
+
+        // 伟星采购
+        $("#generate_order_wx").click(function () {
+            var idx = layer.load(2);
+            $.ajax({
+                url: "{% url 'wx_purchasing_order' %}",
+                method: "POST",
+                data: {
+                    "line_id": "{{ page_info.lid }}",
+                    "is_ready": "1"
+                },
+                success: function (res) {
+                    layer.close(idx);
+                    if (res.code === "1") {
+                        layer.alert('确认是否下单【仅未下单的订单】', {
+                            icon: 3,
+                            yes: function () {
+                                var res_t_head = '<div class="col-md-12 column"><table class="table"><thead><tr><th>订单号</th><th>是否成功</th><th>信息</th></tr></thead><tbody id="res_t_head"></tbody></table></div>';
+                                layer.open({
+                                    title: "下单处理结果",
+                                    btn: false, shade: 0.7,
+                                    area: ['50%', '80%'],
+                                    content: res_t_head,
+                                    success: function () {
+                                        var idx_hold = layer.load();
+                                        wx_ajax_request(res.m_pur_list, idx_hold);
+                                    },
+                                    end: function () {
+                                        window.location.reload();
+                                    }
+                                });
+                            }
+                        });
+
+                    } else {
+                        console.log(res);
+                    }
+                }
+            });
+
+        });
+
+        // 五彩采购
+        $("#generate_order_wc").click(function () {
+            var idx = layer.load(2);
+            $.ajax({
+                url: "{% url 'wx_purchasing_order' %}",  //利用伟星接口获取所有采购单ID
+                method: "POST",
+                data: {
+                    "line_id": "{{ page_info.lid }}",
+                    "is_ready": "1"
+                },
+                success: function (res) {
+                    layer.close(idx);
+                    if (res.code === "1") {
+                        layer.alert('确认是否下单【仅未下单的订单】', {
+                            icon: 3,
+                            yes: function () {
+                                var res_t_head = '<div class="col-md-12 column"><table class="table"><thead><tr><th>订单号</th><th>是否成功</th><th>信息</th></tr></thead><tbody id="res_t_head"></tbody></table></div>';
+                                layer.open({
+                                    title: "下单处理结果",
+                                    btn: false, shade: 0.7,
+                                    area: ['50%', '80%'],
+                                    content: res_t_head,
+                                    success: function () {
+                                        var idx_hold = layer.load();
+                                        wc_ajax_request(res.m_pur_list, idx_hold);
+                                    },
+                                    end: function () {
+                                        window.location.reload();
+                                    }
+                                });
+                            }
+                        });
+
+                    } else {
+                        console.log(res);
+                    }
+                }
+            });
+        });
+        // 更新订单状态为镜片生产
+        $("#updata_status").click(function () {
+            $.ajax({
+                url: "{% url 'updata_laborder_status_print_date' %}",
+                method: "POST",
+                data: {"lid": "{{ lpo_id}}"},
+                success: function (res) {
+                    var obj = JSON.parse(res)
+                    if (obj.code == 0) {
+                        alert(obj.message);
+                        location.reload();
+                    } else {
+                        alert(obj.message);
+                    }
+                },
+                error: function (e) {
+                    alert('更新出错');
+                }
+            });
+        });
+
+        // 推送时间，伟星工厂单号，VD到MRP系统
+        $("#push_to_mrp").click(function () {
+            var idx_hold = layer.load();
+            $.ajax({
+                url: "{% url 'push_purchase_order_to_mrp' %}",
+                method: "POST",
+                data: {"lid": "{{ lpo_id}}"},
+                success: function (res) {
+                    var obj = JSON.parse(res)
+                    if (obj.code == 0) {
+                        layer.close(idx_hold);
+                        alert(obj.message);
+                    } else {
+                        layer.close(idx_hold);
+                        alert(obj.message);
+                    }
+                },
+                error: function (e) {
+                    layer.close(idx_hold);
+                    alert('更新出错');
+                }
+            });
+        });
+
+        //设置手动下单成功
+        $(".set_to_success").click(function () {
+            var td_lab_number = $(this).attr("lab_number");
+            var index = layer.open({
+                type: 1,
+                shade: false,
+                title: '填写车房订单信息',
+                content: $('#set_success_div'),
+                area: ['300px', '200px'],//弹窗框的长宽
+                btn: ['确认', '取消'],
+
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不处理', {time: 5000});
+                },
+                yes: function () {
+                    var file_name = $("#rx_lab_number").val();
+                    var url = "{% url 'oms_set_purchase_order_is_in_rx' %}"
+
+                    if (file_name == "") {
+                        layer.msg('填写车房的单号', {time: 5000});
+                    } else {
+                        layer.close(index);
+                        var load = layer.load();// 转圈圈
+                        var rx_lab_number = $("#rx_lab_number").val();
+                        console.log(rx_lab_number);
+                        console.log(td_lab_number);
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            data: {
+                                'rx_lab_number': rx_lab_number,
+                                'td_lab_number': td_lab_number
+                            },
+                            success: function (arg) {
+                                layer.close(load);
+                                var obj = JSON.parse(arg);
+                                if (obj.code == 0) {
+                                    layer.msg(obj.message, {time: 5000, icon: 6});
+                                } else {
+                                    layer.msg("失败:"+ obj.message, {time: 5000, icon: 6});
+                                }
+                            },
+                            error:function (arg) {
+                                layer.close(load);
+                                layer.msg("错误", {time: 5000, icon: 6});
+                            },
+                        });
+                    }
+                }
+            });
+        });
+                // 伟星采购库存片
+        $("#generate_stock_order_wx").click(function () {
+            var idx = layer.load(2);
+            $.ajax({
+                url: "{% url 'wx_purchasing_order' %}",
+                method: "POST",
+                data: {
+                    "line_id": "{{ page_info.lid }}",
+                    "is_ready": "1"
+                },
+                success: function (res) {
+                    layer.close(idx);
+                    if (res.code === "1") {
+                        layer.alert('确认是否下单【仅未下单的订单】', {
+                            icon: 3,
+                            yes: function () {
+                                var res_t_head = '<div class="col-md-12 column"><table class="table"><thead><tr><th>订单号</th><th>是否成功</th><th>信息</th></tr></thead><tbody id="res_t_head"></tbody></table></div>';
+                                layer.open({
+                                    title: "下单处理结果",
+                                    btn: false, shade: 0.7,
+                                    area: ['50%', '80%'],
+                                    content: res_t_head,
+                                    success: function () {
+                                        var idx_hold = layer.load();
+                                        wx_stock_ajax_request(res.m_pur_list, idx_hold);
+                                    },
+                                    end: function () {
+                                        window.location.reload();
+                                    }
+                                });
+                            }
+                        });
+
+                    } else {
+                        console.log(res);
+                    }
+                }
+            });
+
+        });
+
+        // 分批请求 伟星库存下单接口
+        function wx_stock_ajax_request(list, idx_hold) {
+            var sub_list = list.splice(0, 1);
+            console.log(sub_list)
+            if (sub_list.length > 0) {
+                $.ajax({
+                    url: "{% url 'oms_wx_meta_purchasing_order' %}",
+                    method: "POST",
+                    traditional: true, // Django 接收数组
+                    data: {"sub_list": sub_list},
+                    success: function (res) {
+                        if (res.code == "-1") {
+                            $("#res_t_head").prepend(res.message);
+                            layer.close(idx_hold);
+                            return false;
+                        } else {
+                            $("#res_t_head").prepend(res);
+                        }
+                        wx_stock_ajax_request(list, idx_hold);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            } else {
+                layer.close(idx_hold);
+            }
+        }
+    </script>
+{% endblock %}

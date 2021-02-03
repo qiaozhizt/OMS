@@ -1,0 +1,459 @@
+{% load static %}
+<div class="row">
+    <div class="col-md-12">
+        <!-- Line chart -->
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <i class="fa fa-hourglass-half"></i>
+
+                <h3 class="box-title">工厂订单数据</h3>
+
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                            class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <table class="table table-hover table-bordered">
+                    <tr>
+                        <th>Lab Number</th>
+                        <td><span id="spn_lab_number" class="label label-default spn_lab_number"
+                                  style="font-size:small"> {{ item.lab_number }}</span>
+                            <button type="button" class="btn btn-link"
+                                    data-clipboard-action="copy"
+                                    data-clipboard-text="{{ item.lab_number }}"><i class="fa fa-copy"></i>
+                            </button>
+                        </td>
+                        <th>订单日期</th>
+                        <td>{{ item.order_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>镜架</th>
+                        <td><span class="label label-default" style="font-size: small;"> {{ item.frame }}</span>
+                        </td>
+                        <th>数量</th>
+                        <td>{{ item.quantity }}</td>
+                    </tr>
+                    <tr>
+                        <th>框宽</th>
+                        <td>{{ item.lens_width }}</td>
+                        <th>框高</th>
+                        <td>{{ item.lens_height }}</td>
+                    </tr>
+                    <tr>
+                        <th>订单镜片</th>
+                        <td>{{ item.lens_name }}</td>
+                        <th>实际镜片</th>
+                        <td>{{ item.act_lens_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>染色</th>
+                        <td>{{ item.tint_name }}</td>
+                        <th>涂层</th>
+                        <td>{{ item.coating_name }}</td>
+
+                    </tr>
+
+                    <tr>
+                        <th>设计</th>
+                        <td>{{ item.pal_design_name }}</td>
+                        <th>尺寸</th>
+                        <td colspan="3">{{ item.size }}</td>
+                    </tr>
+                    <tr>
+                        <th>发运方式</th>
+                        <td>{{ item.get_ship_direction_display }}</td>
+                        <th>实际发运方式</th>
+                        <td>{{ item.get_act_ship_direction_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>加工瞳高</th>
+                        <td>{% ifnotequal item.lab_seg_height '' %}{{ item.lab_seg_height }}mm{% endifnotequal %}</td>
+                        <th>装配瞳高</th>
+                        <td>{% ifnotequal item.assemble_height '' %}按标准瞳高{{ item.assemble_height }}mm{% endifnotequal %}</td>
+                    </tr>
+                    <tr>
+                        <th>状态</th>
+                        <td name="detail_status">{{ item.get_status_display }}</td>
+                        <th>预计完成时间</th>
+                        <td id="est_time_{{ item.id }}"> {{ item.estimated_date }}</td>
+                    </tr>
+                    <tr>
+                        <th>下达日期</th>
+                        <td>{{ item.create_at }}</td>
+                        <th>更新日期</th>
+                        <td>{{ item.update_at }}</td>
+                    </tr>
+                    <tr>
+                        <th>用户ID</th>
+                        <td>{{ item.user_id }}</td>
+                        <th>用户</th>
+                        <td>{{ item.user_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>装配师ID</th>
+                        <td>{{ gfit.assembler_id }}</td>
+                        <th>装配师</th>
+                        <td>{{ assembler_name }}</td>
+                    </tr>
+                    {% if perms.oms.TOP_SECRET %}
+                        <tr>
+                            <th>备注[内部]</th>
+                            <td colspan="7" id="comments_inner_{{ item.id }}">{{ item.comments_inner }}</td>
+                        </tr>
+                    {% endif %}
+
+                    <tr>
+                        <th>备注</th>
+                        <td colspan="7" id="comments_{{ item.id }}">{{ item.comments }}</td>
+                    </tr>
+                    <tr>
+                        <th>
+                            附件
+                        </th>
+                        <td class="text-center">
+                        <a href="{{ object_url }}" target="_blank"><img src={% static "image/video.jpg" %} width="10%" height="10%" /></a>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <!-- /.box-body-->
+        </div>
+        <!-- /.box -->
+
+    </div>
+    <!-- /.col -->
+</div>
+<!-- /.row -->
+
+<!-- /.box-body -->
+<!-- /.box-footer -->
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-header">
+                <h3 class="box-title">技术指标</h3>
+            </div>
+            <!-- /.box-header -->
+            <div style="padding:3px 20px">
+                <table class="table table-hover table-bordered">
+                    <tbody>
+                    <tr>
+                        {% if gfit.pd == 0 %}
+                            <th>右眼PD</th>
+                            <td>{{ gfit.od_pd }}</td>
+                        {% else %}
+                            <th rowspan="2" style="vertical-align:middle;">双眼PD</th>
+                            <td rowspan="2" style="vertical-align:middle;">{{ gfit.pd }}</td>
+                        {% endif %}
+                        <th>镜片抗蓝光</th>
+                        <td>{{ gfit.blue_blocker }}</td>
+                        <th>渐变染色</th>
+                        <td>{{ gfit.is_gradient }}</td>
+                        <th>是否美薄</th>
+                        <td>{{ gfit.is_d_thin }}</td>
+                    </tr>
+                    <tr>
+                        {% if gfit.pd == 0 %}
+                            <th>左眼PD</th>
+                            <td>{{ gfit.os_pd }}</td>
+                        {% endif %}
+                        <th>镜片偏光</th>
+                        <td>{{ gfit.polarized }}</td>
+                        <th>颜色</th>
+                        <td>{{ gfit.light_responsive_color }}</td>
+                        <th>是否抛光</th>
+                        <td>{{ gfit.is_polishing }}</td>
+                    </tr>
+                    <tr>
+                        {% if "双光" in  item.act_lens_name %}
+                            <th>右眼子镜高</th>
+                            <td>{{ gfit.od_sub_mirrors_height }}</td>
+                        {% else %}
+                            <th>右眼瞳高</th>
+                            <td>{{ gfit.od_asmbl_seght }}</td>
+                        {% endif %}
+                        <th>超防水涂层</th>
+                        <td>{{ gfit.co }}</td>
+                        <th>膜层</th>
+                        <td>{{ gfit.coatings }}</td>
+                        <th>夹片</th>
+                        <td>{{ gfit.clipon_qty }}</td>
+                    </tr>
+                    <tr>
+                        {% if "双光" in  item.act_lens_name %}
+                            <th>左眼子镜高</th>
+                            <td>{{ gfit.os_sub_mirrors_height }}</td>
+                        {% else %}
+                            <th>左眼瞳高</th>
+                            <td>{{ gfit.os_asmbl_seght }}</td>
+                        {% endif %}
+                        <th>变色</th>
+                        <td>{{ gfit.light_responsive }}</td>
+                        {% if gfit.od_tint_deepness == 0 and gfit.os_tint_deepness == 0  %}
+                            <th rowspan="2" style="vertical-align:middle;">染色深度</th>
+                            <td rowspan="2" style="vertical-align:middle;">{{ gfit.tint_deepness }}</td>
+                        {% else %}
+                            <th>右片染色深度</th>
+                            <td>{{ gfit.od_tint_deepness }}</td>
+                        {% endif %}
+                        <th>近光区是否完整</th>
+                        <td>{{ gfit.is_near_light }}</td>
+                    </tr>
+                    <tr>
+                        <th>是否合格</th>
+                        <td>{{ gfit.is_qualified }}</td>
+                        <th>实色染色</th>
+                        <td>{{ gfit.tint }}</td>
+                        {% if gfit.od_tint_deepness != 0 and gfit.os_tint_deepness != 0  %}
+                            <th>左片染色深度</th>
+                            <td>{{ gfit.os_tint_deepness }}</td>
+                        {% endif %}
+                        <th>加工要求验证</th>
+                        <td>{{ gfit.is_special_handling }}</td>
+
+                    </tr>
+                    </tbody>
+                </table>
+                <table class="table table-hover table-bordered">
+                    <tbody>
+                    <tr>
+                        <th>右眼棱镜</th>
+                        <td>{{ gfit.od_prism }}</td>
+                        <th>右眼方向</th>
+                        <td>{{ gfit.od_base }}</td>
+                        <th>左眼棱镜</th>
+                        <td>{{ gfit.os_prism }}</td>
+                        <th>左眼方向</th>
+                        <td>{{ gfit.os_base }}</td>
+                    </tr>
+                    <tr>
+                        <th>右眼棱镜2</th>
+                        <td>{{ gfit.od_prism1 }}</td>
+                        <th>右眼方向2</th>
+                        <td>{{ gfit.od_base1 }}</td>
+                        <th>左眼棱镜2</th>
+                        <td>{{ gfit.os_prism1 }}</td>
+                        <th>左眼方向2</th>
+                        <td>{{ gfit.os_base1 }}</td>
+                    </tr>
+                    <tr>
+                        <th>备注</th>
+                        <td colspan="7">{{ gfit.comments }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- /.box-body -->
+        </div>
+        <!-- /.box -->
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <!-- Bar chart -->
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <i class="fa fa-eye"></i>
+
+                <h3 class="box-title">验光单 - 订单</h3>
+
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                            class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div class="col-xs-12">
+                    <table class="table table-hover table-bordered">
+                        <tr>
+                            <th>Profile ID</th>
+                            <th>Profile Name</th>
+                            <th>Prescription ID</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Used For</th>
+                        </tr>
+                        <tr>
+                            <td>{{ item.profile_id }}</td>
+                            <td>{{ item.profile_name }}</td>
+                            <td>{{ item.prescription_id }}</td>
+                            <td>{{ item.prescription_name }}</td>
+                            <td>{{ item.prescription_type }}</td>
+                            <td><span class="label label-default">{{ item.used_for }}</span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-xs-12">
+
+                    <table class="table table-hover table-bordered">
+                        <tr>
+                            <th>#</th>
+                            <th>SPH</th>
+                            <th>CYL</th>
+                            <th>AXIS</th>
+                            <th>ADD</th>
+                            <th>PD</th>
+                        </tr>
+                        <tr>
+                            <td>OD</td>
+                            <td>{{ item.od_sph }}</td>
+                            <td>{{ item.od_cyl }}</td>
+                            <td>{{ item.od_axis }}</td>
+                            <td>{{ item.od_add }}</td>
+                            <td>
+
+                                {% ifequal item.is_singgle_pd 1 %}{{ item.pd }}{% endifequal %}
+                                {% ifequal item.is_singgle_pd 0 %}{{ item.od_pd }}{% endifequal %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>OS</td>
+                            <td>{{ item.os_sph }}</td>
+                            <td>{{ item.os_cyl }}</td>
+                            <td>{{ item.os_axis }}</td>
+                            <td>{{ item.os_add }}</td>
+                            <td>
+                                {% ifequal item.is_singgle_pd 0 %}{{ item.os_pd }}{% endifequal %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-xs-4">
+                    <table class="table table-hover table-bordered">
+                        <tr>
+                            <th>#</th>
+                            <th>Prism</th>
+                            <th>Base</th>
+                        </tr>
+                        <tr>
+                            <td>OD</td>
+                            <td>{{ item.od_prism }}</td>
+                            <td>{{ item.od_base }}</td>
+                        </tr>
+                        <tr>
+                            <td>OS</td>
+                            <td>{{ item.os_prism }}</td>
+                            <td>{{ item.os_base }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <!-- /.box-body-->
+        </div>
+        <!-- /.box -->
+    </div>
+    <!-- /.col -->
+    <!-- /.row -->
+
+    <div class="col-md-6">
+        <div class="box box-default">
+            <div class="box-header with-border">
+                <i class="fa fa-eye"></i>
+
+                <h3 class="box-title">验光单 - 实际</h3>
+
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                            class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                <div class="col-xs-12">
+                    <table class="table table-hover table-bordered">
+                        <tr>
+                            <th>Profile ID</th>
+                            <th>Profile Name</th>
+                            <th>Prescription ID</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Used For</th>
+                        </tr>
+                        <tr>
+                            <td>{{ pa.profile_id }}</td>
+                            <td>{{ pa.profile_name }}</td>
+                            <td>{{ pa.prescription_id }}</td>
+                            <td>{{ pa.prescription_name }}</td>
+                            <td>{{ pa.prescription_type }}</td>
+                            <td><span class="label label-default">{{ pa.used_for }}</span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-xs-12">
+
+                    <table class="table table-hover table-bordered">
+                        <tr>
+                            <th>#</th>
+                            <th>SPH</th>
+                            <th>CYL</th>
+                            <th>AXIS</th>
+                            <th>ADD</th>
+                            <th>PD</th>
+                        </tr>
+                        <tr>
+                            <td>OD</td>
+                            <td>{{ pa.od_sph }}</td>
+                            <td>{{ pa.od_cyl }}</td>
+                            <td>{{ pa.od_axis }}</td>
+                            <td>{{ pa.od_add }}</td>
+                            <td>
+                                {% ifequal pa.is_singgle_pd 1 %}{{ pa.pd }}{% endifequal %}
+                                {% ifequal pa.is_singgle_pd 0 %}{{ pa.od_pd }}{% endifequal %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>OS</td>
+                            <td>{{ pa.os_sph }}</td>
+                            <td>{{ pa.os_cyl }}</td>
+                            <td>{{ pa.os_axis }}</td>
+                            <td>{{ pa.os_add }}</td>
+                            <td>
+                                {% ifequal pa.is_singgle_pd 0 %}{{ pa.os_pd }}{% endifequal %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-xs-4">
+                    <table class="table table-hover table-bordered">
+                        <tr>
+                            <th>#</th>
+                            <th>Prism</th>
+                            <th>Base</th>
+                        </tr>
+                        <tr>
+                            <td>OD</td>
+                            <td>{{ pa.od_prism }}</td>
+                            <td>{{ pa.od_base }}</td>
+                        </tr>
+                        <tr>
+                            <td>OS</td>
+                            <td>{{ pa.os_prism }}</td>
+                            <td>{{ pa.os_base }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <!-- /.box-body-->
+        </div>
+        <!-- /.box -->
+    </div>
+</div>
+
+
+<div id="upload_detail">
+
+</div>

@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}WMS
+    {% if form_data.total %}
+        <span class="label label-default">{{ form_data.total }}</span>
+    {% endif %}
+{% endblock %}
+{% block small %}镜片入库记录{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <div class="container">
+                        <div class="box-header">
+
+                            <div style="float: left;">{% include 'search.html' %}</div>
+                            <div class="form-group">
+                                <div class=" col-sm-4">
+                                    <button id="export_excel_btn" type="button" class="btn btn-default"
+                                            style="width:100%; margin-left: 20px;">
+                                        导出入库清单到EXCEL
+                                    </button>
+                                </div>
+                                <div class=" col-sm-4">
+                                    <button id="summary_btn" type="submit" class="btn btn-default"
+                                            style="width:100%; margin-left: 20px;">
+                                        打印入库汇总单
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-solid">
+                <div class="box-body">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <th>
+                            <select name="doc_number_select" id="doc_number_select" class="select2-selection__choice select_check">
+                                <option class="parameter" selected="" value="">入库编号</option>
+                                {% for dn in form_data.receipt_doc_number_list %}
+                                    <option class="parameter" value="{{ dn.doc_number }}"
+                                            {% ifequal dn.doc_number form_data.doc_number %}
+                                            selected="selected"
+                                            {% endifequal %}
+                                    >{{ dn.doc_number }}</option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                        <th>
+                            <select name="name_select" id="name_select" class="select_check">
+                                <option class="parameter" selected="" value="">镜片</option>
+                                {% for dn in form_data.receipt_name_list %}
+                                    <option class="parameter" value="{{ dn.sku }}"
+                                            {% ifequal dn.sku form_data.sku %}
+                                            selected="selected"
+                                            {% endifequal %}
+                                    >{{ dn.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                        <th>
+                            <select name="wh_select" id="wh_select" class="select2-selection__choice select_check">
+                                <option class="parameter" selected="" value="">仓库</option>
+                                {% for dn in form_data.receipt_wh_list %}
+                                    {% if dn.is_enabled == 1 and dn.used_to == 'LENS' %}
+                                        <option class="parameter" value="{{ dn.code }}"
+                                                {% ifequal dn.code form_data.wh_code %}selected="selected"{% endifequal %}>
+                                            {{ dn.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </th>
+
+                        <th>
+                            <select name="doc_type_select" id="doc_type_select" class="select2-selection__choice select_check">
+                                <option class="parameter" selected="" value="">入库类型</option>
+                                <option class="parameter"
+                                        {% ifequal 'INIT' form_data.doc_type %}
+                                            selected="selected"
+                                        {% endifequal %}
+                                        value="INIT">系统自动
+                                </option>
+                                {% for dn in form_data.receipt_doc_type_list %}
+                                    <option class="parameter" value="{{ dn.key }}"
+                                            {% ifequal dn.key form_data.doc_type %}
+                                            selected="selected"
+                                            {% endifequal %}
+                                    >{{ dn.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                        <th>
+                            <select name="user_select" id="user_select" class="select2-selection__choice select_check">
+                                <option class="parameter" selected="" value="">用户</option>
+                                {% for dn in form_data.receipt_user_list %}
+                                    <option class="parameter" value="{{ dn.user_name }}"
+                                            {% ifequal dn.user_name form_data.user %}
+                                            selected="selected"
+                                            {% endifequal %}
+                                    >{{ dn.user_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                        <th>
+                            <select name="creat_at_select" id="creat_at_select" class="">
+                                <option class="parameter" id="creat_at_select_option" {% if form_data.start_time %}selected="selected"{% endif %} value="">
+                                    {% if form_data.start_time %}
+                                        {{ form_data.start_time }}至{{ form_data.end_time }}
+                                    {% else %}
+                                        创建时间
+                                    {% endif %}
+                                </option>
+                            </select>
+                        </th>
+                        <th>SPH</th>
+                        <th>CYL</th>
+                        <th>数量</th>
+                        <th>单号</th>
+                        <th>备注</th>
+                        </thead>
+                        <tbody>
+                        {% for item in list %}
+                            <tr>
+                                <td>{{ item.doc_number  }}</td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.warehouse_name }}</td>
+                                <td>{{ item.get_doc_type_display }}</td>
+                                <td>{{ item.user_name }}</td>
+                                <td>{{ item.created_at }}</td>
+                                <td>{{ item.sph }}</td>
+                                <td>{{ item.cyl }}</td>
+                                <td>{{ item.quantity}}</td>
+                                <td>{{ item.lab_number }}</td>
+                                <td>{{ item.comments }}</td>
+                            </tr>
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--日期选择弹窗-->
+    <div id="shippingtime" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            <input class="form-control creat_at_date" type="text" value="{{ form_data.start_time }}" name="start_time" id="start_time" placeholder="请点击输入框填写开始时间">
+        </div>
+        <div class="form-group" style="padding: 0 5px;">
+            <input class="form-control creat_at_date" type="text" value="{{ form_data.end_time }}" name="end_time" id="end_time" placeholder="请点击输入框填写结束时间">
+        </div>
+    </div>
+    <!--日期选择弹窗-->
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+
+            url = "{% url 'wms_inventory_lens_receipt_report' %}";
+
+            if (sku == '' || sku == null) {
+                layer.msg('请输入一个单号', {time: 3000, icon: 7});
+            } else {
+                location.href = url + '?lab_number=' + sku;
+            }
+        });
+
+        //单击SELECT重新载入页面
+        $(".select_check").change(function () {
+            //获取参数
+            var start_time = $('#start_time').val();
+            var end_time = $('#end_time').val();
+            swith(start_time,end_time);
+        })
+
+        //基于当前筛选条件打印汇总
+        $("#summary_btn").click(function () {
+            var page = "{{ list.number }}"
+            var doc_number_select = $("#doc_number_select").val();
+            var sku_select = $("#name_select").val();
+            var wh_select = $("#wh_select").val();
+            var doc_type_select = $("#doc_type_select").val();
+            var user_select = $("#user_select").val();
+            var start_time = $('#start_time').val();
+            var end_time = $('#end_time').val();
+
+            var url = "{% url 'wms_inventory_lens_receipt_report_print' %}" + "?page=1"
+            //拼接url
+            if (doc_number_select != '') {
+                url = url + "&doc_number=" + doc_number_select
+            }
+            if (sku_select != '') {
+                url = url + "&sku=" + sku_select
+            }
+            if (wh_select != '') {
+                url = url + "&wh_code=" + wh_select
+            }
+            if (doc_type_select != '') {
+                url = url + "&doc_type=" + doc_type_select
+            }
+            if (user_select != '') {
+                url = url + "&user=" + user_select
+            }
+            if (start_time != '') {
+                url = url + "&start_time=" + start_time
+            }
+            if (end_time != '') {
+                url = url + "&end_time=" + end_time
+            }
+
+            //跳转
+            location.href = url;
+        });
+        function swith(start_time,end_time){
+            //获取参数
+            var page = "{{ list.number }}"
+            var doc_number_select = $("#doc_number_select").val();
+            var sku_select = $("#name_select").val();
+            var wh_select = $("#wh_select").val();
+            var doc_type_select = $("#doc_type_select").val();
+            var user_select = $("#user_select").val();
+
+            var url = "{% url 'wms_inventory_lens_receipt_report' %}" + "?page=1"
+            //拼接url
+            if (doc_number_select != '') {
+                url = url + "&doc_number=" + doc_number_select
+            }
+            if (sku_select != '') {
+                url = url + "&sku=" + sku_select
+            }
+            if (wh_select != '') {
+                url = url + "&wh_code=" + wh_select
+            }
+            if (doc_type_select != '') {
+                url = url + "&doc_type=" + doc_type_select
+            }
+            if (user_select != '') {
+                url = url + "&user=" + user_select
+            }
+            if (start_time != '') {
+                url = url + "&start_time=" + start_time
+            }
+            if (end_time != '') {
+                url = url + "&end_time=" + end_time
+            }
+
+            //跳转
+            location.href = url;
+        }
+        //设置INPUT为 date类型
+         laydate.render({
+            elem: '#start_time',
+            type: 'date'
+        });
+         laydate.render({
+            elem: '#end_time',
+            type: 'date'
+        });
+        //日期区间筛选
+        $("#creat_at_select").each(function () {
+            $(this).bind("click", function () {
+                var obj = $(this);
+
+                var index = layer.open({
+                    type: 1,
+                    shade: false,
+                    title: '选择时间区间', //不显示标题
+                    content: $('#shippingtime'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['确定', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        var start_time = $('#start_time').val();
+                        var end_time = $('#end_time').val();
+                        if (start_time > end_time) {
+                            layer.msg('开始时间大于结束时间', {icon: 5});
+                            return false;
+                        }
+                        if (start_time == '' || start_time == null) {
+                            layer.msg('请选择开始时间', {icon: 5});
+                            return false;
+                        }else if (end_time == '' || end_time == null){
+                            layer.msg('请选择结束时间', {icon: 5});
+                            return false;
+                        } else {
+                            swith(start_time,end_time);
+                        }
+                    }
+                });
+            });
+        });
+        //导出到excel
+        $("#export_excel_btn").click(function () {
+            var doc_number_select = $("#doc_number_select").val();
+            var sku_select = $("#name_select").val();
+            var wh_select = $("#wh_select").val();
+            var doc_type_select = $("#doc_type_select").val();
+            var user_select = $("#user_select").val();
+            var start_time = $('#start_time').val();
+            var end_time = $('#end_time').val();
+            var url = "{% url 'wms_inventory_lens_receipt_report_export_excel' %}" + "?page=1"
+            //拼接url
+            if (doc_number_select != '') {
+                url = url + "&doc_number=" + doc_number_select
+            }
+            if (sku_select != '') {
+                url = url + "&sku=" + sku_select
+            }
+            if (wh_select != '') {
+                url = url + "&wh_code=" + wh_select
+            }
+            if (doc_type_select != '') {
+                url = url + "&doc_type=" + doc_type_select
+            }
+            if (user_select != '') {
+                url = url + "&user=" + user_select
+            }
+            if (start_time != '') {
+                url = url + "&start_time=" + start_time
+            }
+            if (end_time != '') {
+                url = url + "&end_time=" + end_time
+            }
+            //跳转
+            location.href = url;
+        });
+    </script>
+{% endblock %}

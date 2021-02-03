@@ -1,0 +1,60 @@
+<ul class="pagination" id="pager">
+{# 每页20个，显示15个页码#}
+{# paginator --分页对象 #}
+{# list --第page页的20条数据 #}
+{# query_string --page参数后其它的参数 #}
+{# request_url --http请求路径，不包括page #}
+{% if list.has_previous %}
+    <li class="previous">
+        <a href="{{ request_url }}?page=1{{ query_string }}">首页</a>
+    </li>
+    <li class="previous">
+        <a href="{{ request_url }}?page={{ list.previous_page_number}}{{ query_string }}">上一页</a>
+    </li>
+{% else %}
+    <li class="previous">
+        <a href="{{ request_url }}?page=1{{ query_string }}">首页</a>
+    </li>
+    <li class="previous disabled">
+        <a href="">上一页</a>
+    </li>
+{% endif %}
+
+{% for page_number in paginator.page_range %}
+    {% if page_number != list.number %}
+        {% if list.number < 8 and  page_number < 16 %}
+            <li class="item">
+                <a href="{{ request_url }}?page={{ page_number }}{{ query_string }}">{{ page_number }}</a>
+            </li>
+        {% elif  list.number > paginator.num_pages|add:"-8" and  page_number > paginator.num_pages|add:"-15" %}
+            <li class="item">
+                <a href="{{ request_url }}?page={{ page_number }}{{ query_string }}">{{ page_number }}</a>
+            </li>
+        {% elif  page_number > list.number|add:"-8" and page_number < list.number|add:"8"%}
+            <li class="item">
+                <a href="{{ request_url }}?page={{ page_number }}{{ query_string }}">{{ page_number }}</a>
+            </li>
+        {% endif %}
+    {% else %}
+        <li class="item active">
+            <a href="{{ request_url }}?page={{ page_number }}{{ query_string }}">{{ page_number }}</a>
+        </li>
+    {% endif %}
+{% endfor %}
+
+{% if list.has_next %}
+    <li class="next">
+        <a href="{{ request_url }}?page={{list.next_page_number}}{{ query_string }}">下一页</a>
+    </li>
+    <li class="previous">
+        <a href="{{ request_url }}?page={{paginator.num_pages}}{{ query_string }}">尾页</a>
+    </li>
+{% else %}
+    <li class="next disabled">
+        <a href="">下一页</a>
+    </li>
+    <li class="next">
+        <a href="{{ request_url }}?page={{paginator.num_pages}}{{ query_string }}">尾页</a>
+    </li>
+{% endif %}
+</ul>

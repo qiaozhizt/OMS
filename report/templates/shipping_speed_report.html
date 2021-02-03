@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Report{% endblock %}
+{% block small %}出货速度统计表{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <!-- AREA CHART -->
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title"></h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body" id="cont_d" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+
+            <!-- AREA CHART -->
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title"></h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body" id="cont_j" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script src="{% static 'highcharts/highcharts.js' %}"></script>
+    <script src="{% static 'highcharts/modules/exporting.js' %}"></script>
+    <script src="{% static 'highcharts/modules/export-data.js' %}"></script>
+    <script type="text/javascript">
+        var date_arr = [];
+        {% for i in res_d_good %}
+            date_arr.push('{{ i.col_week|slice:":4" }}年第{{ i.col_week|slice:"-2:" }}周');
+        {% endfor %}
+
+        Highcharts.chart('cont_d', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: '单光'
+            },
+            xAxis: {
+                categories: date_arr,
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: '不同状态占比'
+                }
+            },
+            tooltip: {
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+                shared: true
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'percent'
+                }
+            },
+            colors: ['#96ed86', '#f7ad69', '#f1728b', '#777777'],
+            series: [{
+                name: '良好',
+                data: [{% for i in res_d_good %}{% ifequal i.sum None %}0, {% else %}{{ i.sum }}, {% endifequal %}{% endfor %}]
+            }, {
+                name: '正常',
+                data: [{% for i in res_d_average %}{% ifequal i.sum None %}0, {% else %}{{ i.sum }}, {% endifequal %}{% endfor %}]
+            }, {
+                name: '较差',
+                data: [{% for i in res_d_poor %}{% ifequal i.sum None %}0, {% else %}{{ i.sum }}, {% endifequal %}{% endfor %}]
+            }, {
+                name: '未出货',
+                data: [{% for i in res_d_unship %}{% ifequal i.sum None %}0, {% else %}{{ i.sum }}, {% endifequal %}{% endfor %}]
+            }]
+        });
+        Highcharts.chart('cont_j', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: '渐进'
+            },
+            xAxis: {
+                categories: date_arr,
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: '不同状态占比'
+                }
+            },
+            tooltip: {
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+                shared: true
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'percent'
+                }
+            },
+            colors: ['#96ed86', '#f7ad69', '#f1728b', '#777777'],
+            series: [{
+                name: '良好',
+                data: [{% for i in res_j_good %}{% ifequal i.sum None %}0, {% else %}{{ i.sum }}, {% endifequal %}{% endfor %}]
+            }, {
+                name: '正常',
+                data: [{% for i in res_j_average %}{% ifequal i.sum None %}0, {% else %}{{ i.sum }}, {% endifequal %}{% endfor %}]
+            }, {
+                name: '较差',
+                data: [{% for i in res_j_poor %}{% ifequal i.sum None %}0, {% else %}{{ i.sum }}, {% endifequal %}{% endfor %}]
+            }, {
+                name: '未出货',
+                data: [{% for i in res_j_unship %}{% ifequal i.sum None %}0, {% else %}{{ i.sum }}, {% endifequal %}{% endfor %}]
+            }]
+        });
+    </script>
+{% endblock %}

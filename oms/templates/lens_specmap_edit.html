@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}OMS
+    {% if form_data.total %}
+        <span class="label label-default">{{ form_data.total }}</span>
+    {% endif %}
+{% endblock %}
+{% block small %}AR设计对照维护{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <div style="float: left;">{% include 'search.html' %}</div>
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+                        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                            工艺类型 <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href={{ requestUrl }}?technology_type=all&vendor={{ vendor }}&active={{ active }}&name={{ name }}>
+                                    {% ifequal technology_type 'all' %}
+                                        *{% endifequal %}All</a></li>
+                            <li>&nbsp</li>
+
+                            {% for pt in technology_type_list %}
+                                <li>
+                                    <a href={{ requestUrl }}?technology_type={{ pt.key }}&vendor={{ vendor }}&active={{ active }}&name={{ name }}>
+                                        {% ifequal technology_type pt.key %}
+                                            *
+                                        {% endifequal %}
+                                        {{ pt.value }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+                        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                            Vendor <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href={{ requestUrl }}?technology_type={{ technology_type }}&vendor=all&active={{ active }}&name={{ name }}>
+                                    {% ifequal vendor 'all' %}
+                                        *{% endifequal %}All</a></li>
+                            <li>&nbsp</li>
+
+                            {% for vc in vendors_choices %}
+                                <li>
+                                    <a href={{ requestUrl }}?technology_type={{ technology_type }}&vendor={{ vc.key }}&active={{ active }}&name={{ name }}>
+                                        {% ifequal vendor vc.key %}
+                                            *
+                                        {% endifequal %}
+                                        {{ vc.value }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+                        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                            是否有效 <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href={{ requestUrl }}?technology_type={{ technology_type }}&vendor={{ vendor }}&active=all&name={{ name }}>
+                                    {% ifequal active 'all' %}
+                                        *{% endifequal %}All</a></li>
+                            <li>&nbsp</li>
+                            {% for ac in activate_choice_list %}
+                                <li><a href={{ requestUrl }}?technology_type={{ technology_type }}&vendor={{ vendor }}&active={{ ac.key }}&name={{ name }}>
+                                        {% ifequal active ac.key %}
+                                            *
+                                        {% endifequal %}
+                                        {{ ac.value }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addmyModal" style="float: right;">新建</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-solid">
+                <div class="box-body">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <th>工艺类型</th>
+                        <th>内部代码</th>
+                        <th>内部名称</th>
+                        <th>Vendor</th>
+                        <th>外部代码</th>
+                        <th>外部名称</th>
+                        <th>是否有效</th>
+                        <th>修改日期</th>
+                        <th>修改人</th>
+                        <th>操作</th>
+                        </thead>
+                        <tbody>
+                        {% for item in list %}
+                            <tr>
+                                <td>{{ item.get_technology_type_display  }}</td>
+                                <td>{{ item.inner_code }}</td>
+                                <td>{{ item.inner_name }}</td>
+                                <td>{{ item.vendor }}</td>
+                                <td>{{ item.outer_code }}</td>
+                                <td>{{ item.outer_name }}</td>
+                                <td>{{ item.get_active_display }}</td>
+                                <td>{{ item.updated_at|date:"Y-m-d H:i:s"}}</td>
+                                <td>{{ item.user_name }}</td>
+                                <td><button type="button" class="btn btn-info edit_sku" data="{{ item.id }}">编辑</button></td>
+                            </tr>
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!--日期选择弹窗-->
+    <!--日期选择弹窗-->
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+         <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">编辑AR维护</h4>
+                </div>
+                <div class="modal-body">
+                    <input name="e_id" type="hidden" class="form-control" id="e_id"/>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_technology_type" class="col-sm-4 control-label">工艺类型</label>
+                        <div class="col-sm-8">
+                            <select name="e_technology_type" id="e_technology_type" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in technology_type_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_inner_code" class="col-sm-4 control-label">内部代码</label>
+                        <div class="col-sm-8">
+                            <input name="e_inner_code" type="text" class="form-control" id="e_inner_code"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_inner_name" class="col-sm-4 control-label">内部名称</label>
+                        <div class="col-sm-8">
+                            <input name="e_inner_name" type="text" class="form-control" id="e_inner_name"/>
+                        </div>
+                    </div>
+                    <div class="form-group" id="channel_box" style="height: 40px;line-height: 40px;">
+                        <label for="e_vendor" class="col-sm-4 control-label">Vendor</label>
+                        <div class="col-sm-8">
+                            <select name="e_vendor" id="e_vendor" class="form-control">
+                                <option value="">请选择</option>
+                                 {% for vc in vendors_choices %}
+                                    <option value="{{ vc.key }}">{{ vc.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_outer_code" class="col-sm-4 control-label">外部代码</label>
+                        <div class="col-sm-8">
+                            <input name="e_outer_code" type="text" class="form-control" id="e_outer_code" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_outer_name" class="col-sm-4 control-label">外部名称</label>
+                        <div class="col-sm-8">
+                            <input name="e_outer_name" type="text" class="form-control" id="e_outer_name" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group" id="channel_box" style="height: 40px;line-height: 40px;">
+                        <label for="e_active" class="col-sm-4 control-label">是否有效</label>
+                        <div class="col-sm-8">
+                            <select name="e_active" id="e_active" class="form-control">
+                                <option value="">请选择</option>
+                                {% for ac in activate_choice_list %}
+                                    <option value="{{ ac.key }}">{{ ac.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="save_sku">确认</button>
+                </div>
+            </div><!-- /.modal -->
+        </div>
+    </div>
+
+   <div class="modal fade" id="addmyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+         <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新建AR维护</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_technology_type" class="col-sm-4 control-label">工艺类型</label>
+                        <div class="col-sm-8">
+                            <select name="add_technology_type" id="add_technology_type" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in technology_type_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_inner_code" class="col-sm-4 control-label">内部代码</label>
+                        <div class="col-sm-8">
+                            <input name="add_inner_code" type="text" class="form-control" id="add_inner_code"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_inner_name" class="col-sm-4 control-label">内部名称</label>
+                        <div class="col-sm-8">
+                            <input name="add_inner_name" type="text" class="form-control" id="add_inner_name"/>
+                        </div>
+                    </div>
+                    <div class="form-group" id="channel_box" style="height: 40px;line-height: 40px;">
+                        <label for="add_vendor" class="col-sm-4 control-label">Vendor</label>
+                        <div class="col-sm-8">
+                            <select name="add_vendor" id="add_vendor" class="form-control">
+                                <option value="">请选择</option>
+                                 {% for vc in vendors_choices %}
+                                    <option value="{{ vc.key }}">{{ vc.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_outer_code" class="col-sm-4 control-label">外部代码</label>
+                        <div class="col-sm-8">
+                            <input name="add_outer_code" type="text" class="form-control" id="add_outer_code" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_outer_name" class="col-sm-4 control-label">外部名称</label>
+                        <div class="col-sm-8">
+                            <input name="add_outer_name" type="text" class="form-control" id="add_outer_name" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group" id="channel_box" style="height: 40px;line-height: 40px;">
+                        <label for="add_active" class="col-sm-4 control-label">是否有效</label>
+                        <div class="col-sm-8">
+                            <select name="add_active" id="add_active" class="form-control">
+                                <option value="">请选择</option>
+                                {% for ac in activate_choice_list %}
+                                    <option value="{{ ac.key }}">{{ ac.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="add_sku_btn">确认</button>
+                </div>
+            </div><!-- /.modal -->
+        </div>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+
+            url = "{% url 'oms_lens_specmap_add_edit' %}";
+
+            if (sku == '' || sku == null) {
+                layer.msg('请输入Name', {time: 3000, icon: 7});
+            } else {
+                location.href = url + '?name=' + sku+'&technology_type={{ technology_type }}&vendor={{ vendor }}&active={{ active }}';
+            }
+        });
+        $(".edit_sku").click(function () {
+            var id = $(this).attr("data");
+            var url = "{% url 'oms_edit_lens_specmap' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "id": id,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#e_inner_code").val(arg.data.inner_code);
+                        $("#e_inner_name").val(arg.data.inner_name);
+                        $("#e_technology_type option[value='"+arg.data.technology_type+"']").attr("selected","selected");
+                        $("#e_vendor option[value='"+arg.data.vendor+"']").attr("selected","selected");
+                        $("#e_outer_code").val(arg.data.outer_code);
+                        $("#e_outer_name").val(arg.data.outer_name);
+                        $("#e_active option[value='"+arg.data.active+"']").attr("selected","selected");
+                        $("#e_id").val(arg.data.id);
+                        $("#myModal").modal('show');
+                    }else{
+                        $("#e_id").val('');
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+        $("#save_sku").click(function () {
+            var e_technology_type = $("#e_technology_type").val();
+            var e_inner_code = $("#e_inner_code").val();
+            var e_inner_name = $("#e_inner_name").val();
+            var e_vendor = $("#e_vendor").val();
+            var e_outer_code = $("#e_outer_code").val();
+            var e_outer_name = $("#e_outer_name").val();
+            var e_active = $("#e_active").val();
+            var id = $("#e_id").val();
+            if(id == ''){
+                layer.msg('获取错误,请刷新重试', {time: 3000, icon: 7});
+                return
+            }
+            var url = "{% url 'oms_save_lens_specmap' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "id": id,
+                    "technology_type": e_technology_type,
+                    "inner_code": e_inner_code,
+                    "inner_name": e_inner_name,
+                    "vendor": e_vendor,
+                    "outer_code": e_outer_code,
+                    "outer_name": e_outer_name,
+                    "active": e_active,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#myModal").modal('hide');
+                        layer.msg(arg.msg, {time: 3000, icon: 6});
+                        location.reload();
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+        $("#add_sku_btn").click(function () {
+            var add_technology_type = $("#add_technology_type").val();
+            var add_inner_code = $("#add_inner_code").val();
+            var add_inner_name = $("#add_inner_name").val();
+            var add_vendor = $("#add_vendor").val();
+            var add_outer_code = $("#add_outer_code").val();
+            var add_outer_name = $("#add_outer_name").val();
+            var add_active = $("#add_active").val();
+            if(add_technology_type == ''){
+                layer.msg('请选择工艺类型', {time: 3000, icon: 7});
+                return
+            }
+            if(add_inner_code == ''){
+                layer.msg('请填写内部代码', {time: 3000, icon: 7});
+                return
+            }
+            if(add_inner_name == ''){
+                layer.msg('请填写内部名称', {time: 3000, icon: 7});
+                return
+            }
+            if(add_vendor == ''){
+                layer.msg('请选择Vendor', {time: 3000, icon: 7});
+                return
+            }
+            if(add_outer_code == ''){
+                layer.msg('请填写外部代码', {time: 3000, icon: 7});
+                return
+            }
+            if(add_outer_name == ''){
+                layer.msg('请填写外部名称', {time: 3000, icon: 7});
+                return
+            }
+            if(add_active == ''){
+                layer.msg('请选择是否有效', {time: 3000, icon: 7});
+                return
+            }
+            var url = "{% url 'oms_add_lens_specmap' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "technology_type": add_technology_type,
+                    "inner_code": add_inner_code,
+                    "inner_name": add_inner_name,
+                    "vendor": add_vendor,
+                    "outer_code": add_outer_code,
+                    "outer_name": add_outer_name,
+                    "active": add_active
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#addmyModal").modal('hide');
+                        layer.msg(arg.msg, {time: 3000, icon: 6});
+                        location.reload()
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

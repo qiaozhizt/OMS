@@ -1,0 +1,15 @@
+{% load static %}
+{% for key,val in stat_list.items %}
+    <tr>
+        <td>{{ key }}</td>
+        <td>
+            {% ifequal True val.Success %}
+                <img src="{% static "image/icon-yes.svg" %}">
+            {% endifequal %}
+            {% ifequal False val.Success %}
+                <img src="{% static "image/icon-no.svg" %}">
+            {% endifequal %}
+        </td>
+        <td>{{ val.Message }}</td>
+    </tr>
+{% endfor %}

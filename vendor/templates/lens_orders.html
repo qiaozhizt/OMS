@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+{% block style %}
+    <style>
+        .img-responsive {
+            display: block;
+            height: auto;
+            max-width: 100%;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}
+    Vendor
+{% endblock %}
+{% block small %}镜片订单{% endblock %}
+{% block content %}
+    <!--Table start-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover table-striped">
+            <thead>
+            <tr>
+                <th><input id="chk_all" type="checkbox"></th>
+                <th class="hid">#</th>
+                <th>Lab Number</th>
+                <th>SKU</th>
+                <th>Name</th>
+                <th>Index</th>
+                <th>Vendor</th>
+                <th>R/L</th>
+                <th>SPH</th>
+                <th>CYL</th>
+                <th>AXIS</th>
+                <th>PD</th>
+                <th>Created At</th>
+                <th class="hid">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td><input name="chk_items" value="{{ item.Entity_id }}" type="checkbox"></td>
+                    <td class="hid order_entity">{{ item.id }}</td>
+                    <td>{{ item.lab_number }}</td>
+                    <td>{{ item.lens_sku }}</td>
+                    <td>{{ item.lens_name }}</td>
+                    <td>{{ item.index }}</td>
+                    <td>{{ item.vendor }}</td>
+                    <td>{{ item.rl_identification }}</td>
+                    <td>{{ item.sph }}</td>
+                    <td>{{ item.cyl }}</td>
+                    <td>{{ item.axis }}</td>
+                    <td>{{ item.pd }}</td>
+
+{#                    <td class="hid">#}
+{#                        {% ifequal item.is_enabled True %}#}
+{#                            <img src="{% static "image/icon-yes.svg" %}">#}
+{#                        {% endifequal %}#}
+{#                        {% ifequal item.is_enabled False %}#}
+{#                            <img src="{% static "image/icon-no.svg" %}">#}
+{#                        {% endifequal %}#}
+{#                    </td>#}
+                    <td>
+                        {{ item.created_at }}
+                    </td>
+                    <!--<td class="hid">{{ item.comments }}</td>-->
+                    <td class="hid">
+                        <a name="lbo_details"
+                           href="javascript:void(0)"
+                           id="{{ item.lab_number }}"
+                        >
+                            Details</a>
+
+                        <!-- /btn-group -->
+
+                    </td>
+                </tr>
+                <tr class="lab_order_details" style="display:none">
+                    <td colspan="21">
+                        <div name="details">
+
+                        </div>
+                    </td>
+                </tr>
+                <tr style="display:none">
+                    <td colspan="20">
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+
+    <!--Table end-->
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        $(document).ready(function () {
+
+        });
+
+        // Sample Code
+        function get_product_ajax(prod_id, entity) {
+            var prod_container = $("#" + prod_id).html(entity);
+            console.log("ready ....");
+            console.log(entity);
+            url = "/category/product/" + entity + "/";
+            $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {entity: entity,},
+
+                    success: function (result) {
+                        json_data = JSON.parse(result);
+                        // json_data = json_data.obj;
+
+                        console.log("successful");
+                        console.log(json_data);
+
+                        var product_image_prepath = json_data.obj.product_image_prepath;
+
+                        // data_total.html(json_data.json_body.length);
+                        var index = 0;
+
+                        json_data = json_data.obj.rm.obj.json_body;
+
+                        for (var i = 0; i < json_data.length; i++) {
+                            index = i + 1;
+                            item = json_data[i];
+                            product_image_path = product_image_prepath + item.image;
+                            prod_container.html(product_image_path);
+
+                            prod_container.html('<img class="img-responsive" src="' + product_image_path + '">');
+                        }
+
+                    }
+                }
+            )
+        }
+    </script>
+{% endblock %}

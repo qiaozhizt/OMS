@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+{% block style %}
+    <style>
+    .reportList{
+        overflow: auto;
+    }
+        #tabs{
+            overflow: auto;
+{#            display: block;#}
+        }
+        .trDetail{
+            display: none;
+        }
+        .trDetail div{
+        margin-top:10px;
+        margin-bottom: 10px;
+        text-align: left;
+    }
+    .trDetail span{
+        margin-right: 10px;
+    }
+    .divDetail{
+        display: inline-block;
+    }
+    thead th{
+        text-align: center;
+    }
+    tbody td{
+        text-align: center;
+    }
+{#     @media screen and (max-width: 800px) {#}
+{##}
+{#            #tabs{#}
+{#                display: none;#}
+{#            }#}
+{#        }#}
+    </style>
+{% endblock %}
+{% block h1 %}Lab Orders{% endblock %}
+{% block small %}订单跟踪报告{% endblock %}
+{% block content %}
+    <div>
+    {% include 'search.html' %}
+       <div class="reportList">
+           <table class="table table-striped" id="tab">
+               <thead>
+
+               </thead>
+               <tbody>
+
+               </tbody>
+           </table>
+       </div>
+    <div id="callBackPager" style="text-align: center;width: 100%"></div>
+
+
+    </div>
+{% endblock %}
+{% block jquery %}
+<script>
+$(document).ready(function(){
+  var width = $(document).width();
+
+
+    $.ajaxSetup({
+         data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+        });
+     function formateTime(date){
+                var f =date.split('T');
+                var md = f[0].split('-');
+                var g = f[1].split('Z');
+                var xf = g[0].split(":");
+                var order_date = md[1]+'-'+md[2]+' '+xf[0]+':'+xf[1];
+                return order_date;
+            }
+    createTable(1);
+     function createTables(data){
+                  var html=[];
+            if(width >800){
+                html.push("<tr>" +
+                        "<th>单号</th>" +
+                        "<th>订单日期</th>" +
+                        "<th>打印</th>" +
+                        "<th>镜架出库</th>" +
+                        "<th>加硬</th>" +
+                        "<th>加膜</th>" +
+                        "<th>染色</th>" +
+                        "<th>镜片收货</th>" +
+                        "<th>装配</th>" +
+                        "<th>初检</th>" +
+                        "<th>整形</th>" +
+                        "<th>清洗</th>" +
+                        "<th>终检</th>" +
+                        "<th>订单配对</th>" +
+                        "<th>包装</th>" +
+                        "<th>发货</th>" +
+                        "</tr>");
+                var thead = $("thead");
+                 thead.empty();
+                 thead.html(html.join(''));
+                 html = [];
+                if(data.length>0 && data!=null){
+
+                for(var i =0;i<data.length;i++){
+                    var list = data[i].fields;
+
+                    html.push("<tr>");
+                    html.push("<td>"+list.lab_order_number+"</td>");
+                    order_date = formateTime(list.order_date);
+                    html.push("<td>"+order_date+"</td>");
+                    if(list.print_date !=null){
+                        print_date = formateTime(list.print_date);
+                         html.push("<td>"+print_date+"</td>");
+                    }else{
+                         html.push("<td>-</td>");
+                    }
+                    if(list.frame_outbound != null){
+                        frame_outbound = formateTime(list.frame_outbound);
+                        html.push("<td>"+frame_outbound+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.add_hardened != null){
+                        add_hardened = formateTime(list.add_hardened);
+                       html.push("<td>"+add_hardened+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.coating != null){
+                        coating = formateTime(list.coating)
+                        html.push("<td>"+coating+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.tint != null){
+                        tint = formateTime(list.tint);
+                        html.push("<td>"+tint+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.lens_receive != null){
+                        lens_receive = formateTime(list.lens_receive);
+                         html.push("<td>"+lens_receive+"</td>");
+                    }else{
+                         html.push("<td>-</td>");
+                    }
+                    if(list.assembling != null){
+                        assembling = formateTime(list.assembling);
+                        html.push("<td>"+assembling+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.initial_inspection != null){
+                        initial_inspection = formateTime(list.initial_inspection);
+                        html.push("<td>"+initial_inspection+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.shaping != null){
+                        shaping = formateTime(list.shaping);
+                        html.push("<td>"+shaping+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.purging != null){
+                        purging = formateTime(list.purging);
+                        html.push("<td>"+purging+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.final_inspection != null){
+                        final_inspection = formateTime(list.final_inspection);
+                        html.push("<td>"+final_inspection+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.order_match != null){
+                        order_match = formateTime(list.order_match);
+                        html.push("<td>"+order_match+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.package != null){
+                        package = formateTime(list.package);
+                        html.push("<td>"+package+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    if(list.shipping != null){
+                        shipping = formateTime(list.shipping);
+                        html.push("<td>"+shipping+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                    }
+                    html.push("</tr>");
+                    var tbody = $('tbody');
+                    tbody.empty();
+                    tbody.html(html.join(''));
+                }
+            }else{
+                html.push("<tr><td colspan = '16' style='text-align:center'>No data</td></tr>");
+                var tbody = $('tbody');
+                    tbody.empty();
+                    tbody.html(html.join(''));
+                }
+            }else{
+{#                --------------------移动端---------------------#}
+                html.push("<tr><th>单号</th><th>订单日期</th><th>备注</th></tr>")
+                var thead = $("thead");
+                 thead.empty();
+                 thead.html(html.join(''));
+                 html = [];
+                 if(data.length>0 && data!=null){
+
+                 for(var i =0;i<data.length;i++){
+                    var list = data[i].fields;
+                    html.push("<tr number=0 class='alltr'>");
+                    html.push("<td>"+list.lab_order_number+"</td>");
+                    order_date = formateTime(list.order_date);
+                    html.push("<td>"+order_date+"</td>");
+                    if(list.remark != null){
+                        html.push("<td>"+list.remark+"</td>");
+                    }else{
+                        html.push("<td>-</td>");
+                     }
+                     html.push("</tr>");
+
+{# -----------------------detail------------------#}
+                    html.push("<tr class='trDetail'><td colspan='3'><div class='divDetail'><div>");
+                    if(list.print_date !=null){
+                        print_date = formateTime(list.print_date);
+                        html.push("<span><b>打印</b>："+print_date+"</span><br>");
+                    }
+                    if(list.frame_outbound !=null){
+                        frame_outbound = formateTime(list.frame_outbound);
+                        html.push("<span><b>镜架出库</b>："+frame_outbound+"</span><br>");
+                    }
+                    if(list.add_hardened !=null){
+                        add_hardened = formateTime(list.add_hardened);
+                        html.push("<span><b>加硬</b>："+add_hardened+"</span><br>");
+                    }
+                    if(list.coating !=null){
+                         coating = formateTime(list.coating)
+                        html.push("<span><b>加膜</b>："+coating+"</span><br>");
+                    }
+                    if(list.tint !=null){
+                        tint = formateTime(list.tint);
+                        html.push("<span><b>染色</b>："+tint+"</span><br>");
+                    }
+                    if(list.lens_receive !=null){
+                        lens_receive = formateTime(list.lens_receive);
+                        html.push("<span><b>镜片收货</b>："+lens_receive+"</span><br>");
+                    }
+                    if(list.assembling !=null){
+                        assembling = formateTime(list.assembling);
+                        html.push("<span><b>装配</b>："+assembling+"</span><br>");
+                    }
+                    if(list.initial_inspection !=null){
+                        initial_inspection = formateTime(list.initial_inspection);
+                        html.push("<span><b>初检</b>："+initial_inspection+"</span><br>");
+                    }
+                    if(list.shaping !=null){
+                        shaping = formateTime(list.shaping);
+                        html.push("<span><b>整形</b>："+shaping+"</span><br>");
+                    }
+                    if(list.purging !=null){
+                        purging = formateTime(list.purging);
+                        html.push("<span><b>清洗</b>："+purging+"</span><br>");
+                    }
+                    if(list.final_inspection !=null){
+                        final_inspection = formateTime(list.final_inspection);
+                        html.push("<span><b>终检</b>："+final_inspection+"</span><br>");
+                    }
+                    if(list.order_match !=null){
+                        order_match = formateTime(list.order_match);
+                        html.push("<span><b>订单配对</b>："+order_match+"</span><br>");
+                    }
+                    if(list.package !=null){
+                        package = formateTime(list.package);
+                        html.push("<span><b>包装</b>："+package+"</span><br>");
+                    }
+                    if(list.shipping !=null){
+                        shipping = formateTime(list.shipping);
+                        html.push("<span><b>发货</b>："+shipping+"</span><br>");
+                    }
+                    html.push("</div></div></td></tr>");
+
+                    var tbody = $('tbody');
+                    tbody.empty();
+                    tbody.html(html.join(''));
+                }
+            }else{
+                     html.push("<tr><td colspan = '3' style='text-align:center'>No data</td></tr>");
+                    var tbody = $('tbody');
+                    tbody.empty();
+                    tbody.html(html.join(''));
+                 }
+            }
+
+     }
+    function createTable(currPage){
+        $.ajax({
+            url:"/oms/ordre_tracking_report/",
+            type:"POST",
+            data:{
+                'currpage':currPage
+            },
+            async:false,
+            success:function (arg) {
+            data = JSON.parse(arg);
+            createTables(data);
+
+        }
+    });
+    }
+
+
+colors();
+    function colors(){
+
+        $('.alltr').each(function (index,element) {
+
+              if (index%2==0){
+                  $(this).css('backgroundColor','#f9f9f9');
+                    $(this).attr("type",'odd');
+              }else{
+                  $(this).css('backgroundColor','transparent');
+                   $(this).attr("type",'even');
+              }
+          })
+    }
+
+
+
+     $("tbody ").on('click','tr' ,function(){
+            var trname = $(this).attr("class");
+            if (trname == "alltr"){
+                 var labid =  $(this).attr("number");
+                 var type = $(this).attr("type");
+                if(labid == 0){
+                    $(this).css('backgroundColor','#ffff99');
+                    $(this).next().show();
+                    $(this).attr("number",1);
+                }else{
+                     if(type=="odd"){
+                       $(this).css('backgroundColor','#f9f9f9');
+                    }else{
+                       $(this).css('backgroundColor','transparent');
+                }
+                   $(this).next().css('display','none');
+                   $(this).attr("number",0);
+          }
+            }
+        });
+ var countPage = {{ countPage|safe }}
+    callBackPagination();
+     function callBackPagination() {
+
+        var totalCount =countPage
+          var showPage = 5;
+               var limit = 20;
+        $('#callBackPager').extendPagination({
+
+            totalCount: totalCount,
+
+            showPage: showPage,
+
+            limit: limit,
+
+            callback: function (curr, limit, totalCount) {
+
+                createTable(curr);
+            }
+
+        });
+
+    }
+
+
+    //按照单号搜索
+    $("#btnSearch").on("click",function(){
+        var order_number = $("#number").val();
+        var url = "/oms/orderTrackingReportFilter/";
+        searchByNumber(order_number,url,1);
+        var arg = responseValue;
+        var data = JSON.parse(arg);
+        if(data.length == 0){
+            layer.msg('No order, please check the number.', {time:3000,icon: 7});
+        }else{
+
+            createTables(data);
+        }
+    })
+
+});
+</script>
+{% endblock %}

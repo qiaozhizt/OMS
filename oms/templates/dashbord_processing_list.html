@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}PgOrder Orders {% if form_data.total %}
+    <span class="label label-default" xmlns="http://www.w3.org/1999/html">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}PgOrder Processing查询{% endblock %}
+{% block content %}
+
+    <!--Actions-->
+    <div class="cl">
+        <div style="float: left;margin-right: 3px;margin-left:10px;display: none;">
+            <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+        <!-- /btn-group -->
+    </div>
+
+<br/>
+
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover table-striped">
+            <thead>
+            <tr>
+                <th><input id="chk_all" type="checkbox"></th>
+                <th>订单号</th>
+                <th class="hid">订单日期</th>
+                <th class="hid">发货方式</th>
+                <th>订单创建时间</th>
+                <th>时间</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td><input name="chk_items" value="{{ item.id }}" type="checkbox"></td>
+                    <td><a href="/oms/pgorder_detail_v3?number={{ item.order_number }}">{{ item.order_number }}</a></td>
+                    <td>{{ item.order_datetime }}</td>
+                     <td>
+                        {% if item.shipping_method == 'standard_standard' %}
+                            Standard
+                        {% elif  item.shipping_method == 'express_express' %}
+                            Express
+                        {% elif  item.shipping_method == 'canada_express_canada_express' %}
+                            CA_Express
+                        {% elif  item.shipping_method == 'flatrate_flatrate' %}
+                            Flatrate
+                        {% else %}
+                            {{ item.shipping_method }}
+                        {% endif %}
+
+                    </td>
+                <td>{{ item.create_at }}</td>
+                     <td>
+                         <div style="text-align: center" class="{% ifequal item.hours_of_purchase '1' %}label-default{% endifequal %}
+                                    {% ifequal item.hours_of_purchase '2' %}label-success{% endifequal %}
+                                    {% ifequal item.hours_of_purchase '3' %}label-warning{% endifequal %}
+                                    {% ifequal item.hours_of_purchase '4' %}label-danger{% endifequal %}">
+                            {% ifequal item.hours_of_purchase '1' %}{{item.hours}}{% endifequal %}
+                            {% ifequal item.hours_of_purchase '2' %}{{item.hours}}{% endifequal %}
+                         {% ifequal item.hours_of_purchase '3' %}{{item.hours}}{% endifequal %}
+                         {% ifequal item.hours_of_purchase '4' %}{{item.hours}}{% endifequal %}
+                    </div></td>
+                </tr>
+                <tr style="display:none">
+                    <td colspan="20">
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+{% endblock %}
+{% block jquery %}
+
+{% endblock %}

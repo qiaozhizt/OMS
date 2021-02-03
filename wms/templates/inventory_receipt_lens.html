@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}WMS {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}入库-镜片{% endblock %}
+{% block content %}
+
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <form class="form-horizontal box box-default" role="form" id="inventory_form" method="POST">
+                {% csrf_token %}
+                <h4 class="box-header">&nbsp;&nbsp;输入产品信息</h4>
+                <div class="form-group">
+                    <label for="doc_number" class="col-sm-2 control-label">单号</label>
+                    <div class="col-sm-4">
+                        <input name="doc_number" type="text" class="form-control" id="doc_number" value="{{ time_now }}"
+                               readonly="readonly"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="doc_type" class="col-sm-2 control-label">入库类型</label>
+                    <div class="col-sm-4">
+                        <select name="doc_type" id="doc_type" class="form-control">
+                            {% for key, value in invr_dict.items %}
+                                <option value="{{ key }}" class="doc_type_select"
+                                        {% ifequal key parameter_list.doc_type_key %}selected="selected"{% endifequal %}>{{ value }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="lab_number_div" style="display: none">
+                    <label for="lab_number_select" class="col-sm-2 control-label" >手动输入工厂单号</label>
+                    <div class="col-sm-4">
+                        <input name="lab_number_select" type="text" class="form-control" id="lab_number_select" value="" placeholder="订单退货入库必填"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="wh_number" class="col-sm-2 control-label">仓库</label>
+                    <div class="col-sm-4">
+                        <select name="wh_number" id="wh_number" class="form-control">
+                            {% for wh in all_wh %}
+                                {% if wh.is_enabled == 1 and wh.used_to == 'LENS' %}
+                                    <option value="{{ wh.code }}"
+                                        {% ifequal wh.code parameter_list.wh_code  %}selected="selected"{% endifequal %}>
+                                    {{ wh.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sku_select" class="col-sm-2 control-label">镜片</label>
+                    <div class="col-sm-4">
+                        <select name="sku_select" id="sku_select" class="form-control">
+                            {% for bsl in sku_list %}
+                                <option class="parameter_sku" value="{{ bsl.sku }}"
+                                        {% ifequal parameter_list.sku bsl.sku %}
+                                        selected="selected"
+                                        {% endifequal %}
+                                >{{ bsl.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sph_select" class="col-sm-2 control-label">参数</label>
+                    <div class="col-sm-2">
+                        <select name="sph_select" id="sph_select" class="form-control">
+                            <option style="display: none" selected="" value="">SPH</option>
+                            {% for var in select_sph_list %}
+                                <option class="parameter" value="{{ var }}"
+                                    {% ifequal parameter_list.sph var %}
+                                    selected="selected"
+                                    {% endifequal %}
+                                >{{ var }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-2">
+                        <select name="cyl_select" id="cyl_select" class="form-control">
+                            <option style="display: none" selected="selected" value="">CYL</option>
+                            <option class="parameter" value="-6.00"
+                                    {% ifequal parameter_list.cyl -6.00 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-6.00</option>
+                            <option class="parameter" value="-5.75"
+                                    {% ifequal parameter_list.cyl -5.75 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-5.75</option>
+                            <option class="parameter" value="-5.50"
+                                    {% ifequal parameter_list.cyl -5.50 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-5.50</option>
+                            <option class="parameter" value="-5.25"
+                                    {% ifequal parameter_list.cyl -5.25 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-5.25</option>
+                            <option class="parameter" value="-5.00"
+                                    {% ifequal parameter_list.cyl -5.00 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-5.00</option>
+                            <option class="parameter" value="-4.75"
+                                    {% ifequal parameter_list.cyl -4.75 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-4.75</option>
+                            <option class="parameter" value="-4.50"
+                                    {% ifequal parameter_list.cyl -4.50 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-4.50</option>
+                            <option class="parameter" value="-4.25"
+                                    {% ifequal parameter_list.cyl -4.25 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-4.25</option>
+                            <option class="parameter" value="-4.00"
+                                    {% ifequal parameter_list.cyl -4.00 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-4.00</option>
+                            <option class="parameter" value="-3.75"
+                                    {% ifequal parameter_list.cyl -3.75 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-3.75</option>
+                            <option class="parameter" value="-3.50"
+                                    {% ifequal parameter_list.cyl -3.50 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-3.50</option>
+                            <option class="parameter" value="-3.25"
+                                    {% ifequal parameter_list.cyl -3.25 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-3.25</option>
+                            <option class="parameter" value="-3.00"
+                                    {% ifequal parameter_list.cyl -3.00 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-3.00</option>
+                            <option class="parameter" value="-2.75"
+                                    {% ifequal parameter_list.cyl -2.75 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-2.75</option>
+                            <option class="parameter" value="-2.50"
+                                    {% ifequal parameter_list.cyl -2.50 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-2.50</option>
+                            <option class="parameter" value="-2.25"
+                                    {% ifequal parameter_list.cyl -2.25 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-2.25</option>
+                            <option class="parameter" value="-2.00"
+                                    {% ifequal parameter_list.cyl -2.00 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-2.00</option>
+                            <option class="parameter" value="-1.75"
+                                    {% ifequal parameter_list.cyl -1.75 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-1.75</option>
+                            <option class="parameter" value="-1.50"
+                                    {% ifequal parameter_list.cyl -1.50 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-1.50</option>
+                            <option class="parameter" value="-1.25"
+                                    {% ifequal parameter_list.cyl -1.25 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-1.25</option>
+                            <option class="parameter" value="-1.00"
+                                    {% ifequal parameter_list.cyl -1.00 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-1.00</option>
+                            <option class="parameter" value="-0.75"
+                                    {% ifequal parameter_list.cyl -0.75 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-0.75</option>
+                            <option class="parameter" value="-0.50"
+                                    {% ifequal parameter_list.cyl -0.50 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-0.50</option>
+                            <option class="parameter" value="-0.25"
+                                    {% ifequal parameter_list.cyl -0.25 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >-0.25</option>
+                            <option class="parameter" value="0.00"
+                                    {% ifequal parameter_list.cyl 0.00 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >0.00</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-2" style="display: none">
+                        <select name="add_select" id="add_select" class="form-control">
+                            <option style="display: none" selected="selected" value="0">ADD</option>
+                            <option class="parameter" value="0.00"
+                                    {% ifequal parameter_list.add 0.00 %}
+                                    selected="selected"
+                                    {% endifequal %}
+                            >0.00</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="quantity" class="col-sm-2 control-label">数量</label>
+                    <div class="col-sm-4">
+                        <input name="quantity" type="number" class="form-control" id="quantity" placeholder="产品数量"
+                               value="1"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="price" class="col-sm-2 control-label">价格</label>
+                    <div class="col-sm-4">
+                        <input name="price" type="number" class="form-control" id="price" placeholder="产品单价" value="0"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="comments" class="col-sm-2 control-label">备注</label>
+                    <div class="col-sm-4">
+                        <textarea name="comments" maxlength="128" class="form-control" id="comments" placeholder="请输入备注"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-4">
+                        <button id="receipt_submit" type="submit" class="btn btn-default" style="width:50%">确认入库
+                        </button>
+                    </div>
+                </div>
+                <div class="box-header"></div>
+            </form>
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <table class="table table-hover box box-default">
+                <thead>
+                <tr>
+                    <th style="padding-left:20px">编号</th>
+                    <th>镜片</th>
+                    <th>SPH</th>
+                    <th>CYL</th>
+                    <th>数量</th>
+                    <th>仓库</th>
+                    <th>创建时间</th>
+                    <th>入库类型</th>
+                    <th>用户</th>
+                    <th>单号</th>
+                    <th>备注</th>
+                </tr>
+                </thead>
+                <tbody id="list_body">
+                {% for invr in list %}
+                    <tr>
+                        <td style="padding-left:20px">{{ invr.doc_number }}</td>
+                        <td>{{ invr.name }}</td>
+                        <td>{{ invr.sph }}</td>
+                        <td>{{ invr.cyl }}</td>
+                        <td>{{ invr.quantity }}</td>
+                        <td>{{ invr.warehouse.name }}</td>
+                        <td>{{ invr.created_at }}</td>
+                        <td>{{ invr.get_doc_type_display }}</td>
+                        <td>{{ invr.user_name }}</td>
+                        <td>{{ invr.lab_number }}</td>
+                        <td>{{ invr.comments }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 获取表单数据
+        function getFormData(form) {
+            let data = form.serialize();
+            data = decodeURI(data);
+            let arr = data.split('&');
+            let item, key, value, newData = {};
+            for (let i = 0; i < arr.length; i++) {
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if (key.indexOf('[]') != -1) {
+                    key = key.replace('[]', '');
+                    if (!newData[key]) {
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                } else {
+                    newData[key] = value;
+                }
+            }
+            return newData;
+        }
+
+        $("#inventory_form").submit(function (e) {
+            e.preventDefault();//不执行原来的submit提交
+            $("#receipt_submit").prop("disabled", true);
+            var _self = $(this);
+            var form_data = getFormData(_self);
+            //form_data["sku_select"] = form_data["sku_select"].toUpperCase();//转换字符串为大写
+            if (form_data["quantity"] == "") {
+                layer.alert("请输入商品数量", {
+                    yes: function () {
+                        $("#quantity").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+            if (form_data["price"] == ""||form_data["quantity"] == '0') {
+                layer.alert("请输入商品价格", {
+                    yes: function () {
+                        $("#price").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+            //检查参数是否选择
+            if (form_data["cyl_select"] == "") {
+                layer.alert("请选择完整的镜片参数", {
+                    yes: function () {
+                        $("#price").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+
+            $.ajax({
+                url: "/wms/inventory_receipt_lens_submit/",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                success: function (res) {
+                    if (res.code == -1) {
+                        layer.msg(res.error);
+                    } else {
+                        $("#list_body").prepend(res);
+                        layer.msg("添加成功");
+                        $("#sku").val("");
+                        $("#quantity").val("1");
+                        $("#skpriceu").val("");
+                        $("#comments").val("");
+                    }
+                    $("#receipt_submit").prop("disabled", false);
+                }
+            });
+
+        });
+        //单击SELECT重新载入页面
+        $("#sku_select").change(function () {
+            //获取参数
+            var page = "{{ list.number }}"
+            var doc_type = $("#doc_type").val();
+            var wh_code = $("#wh_number").val();
+            var sku = $("#sku_select").val();
+            var sph = $("#sph_select").val();
+            var syl = $("#cyl_select").val();
+            var add = $("#add_select").val();
+
+            var url = "{% url 'wms_inventory_receipt_lens' %}" + "?page=" + page + "&doc_type=" + doc_type + '&wh_code=' + wh_code
+            //拼接url
+            if (sku != '') {
+                url = url + "&sku=" + sku
+            }
+            if (sph != '') {
+                url = url + "&sph=" + sph
+            }
+            if (syl != '') {
+                url = url + "&cyl=" + syl
+            }
+            if (add != '') {
+                url = url + "&add=" + add
+            }
+            //跳转
+            location.href = url;
+        });
+
+        //工厂单号填写框显示与隐藏
+        $(".doc_type_select").click(function () {
+
+           var doc_type = $("#doc_type").val();
+
+           if (doc_type == "REFUNDS_IN"){
+               $("#lab_number_div").show(300);//显示div
+           }else{
+               $("#lab_number_div").hide(300);//隐藏div
+           }
+        });
+    </script>
+{% endblock %}

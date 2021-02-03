@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Inventory{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}库存结构表-仓库{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header">
+
+                    <div style="float: left;">{% include 'search.html' %}</div>
+
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+                        <button class="btn btn-default btn dropdown-toggle btn-flat"
+                                type="button"
+                                data-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false">
+                            Filter <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href={{ requestUrl }}?filter=all>
+                                {% ifequal filter 'all' %}
+                                    *{% endifequal %}All</a></li>
+                            <li>&nbsp</li>
+
+                            {% for wh in form_data.warehouse_list %}
+                                {% if wh.is_enabled == 1 and wh.used_to == 'FRAME' or wh.used_to == 'ACCESSORIES' %}
+                                    <li>
+                                        <a  href={{ requestUrl }}?filter={{ wh.code }}>
+                                        {% ifequal filter wh.code %}*{% endifequal %}
+                                        {{ wh.name }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;display:none">
+                        <button id="btn_delivery_shipped" name="btn_order_matched_shipped" type="button"
+                                class="btn btn-default btn active btn-flat">发货完成
+                        </button>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;" id="onssk">
+                        <a class="btn btn-block btn-default" id="overdue_warehouse_csv" target='view_window'>导出
+                        CSV</a>
+                    </div>
+
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-solid">
+                <div class="box-body">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <th>#</th>
+                        <th>SKU</th>
+                        <th>名称</th>
+                        <th>数量</th>
+                        <th>代码</th>
+                        <th>仓库</th>
+                        <th>货位</th>
+                        <th>在售状态</th>
+                        </thead>
+                        <tbody>
+                        {% for item in list %}
+                            <tr>
+                                <td>{{ item.id }}</td>
+                                <td>{{ item.sku }}</td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.warehouse_code }}</td>
+                                <td>{{ item.warehouse_name }}</td>
+                                <td>{{ item.location }}</td>
+                                <td>{{ item.status }}</td>
+                            </tr>
+
+                            <!-- ./col -->
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- /.row -->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        //导出
+        $("#overdue_warehouse_csv").click(function () {
+            var url = "{% url 'wms_inventory_struct_warehouse_csv' %}";
+            window.location.href = url + "?filter={{ filter }}"
+        });
+
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+
+            url = "{% url 'wms_inventory_struct_warehouse' %}";
+
+            if (sku == '' || sku == null) {
+                layer.msg('Please enter a sku', {time: 3000, icon: 7});
+            } else {
+                location.href = url + '?sku=' + sku;
+            }
+        });
+
+        //全选/不选
+        document.getElementById('chk_all').onclick = function () {
+            // 获取所有的复选框
+            var checkElements = document.getElementsByName('chk_items');
+            if (this.checked) {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = "checked";
+                }
+            } else {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = null;
+                }
+            }
+        };
+
+
+
+    </script>
+{% endblock %}

@@ -1,0 +1,571 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .toItme a {
+            cursor: pointer;
+        }
+
+        .tdContent {
+            position: relative;
+        }
+
+        .showContent {
+            width: 350px;
+            height: 200px;
+            overflow-y: auto;
+            background: #ccc;
+            border-radius: 5px;
+            position: absolute;
+            left: -370px;
+            top: -52px;
+            z-index: 11;
+            padding: 5px;
+        }
+
+        .qipao {
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-right: 20px solid #ccc;
+            border-bottom: 20px solid transparent;
+            position: absolute;
+            left: -20px;
+            top: 55px;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}PgOrder{% endblock %}
+{% block small %}ALL PG Orders(Old){% endblock %}
+{% block content %}
+    <div style="float: left">{% include 'search.html' %}</div>
+
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn-lg dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            Filters <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+
+            <li><a href="/oms/redirectPgOrderList?filter=a">{% ifequal filter 'a' %}*{% endifequal %}ALL</a></li>
+            <li>&nbsp</li>
+            <li inlab="false"><a href="/oms/redirectPgOrderList?filter=reviewed">{% ifequal filter 'reviewed' %}
+                *{% endifequal %}Is Reviewed</a></li>
+            <li><a href="/oms/redirectPgOrderList?filter=true"> {% ifequal filter 'true' %}*{% endifequal %}In_Lab</a>
+            </li>
+
+            <li><a href="/oms/redirectPgOrderList?filter=false">{% ifequal filter 'false' %}*{% endifequal %}
+                Not_In_Lab</a></li>
+            <li><a href="/oms/redirectPgOrderList?filter=issue">{% ifequal filter 'issue' %}*{% endifequal %}Issue
+                Addr</a></li>
+            <li><a href="/oms/redirectPgOrderList?filter=lable">{% ifequal filter 'lable' %}*{% endifequal %}Return
+                Lable</a></li>
+        </ul>
+    </div>
+
+    <div id="tableContent">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Order Number</th>
+                <th>LabOrder Created</th>
+                <th>Push Address</th>
+                <th>Return Lable</th>
+                <th>Order Date</th>
+                <th>Qty</th>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Shipping Method</th>
+
+                <th>Status</th>
+                <th>Status_c</th>
+                <th>Estimated Ship</th>
+                <th>Actual Ship</th>
+                <th>Targeted Ship</th>
+                <th>Promised Ship</th>
+                <!--<th>Last Update</th>-->
+                <th>Comments</th>
+                <th style="min-width: 115px">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in list %}
+                <tr>
+                    <td id="'+field.order_number+'" class="toItme"><a
+                            href="/oms/redirectPgOrderItemList?number={{ item.order_number }}&page={{ currentPage }}&filter={{ filter }}">{{ item.order_number }}</a>
+                    </td>
+                    {% if item.is_inlab == True %}
+                        <td><img src="{% static "image/icon-yes.svg" %}"></td>
+                    {% else %}
+                        <td><img src="{% static "image/icon-no.svg" %}"></td>
+                    {% endif %}
+                    {% if item.is_shiped_api == True %}
+                        <td><img src="{% static "image/icon-yes.svg" %}"></td>
+                    {% else %}
+                        <td><img src="{% static "image/icon-no.svg" %}"></td>
+                    {% endif %}
+                    {% if item.is_required_return_lable == True %}
+                        <td><img src="{% static "image/icon-yes.svg" %}"></td>
+                    {% else %}
+                        <td><img src="{% static "image/icon-no.svg" %}"></td>
+                    {% endif %}
+                    <td>{{ item.order_date }}</td>
+                    <td>{{ item.total_qty_ordered }}</td>
+                    <td>{{ item.customer_name }}</td>
+                    {% if item.email == None or item.email == '' %}
+                        <td>--</td>
+                    {% else %}
+                        <td>{{ item.email }}</td>
+                    {% endif %}
+
+                    <td>
+                        {% if item.shipping_method == 'standard_standard' %}
+                            Standard
+                        {% elif  item.shipping_method == 'express_express' %}
+                            Express
+                        {% elif  item.shipping_method == 'canada_express_canada_express' %}
+                            CA_Express
+                        {% elif  item.shipping_method == 'flatrate_flatrate' %}
+                            Flatrate
+                        {% else %}
+                            {{ item.shipping_method }}
+                        {% endif %}
+
+                    </td>
+                    <td>{{ item.get_status_display }}</td>
+                    <td>{{ item.get_status_control_display }}</td>
+                    {% if item.estimated_ship_date == None or item.estimated_ship_date == '' %}
+                        <td>--</td>
+                    {% else %}
+                        <td>{{ item.estimated_ship_date }}</td>
+                    {% endif %}
+
+                    {% if item.final_date == None or item.final_date == '' %}
+                        <td>--</td>
+                    {% else %}
+                        <td>{{ item.final_date }}</td>
+                    {% endif %}
+
+                    {% if item.targeted_ship_date == None or item.targeted_ship_date == '' %}
+                        <td>--</td>
+                    {% else %}
+                        <td>{{ item.targeted_ship_date }}</td>
+                    {% endif %}
+
+                    {% if item.promised_ship_date == None or item.promised_ship_date == '' %}
+                        <td>--</td>
+                    {% else %}
+                        <td>{{ item.promised_ship_date }}</td>
+                    {% endif %}
+
+                    <!--<td>{{ item.update_at }}</td>-->
+                    {#                <td class="originValue" style="max-width: 100px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">{{ item.comments }}</td>#}
+                    <td class="tdContent">
+                        <div class="showlittle"><p class="td_show"
+                                                   style="max-width: 100px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">{{ item.comments }}</p>
+                        </div>
+                        <div class="showContent" hidden>
+                            <div class="qipao"></div>
+                            {{ item.comments }}</div>
+                    </td>
+                    <td class="shipping">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default">Action</button>
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                <span class="caret"></span>
+                                <span class="sr-only">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu" style="left: -40px !important;">
+
+                                {% if item.is_shiped_api == False %}
+                                    <li style='margin-bottom:5px;'>
+                                        <button class='btn btn-block btn-default button0'
+                                                ordernum='{{ item.order_number }}'>Push Address
+                                        </button>
+                                    </li>
+                                {% else %}
+                                    <li style='margin-bottom:5px;'>
+                                        <button class='btn btn-block btn-default button0'
+                                                ordernum='{{ item.order_number }}' disabled='disabled'>Push Address
+                                        </button>
+                                    </li>
+                                {% endif %}
+
+
+                                <li style='margin-bottom:5px;'>
+                                    <button tag='ADD COMMENTS' class='btn btn-block btn-default button1'
+                                            ordernum='{{ item.order_number }}' ordertype='{{ item.type }}'
+                                            id='{{ item.pk }}'>ADD COMMENTS
+                                    </button>
+                                </li>
+                                {#                                   <li style='margin-bottom:5px;'><button tag='ONHOLD' class='btn btn-block btn-default buttonStatus' ordernum='{{ item.order_number }}' ordertype='{{ item.type }}' id='{{ item.pk }}'>HOLD</button></li>#}
+                                {#                                   <li style='margin-bottom:5px;'><button tag='CANCEL_HOLD' class='btn btn-block btn-default buttonStatus' ordernum='{{ item.order_number }}' ordertype='{{ item.type }}' id='{{ item.pk }}'>UNHOLD</button></li>#}
+                                {#                                   <li style='margin-bottom:5px;'><button tag='CANCELLED' class='btn btn-block btn-default buttonStatus' ordernum='{{ item.order_number }}' ordertype='{{ item.type }}' id='{{ item.pk }}'>CANCEL</button></li>#}
+
+
+                            </ul>
+                        </div>
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            {#                            上一页按钮开始#}
+            {#                             如果当前页有上一页#}
+            {% if list.has_previous %}
+                {#                                  当前页的上一页按钮正常使用#}
+                <li class="previous"><a
+                        href="{{ requestUrl }}?page={{ list.previous_page_number }}&filter={{ filter }}">previous</a>
+                </li>
+            {% else %}
+                {#                                 当前页的不存在上一页时,上一页的按钮不可用#}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {#                            上一页按钮结束#}
+            {#                             页码开始#}
+            {% for num in paginator.page_range %}
+
+                {% if num == currentPage %}
+                    <li class="item active"><a href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="item"><a href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a></li>
+
+                {% endif %}
+            {% endfor %}
+            {#                            页码结束#}
+            {#                             下一页按钮开始#}
+            {% if list.has_next %}
+                <li class="next"><a
+                        href="{{ requestUrl }}?page={{ list.next_page_number }}&filter={{ filter }}">next</a>
+                </li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+            {#                             下一页按钮结束#}
+        </ul>
+    </div>
+    <div id="callBackPager" style="text-align: center;width: 100%"></div>
+    <div id="comments" style="display: none; margin:10px 10px;">
+        <textarea class="form-control" rows="6" id="remarks"></textarea>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $(function () {
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            });
+
+            //总条数
+            {#            var pageNumber = {{ pageNum|safe }}#}
+            var actions = ['SHIPPING', 'ADD COMMENTS'];
+            {#            var page_now = {{ currentpage|safe }};#}
+
+            //callBackPagination(pageNumber);
+            {#            $('.pagination li').each(function () {#}
+            {#                if($(this).find('a').html() == page_now){#}
+            {#                    $(this).siblings('li').removeClass('active');#}
+            {#                    $(this).addClass('active');#}
+            {#                }#}
+            {##}
+            {#            });#}
+
+            {#            var pofilter = ''#}
+
+            $("#filters li").click(function () {
+                var filter = $(this).attr("inlab");
+                pofilter = filter;
+                createTable(page_now)
+                callBackPagination(pageNumber);
+
+            })
+
+
+            //ajax查询pgorder
+            function createTable(currPage) {
+                $.ajax({
+                    url: '/oms/pgOrderList/',
+                    type: 'POST',
+                    data: {
+                        'currPage': currPage,
+                        'filter': pofilter
+
+                    },
+                    async: false,
+                    success: function (arg) {
+                        var data = JSON.parse(arg);
+                        createTables(data);
+                    }
+                })
+            };
+
+
+            //生成表格列表
+            function createTables(data) {
+                var html = [];
+                for (var i = 0; i < data.length; i++) {
+                    var field = data[i].fields;
+                    html.push('<tr>');
+                    html.push('<td id="' + field.order_number + '" class="toItme"><a href="/oms/redirectPgOrderItemList?number=' + field.order_number + '&page={{ currentPage|safe }}&filter={{ filter|safe }}">' + field.order_number + '</a></td>');
+                    if (field.is_inlab) {
+                        html.push('<td><img src="{% static "image/icon-yes.svg"%}"></td>');
+                    } else {
+                        html.push('<td><img src="{% static "image/icon-no.svg"%}"></td>');
+                    }
+                    if (field.is_shiped_api) {
+                        html.push('<td><img src="{% static "image/icon-yes.svg"%}"></td>');
+                    } else {
+                        html.push('<td><img src="{% static "image/icon-no.svg"%}"></td>');
+                    }
+
+                    if (field.is_required_return_lable) {
+                        html.push('<td><img src="{% static "image/icon-yes.svg"%}"></td>');
+                    } else {
+                        html.push('<td><img src="{% static "image/icon-no.svg"%}"></td>');
+                    }
+
+                    html.push('<td>' + field.order_date + '</td>');
+                    html.push('<td>' + field.total_qty_ordered + '</td>');
+                    html.push('<td>' + field.customer_name + '</td>');
+                    html.push('<td>' + field.email + '</td>');
+                    html.push('<td>' + field.shipping_method + '</td>');
+                    html.push('<td>' + field.status + '</td>');
+                    html.push('<td>' + field.status_control + '</td>');
+
+                    if (field.estimated_ship_date == '' || field.estimated_ship_date == null) {
+                        html.push('<td>--</td>');
+                    } else {
+                        html.push('<td>' + formateTime(field.estimated_ship_date) + '</td>');
+                    }
+                    if (field.final_date == '' || field.final_date == null) {
+                        html.push('<td>--</td>');
+                    } else {
+                        html.push('<td>' + formateTime(field.final_date) + '</td>');
+                    }
+                    if (field.targeted_ship_date == '' || field.targeted_ship_date == null) {
+                        html.push('<td>--</td>');
+                    } else {
+                        html.push('<td>' + formateTime(field.targeted_ship_date) + '</td>');
+                    }
+                    if (field.promised_ship_date == '' || field.promised_ship_date == null) {
+                        html.push('<td>--</td>');
+                    } else {
+                        html.push('<td>' + formateTime(field.promised_ship_date) + '</td>');
+                    }
+                    //html.push('<td>' + longTime(field.update_at) + '</td>');
+                    if (field.comments == '' || field.comments == null) {
+                        html.push('<td class="tdContent"><div class="showlittle" ><p class="td_show" style="max-width: 100px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;" > </p></div><div class="showContent" hidden><div class="qipao"></div> </div></td>')
+
+                    } else {
+                        {#                        html.push('<td class="originValue">'+field.comments+'</td>');#}
+                        html.push('<td class="tdContent"><div class="showlittle" ><p class="td_show" style="max-width: 100px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;" >' + field.comments + '</p></div><div class="showContent" hidden><div class="qipao"></div>' + field.comments + '</div></td>')
+                    }
+
+                    html.push('<td class="shipping"><div class="btn-group">' +
+                        '                  <button type="button" class="btn btn-default">Action</button>' +
+                        '                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">' +
+                        '                    <span class="caret"></span>' +
+                        '                    <span class="sr-only">Toggle Dropdown</span>' +
+                        '                  </button>' +
+                        '                  <ul class="dropdown-menu" role="menu">');
+                    for (var j = 0; j < actions.length; j++) {
+                        if (j == 0) {
+                            if (field.is_shiped_api == false) {
+                                html.push("<li style='margin-bottom:5px;'><button class='btn btn-block btn-default button" + j + "' ordernum=" + field.order_number + ">" + actions[j] + "</button></li>");
+                            } else {
+                                html.push("<li style='margin-bottom:5px;'><button class='btn btn-block btn-default button" + j + "' ordernum=" + field.order_number + " disabled='disabled'>" + actions[j] + "</button></li>");
+                            }
+                        } else {
+                            html.push("<li style='margin-bottom:5px;'><button tag='ADD COMMENTS' class='btn btn-block btn-default button" + j + "' ordernum=" + field.order_number + " ordertype=" + field.type + " id=" + data[i].pk + ">" + actions[j] + "</button></li>");
+                        }
+                        html.push("<li style='margin-bottom:5px;'><button class='btn btn-block btn-default button" + j + "' ordernum=" + field.order_number + ">" + actions[j] + "</button></li>");
+                    }
+
+                    html.push("</ul></div></td>");
+                    html.push('</tr>');
+                }
+                var tbody = $("tbody");
+                tbody.empty();
+                tbody.html(html.join(''));
+
+                $("tbody .tdContent").mouseover(function () {
+                    // $(this).find('.showlittle').hide();
+                    $(this).find('.showContent').show();
+
+                });
+                $("tbody .tdContent").mouseout(function () {
+                    //  $(this).find('.showlittle').show();
+                    $(this).find('.showContent').hide();
+                })
+            }
+
+
+            var now_page = 1;
+            //分页
+            {#            function callBackPagination(pageNumber){#}
+            {#                var totalCount = pageNumber;//总条数#}
+            {#                var showPage = 10;//页面上显示几页#}
+            {#                var limit = 20;//每页显示多少条#}
+            {#                createTable(page_now);#}
+            {#                $('#callBackPager').extendPagination({#}
+            {#                    totalCount: totalCount,#}
+            {#                    showPage: showPage,#}
+            {#                    limit: limit,#}
+            {#                    callback: function (curr, limit, totalCount) {#}
+            {#                         now_page = parseInt(curr);#}
+            {#                        createTable(curr);#}
+            {#                    }#}
+            {#                })#}
+            {##}
+            {#            }#}
+
+            //点击跳转到pgorderitemlist
+            $("tbody").on("click", ".toItme", function () {
+                var number = $(this).find("a").html();
+                if (page_now != 1) {
+                    now_page = page_now
+                }
+
+                window.location.href = "/oms/redirectPgOrderItemList?number=" + number + "&page=" + now_page
+            });
+
+
+            {#           按钮点击发送地址#}
+
+            $('#tableContent').on('click', '.button0', function (event) {
+                event.stopPropagation();
+                var ordernumber = $(this).attr('ordernum');
+                var $this = $(this);
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/shipmentServer/",
+                    type: "POST",
+                    data: {
+                        'order_number': ordernumber
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'success') {
+                            $this.attr("disabled", 'disabled');
+                            layer.msg('Success', {time: 1000, icon: 6}, function () {
+                                window.location.href = "/oms/redirectPgOrderList?page={{ currentPage }}&filter={{ filter }}"
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 3000, icon: 5});
+                        }
+
+                    }
+                })
+            });
+
+            //添加commnents
+            var poup = new Array();
+            var width = $(document).width();
+            if (width < 800) {
+                poup = ['85%', '35%'];
+            } else {
+                poup = ['30%', '35%'];
+            }
+            $('#tableContent').on('click', '.button1', function (event) {
+
+                event.stopPropagation();
+
+                var ordernumber = $(this).attr('ordernum');
+                var ordertype = $(this).attr('ordertype');
+                var id = $(this).attr('id');
+                var action_value = $(this).attr('tag');
+                var $this = $(this);
+                $('#remarks').val('');
+                addCOMMENTS(ordernumber, ordertype, id, action_value, $this);
+                {#                var index = layer.open({#}
+                {#                    title:'ADD COMMENTS',#}
+                {#                    type: 1,#}
+                {#                    area: poup, //宽高#}
+                {#                    content: $('#comments') ,#}
+                {#                    btn: ['SAVE', 'CANCEL'],#}
+                {#                    yes:function () {#}
+                {#                        var textarea = $('#remarks').val();#}
+                {#                        $.ajax({#}
+                {#                            url:"/oms/addComments/",#}
+                {#                            type:'POST',#}
+                {#                            data:{#}
+                {#                                'order_number':ordernumber,#}
+                {#                                'ordertype':ordertype,#}
+                {#                                'id':id,#}
+                {#                                'action_value':action_value,#}
+                {#                                'textarea':textarea#}
+                {#                            },#}
+                {#                            success:function(arg){#}
+                {#                                layer.close(index);#}
+                {#                                if(arg == 'Success'){#}
+                {#                                    $this.closest('tr').find('.originValue').html(textarea);#}
+                {#                                    layer.msg('Success', {time:3000,icon: 6});#}
+                {#                                }else{#}
+                {#                                     layer.open({#}
+                {#                                          title: 'Error',#}
+                {#                                          content:arg,#}
+                {#                                          time:5000#}
+                {#                                        });#}
+                {#                                }#}
+                {##}
+                {#                            }#}
+                {#                        })#}
+                {#                    }#}
+                {#                })#}
+            });
+
+            $("#number").bind("keypress", function (event) {
+                if (event.keyCode == "13") {
+                    $("#btnSearch").click();
+                }
+            });
+
+
+            $("#btnSearch").on("click", function () {
+                order_number = $("#number").val();
+                if (order_number == '' || order_number == null) {
+                    layer.msg('Please enter a order number', {time: 3000, icon: 7});
+                }
+                else {
+                    $.ajax({
+                        url: "/oms/pgOrderItemFilter/",
+                        type: "POST",
+                        data: {
+                            "order_number": order_number
+                        },
+                        success: function (arg) {
+                            if (arg == 'False') {
+                                layer.msg('No order, please check the number.', {time: 3000, icon: 7});
+                            } else {
+                                var data = JSON.parse(arg);
+                                createTables(data);
+                            }
+
+                        }
+                    })
+                }
+            });
+
+
+            $("tbody .tdContent").mouseover(function () {
+                // $(this).find('.showlittle').hide();
+                $(this).find('.showContent').show();
+
+            })
+            $("tbody .tdContent").mouseout(function () {
+                //  $(this).find('.showlittle').show();
+                $(this).find('.showContent').hide();
+            })
+
+
+        })
+    </script>
+{% endblock %}

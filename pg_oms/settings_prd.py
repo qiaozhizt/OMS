@@ -1,0 +1,1 @@
+/opt/project/pg_oms/app/pg_oms/settings.py

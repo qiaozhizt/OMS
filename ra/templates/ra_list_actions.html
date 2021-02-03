@@ -1,0 +1,15 @@
+<div class="box-body">
+    <form role="form" class="form-inline box" id="ra_actions" method="POST" style="padding:5px;margin-bottom: 0px;">
+
+        <div class="form-group" style="padding-right: 10px;">
+            <a class="btn btn-info" href="{% url 'ra_new' %}">New RA</a>
+        </div>
+
+        {% for action in form_data.actions %}
+            <button id="{{ action.id }}" type="button" {% if action.class %} class="{{ action.class }}"{% else %}
+                    class="btn btn-primary"{% endif %}>{{ action.value }}</button>
+        {% endfor %}
+        <button id="btnClose" type="button" class="btn btn-warning">RA Close</button>
+        <button id="btnCancel" type="button" class="btn btn-warning">RA Cancel</button>
+    </form>
+</div>

@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Report{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}审单消耗统计报表{% endblock %}
+{% block content %}
+    <style>
+        .row {
+            margin-left: 1px;
+            margin-right: 1px;
+        }
+
+        .table th, .table td {
+            text-align: center;
+            vertical-align: middle !important;
+        }
+
+    </style>
+
+    <div class="row">
+        <div style="float: left">
+            <label class="form-inline"/>选择日期：
+            <input type="date" class="form-control" id="day" value="{{ day }}"/>
+            </label>
+            <button id="btnSearch" class="btn btn-default">确认查询</button>
+{#            <span style="margin-left: 30px;">#}
+{#            <label class="form-inline"/>开始日期：#}
+{#            <input type="date" class="form-control" id="start_date" value="{{ start_date }}"/>#}
+{#            </label>#}
+{#            <label class="form-inline"/>结束日期：#}
+{#            <input type="date" class="form-control" id="end_date" value="{{ end_date }}"/>#}
+{#            </label>#}
+{#            <button onclick="generate_report()" class="btn btn-default">确认生成</button>#}
+{#            </span>#}
+        </div>
+    </div>
+    <br/>
+    <div style="border-bottom: #b7b8bb solid 1px;margin-left: 20px">审单耗时统计：</div>
+    <div class="c1" style="margin-left:10px;margin-top: 10px">
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th>时间</th>
+                <th>ID</th>
+                <th>订单编号</th>
+                <th>下单时间</th>
+                <th>pg订单生成时间</th>
+                <th>lab订单生成时间</th>
+                <th>pg转lab消耗时间</th>
+                <th>pg转lab方式</th>
+                <th>lab订单Hold消耗时间</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for factory_item in list %}
+                <tr>
+                    <td>{{ factory_item.report_year }}-{{ factory_item.report_month }}-{{ factory_item.report_day }}</td>
+                    <td>{{ factory_item.entity_id }}</td>
+                    <td>{{ factory_item.order_number }}</td>
+                    <td>{{ factory_item.order_datetime }}</td>
+                    <td>{{ factory_item.pg_created_at }}</td>
+                    <td>{{ factory_item.lab_created_at }}</td>
+                    <td>{{ factory_item.diff_hours }}</td>
+                    <td>{{ factory_item.Status_c }}</td>
+                    <td>{{ factory_item.hold_hours }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!-- /.row -->
+
+    {#    <!--paginator-->#}
+    {#    <div style="width: 100%;text-align: center;">#}
+    {#        {% include 'page_number.html' %}#}
+    {#    </div>#}
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $("#btnSearch").on("click", function () {
+            day = $("#day").val();
+            location.href = "/report/pgorder_approve_processing_report/" + '?day=' + day;
+        });
+        var date_now = new Date();
+        var year = date_now.getFullYear();
+        var month = date_now.getMonth() < 10 ? "0" + (date_now.getMonth()) : (date_now.getMonth());
+        var date = date_now.getDate() < 10 ? "0" + date_now.getDate() : date_now.getDate();
+        $("#start_date").attr("min", year + "-" + month + "-" + date);
+        $("#end_date").attr("min", year + "-" + month + "-" + date);
+
+       function generate_report() {
+            var start_date = $("#start_date").val();
+            var end_date = $("#end_date").val();
+
+            form_data ={
+                "start_date":start_date,
+                "end_date": end_date
+            }
+            $.ajax({
+                url: "{% url 'pgorder_approve_processing_report_generate' %}",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                success: function (res) {
+                     var obj = JSON.parse(res);
+                      if(obj.code == 0){
+                         layer.msg(obj.message, {time: 5000, icon: 7});
+                        $("#myPurchaseLens").modal('hide');
+                        window.location.reload();
+                    }else{
+                          layer.msg(obj.message, {time: 5000, icon: 7});
+                    }
+                }
+            });
+        };
+
+
+    </script>
+{% endblock %}

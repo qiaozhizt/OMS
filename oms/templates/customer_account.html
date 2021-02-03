@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+{% load static %}
+<!-- 2018.06.19 updated by guof. -->
+{% block h1 %}Customer Account Info{% endblock %}
+{% block small %}Account{% endblock %}
+{#{% if perms.oms.CUSTOMER_NAV %}#}
+{% block style %}
+    <style>
+        .center{
+            width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            margin: 100px auto;
+        }
+        .center>div{
+            width: 391px;
+            margin: 20px auto;
+            position: relative;
+            background: #fff;
+            padding: 10px;
+            box-shadow: 5px 3px 9px 0px #ccc;
+        }
+        .center>div>h2{
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .center>div:nth-of-type(2) label{
+            margin-bottom: 52px;
+        }
+        label{
+            display: block;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: normal;
+        }
+        label input{
+            width: 200px;
+            height: 30px;
+            padding-left: 5px;
+            color: #444;
+            outline: none;
+            border:1px solid #ccc;
+            font-weight: normal;
+        }
+        .center button{
+            width: 100%;
+        }
+        .updatePassword{
+            border-color: #ddd;
+            cursor: not-allowed;
+            background: #ddd;
+            pointer-events: none;
+        }
+        .error{
+            border-color: red;
+        }
+        @media screen and (max-width: 1190px) {
+            .center{
+                width: 852px;
+            }
+        }
+        @media screen and (max-width: 1100px) {
+            .center{
+                width: auto;
+                display: block;
+            }
+            .center>div{
+                margin-bottom: 40px;
+            }
+
+        }
+        @media screen and (max-width: 375px) {
+            .center>div{
+                width: 300px;
+            }
+            label input{
+                width: 150px;
+            }
+        }
+        .errorS{
+            position: absolute;
+            left: 184px;
+            top: 182px;
+            color: #444;
+        }
+
+        .select_err{
+            color: red !important;
+        }
+
+        .select_err2{
+            color: red !important;
+        }
+        .errorS>div{
+            color: #006400;
+        }
+
+        .errorS span{
+            margin-right: 5px;
+            font-weight: bold;
+            font-size: 17px;
+        }
+        .customerPass_Select{
+            border-color: red !important;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="center">
+        <div>
+            <h2>Change Customer Password</h2>
+            <label for="">
+                Customer Current Email:<input type="text" txt="Customer Current Email" value="" id="customer_email" class="customerEmail">
+            </label>
+            <label for="">
+                New Password:<input type="password" οncοpy="return true"
+                                    maxlength="20"
+                                    value="" id="customer_pass" class="customerPass customerPassOne">
+            </label>
+            <div class="errorS">
+                <div style="color: red;font-size: 12px;display:none" id="Please">Please enter the same value again.</div>
+                <div class="select_err"><span class="one">x</span>6-20 characters</div>
+                <div class="select_err2"><span class="two">x</span>At least 1 letter and 1 number</div>
+            </div>
+            <label for="" style="margin-bottom: 55px;" id="Confirm_new">
+                Confirm New Password:
+                <input type="password" maxlength="20"
+                  οncοpy="return true" value="" id="customer_pass1" class="customerPassTwo">
+            </label>
+         <button type="button" class="btn btn-default"  id="update_password">Save</button>
+        </div>
+        <div>
+            <h2>Change Customer Email</h2>
+            <label for="">
+                Customer Current Email:<input type="text" value="" txt="Customer Current Email" id="customer_email1" class="customerEmail customerEmailOne">
+            </label>
+            <label for="">
+                New Customer Email:<input type="text" value="" txt="New Customer Email" id="customer_email_new" class="customerEmail customerEmailTwo">
+            </label>
+            <button type="button" class="btn btn-default"  id="update_customer">Save</button>
+        </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+         $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            });
+        var width = $(document).width();
+            if (width < 800) {
+                poup = ['85%', '35%'];
+            } else {
+                poup = ['25%', '20%'];
+            }
+        var pass = /^([a-z0-9\.\@\!\#\$\%\^\&\*\(\)\,\_]){6,20}$/i;//匹配密码
+        var email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+        var flagPass = false;
+         //密码二次输入错误函数
+         function passTwo(){
+             $("#Please").show();
+             $("#Confirm_new").css({
+                 marginBottom:"77px"
+             });
+             $("#customer_pass1").addClass("customerPass_Select");
+             setTimeout(function(){
+                 $("#Please").hide();
+                 $("#Confirm_new").css({
+                     marginBottom:"55px"
+                 });
+                 $("#customer_pass1").removeClass("customerPass_Select");
+             },3000);
+         }
+
+
+         //还原默认表单函数(修改密码)
+        function input_fn(){
+            $("#customer_email,#customer_pass,#customer_pass1").val("");
+            $(".errorS>div").eq(1).addClass("select_err");
+            $(".one,.two").text("x");
+            $(".errorS>div").eq(2).addClass("select_err2");
+         }
+         //还原默认表单函数(修改邮箱)
+         function input_Email(){
+             $("#customer_email1,#customer_email_new").val("");
+         }
+         //密码输入验证
+         $(".customerPass").keyup(function () {
+                var currentText  = $(this).val();
+                //密码输入匹配为6个字符
+                if(pass.test(currentText)){
+                    $(".errorS>div").eq(1).removeClass("select_err");
+                    $(".one").text("✔");
+                }else{
+                    $(".errorS>div").eq(1).addClass("select_err");
+                    $(".one").text("x");
+                }
+                if(currentText.match(/\d/) && currentText.match(/[a-zA-Z]/)){
+                    $(".errorS>div").eq(2).removeClass("select_err2");
+                    $(".two").text("✔");
+
+                }else{
+                    $(".errorS>div").eq(2).addClass("select_err2");
+                    $(".two").text("x");
+                }
+         });
+         //再次输入密码验证是否完整
+         $(".customerPassTwo").blur(function(){
+             var prev_Text = $("#customer_pass").val();
+             var this_val = $(this).val();
+             //上一个输入的密码和本次输入的密码是否相同
+             if(this_val == prev_Text){
+                $("#Please").hide();
+                $("#Confirm_new").css({
+                    marginBottom:"55px"
+                });
+                 $("#customer_pass1").removeClass("customerPass_Select");
+                 flagPass = true;
+             }else{
+                 passTwo();
+             }
+         });
+
+         //ajax函数请求封装
+         function customerAjax(poup,text,url,data,fn){
+             var index = layer.open({
+                 title: 'Update Customer Info',
+                 type: 1,
+                 area: poup, //宽高
+                 content:text,
+                 btn: ['CONFIRM', 'CANCEL'],
+                 yes: function () {
+                     $.ajax({
+                         url: url,
+                         type: "POST",
+                         data: data,
+                         success: function (arg) {
+                             fn && fn(arg,index);
+                         }
+                     })
+                 }
+             });
+         }
+
+        $("#update_password").click(function () {
+            //  验证邮箱地址
+            var url = '{% url 'search_customer_email' %}';
+            var  Pass_url = '{% url 'update_customer_pwd' %}';
+            var old_val =  $(".customerPassTwo").val();
+            var new_val =  $("#customer_pass").val();
+            // 获取当前输入的邮箱文本
+            var emailVal = $(".customerEmail").val();
+            if(!emailVal){
+                layer.msg("Mailbox cannot be empty", {time: 3000, icon: 7,offset:'100px'});
+                return false;
+            }
+            if(!flagPass || old_val != new_val){
+                passTwo();
+                return false;
+            }
+            if(!($(".one").text()=="✔" && $(".two").text()=="✔")){
+                layer.msg("Incorrect password format", {time: 3000, icon: 7,offset:'100px'});
+                return false;
+            }
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: {
+                    "customer_email": emailVal
+                },
+                success:function(arg){
+                    var obj = JSON.parse(arg);
+                    //用户存在
+                    if(obj.code>=0){
+                        var datas ={
+                            "customer_email":$("#customer_email").val(),
+                            "customer_pass":$("#customer_pass").val(),
+                            "customer_pass1":$("#customer_pass1").val()
+                        };
+                        var content = "&nbsp;&nbsp;&nbsp;Are you sure to change customer password?";
+                        customerAjax(poup,content,Pass_url,datas,function (arg,index) {
+                            var obj = JSON.parse(arg);
+                            layer.close(index);
+                            if(obj['code']==0){
+                                input_fn();
+                                layer.msg(obj.msg, {time: 3000, icon: 6,offset:'100px'})
+                            }else{
+                                layer.msg(obj.msg, {time: 3000, icon: 7,offset:'100px'})
+                            }
+                        });
+                    }
+                    //用户不从在
+                    else{
+                        layer.msg(obj.msg, {time: 3000, icon: 7,offset:'100px'})
+                    }
+                }
+            })
+        });
+        $("#update_customer").click(function () {
+            url = '{% url 'update_customer_email' %}';
+            var new_val  = $("#customer_email_new").val();
+            if(!email.test(new_val)){
+                layer.msg('Incorrect mailbox format', {time: 3000, icon: 7,offset:'100px'})
+                return false;
+            }
+            var datas={
+                "customer_email":$("#customer_email1").val(),
+                "customer_email_new":new_val
+            };
+            var content = '&nbsp;&nbsp;&nbsp;Are you sure to change customer email?';
+                customerAjax(poup,content,url,datas,function(arg,index){
+                    var obj = JSON.parse(arg);
+                    layer.close(index);
+                    if(obj['code'] == 0){
+                        input_Email();
+                        layer.msg(obj.msg, {time: 3000, icon: 6,offset:'100px'})
+                    }else{
+                        layer.msg(obj.msg, {time: 3000, icon: 7,offset:'100px'})
+                    }
+                })
+        });
+    </script>
+{% endblock %}

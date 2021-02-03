@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+{% block small %}从JSON设置五彩镜片信息{% endblock %}
+{% block content %}
+    <div class="">
+        lens_code_str:
+        <textarea id="lens_code_str">
+        </textarea>
+        <br/>
+
+        Product_str:
+        <textarea id="product_str">
+        </textarea>
+        <br/>
+
+        Material_str:
+        <textarea id="material_str">
+        </textarea>
+        <br/>
+
+        IMBD_str:
+        <textarea id="imbd_str">
+        </textarea>
+        <br/>
+
+        <input type="button" class="btn btn-primary" id="set_wc_lens_btn" value="GO">
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $("#set_wc_lens_btn").on('click', function () {
+            var lens_code_str = $("#lens_code_str").val();
+            var product_str = $("#product_str").val();
+            var material_str = $("#material_str").val();
+            var imbd_str = $("#imbd_str").val();
+            set_wc_lens(lens_code_str,product_str,material_str,imbd_str);
+        });
+        function set_wc_lens(lens_code_str,product_str,material_str,imbd_str) {
+            var index = layer.load();
+            var url = "{% url 'set_wc_lens_from_json' %}";
+            $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        "lens_code_str": lens_code_str,
+                        "product_str": product_str,
+                        "material_str": material_str,
+                        "imbd_str": imbd_str,
+                    },
+                    success: function (result) {
+                        layer.close(index);
+                        var obj = $.parseJSON(result);
+                        alert(obj.message);
+                    }
+                }
+            )
+        }
+    </script>
+{% endblock %}

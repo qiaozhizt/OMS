@@ -1,0 +1,1136 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .cl:after {
+            display: block;
+            clear: both;
+            content: "";
+        }
+
+        .cl {
+            zoom: 1
+        }
+
+        .trDetail div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .trDetail span {
+            margin-right: 10px;
+        }
+
+        .divDetail {
+            display: inline-block;
+            text-align: center !important;
+            width: 100%;
+            background: #fff;
+            margin-bottom: -1px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .positionBox {
+            display: inline-block;
+        }
+
+        .divDetail hr {
+            width: 100%;
+            border: 1px dashed #000;
+        }
+
+        tbody .ondetail {
+            cursor: pointer;
+        }
+
+        .pgorderdetail span {
+            margin-left: 20px;
+        }
+
+        div.order-imags > div {
+            padding: 15px
+        }
+    </style>
+{% endblock %}
+{% block h1 %}PgOrder{% endblock %}
+{% block small %}ALL PG Orders(Old){% endblock %}
+{% block content %}
+    <div class="blockContent" id="blockContent">
+
+        <!--Actions-->
+        <div class="cl">
+            <div style="float: left;margin-right: 3px">
+                <button id="backPrev" type="button" class="btn btn-default btn active" role="button"
+                        onClick="javascript :history.back(-1);">Back
+                </button>
+            </div>
+
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'holded' or form.status.value == 'canceled' or form.is_inlab.value == True or form.status_control.value == 'REVIEWED' or form.status_control.value == 'APPROVED' %}
+                    {% if perms.oms.ACT_REVIEW %}
+                        <button id="btnReview" type="button" class="btn btn-default btn active" disabled="disabled"
+                                order_number={{ order_number }}>Review
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if perms.oms.ACT_REVIEW %}
+                        <button id="btnReview" type="button" class="btn btn-default btn active"
+                                order_number={{ order_number }}>Review
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'holded' or form.status.value == 'canceled' or form.is_inlab.value == True or form.status_control.value == 'APPROVED' %}
+                    {% if perms.oms.ACT_APPROVE %}
+                        <button id="btnApprove" type="button" class="btn btn-default btn active" disabled="disabled"
+                                order_number={{ order_number }}>Approve
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if perms.oms.ACT_APPROVE %}
+                        <button id="btnApprove" type="button" class="btn btn-default btn active"
+                                order_number={{ order_number }}>Approve
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'holded' or form.status.value == 'canceled' or form.is_inlab.value == True %}
+                    {% if perms.oms.ACT_GLO %}
+                        <button id="btnLab" type="button" class="btn btn-default btn active" disabled="disabled"
+                                order_number={{ order_number }}>Generate Lab Orders
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if perms.oms.ACT_GLO %}
+                        <button id="btnLab" type="button" class="btn btn-default btn active"
+                                order_number={{ order_number }}>Generate Lab Orders
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'canceled' %}
+                    <button tag='holded' content="Hold" type="button" class="btn btn-default btn active status"
+                            disabled="disabled" order_number={{ order_number }}>Hold
+                    </button>
+                {% else %}
+                    {% if form.status.value == 'holded' %}
+                        <button tag='unhold' content="Unhold" type="button" class="btn btn-default btn active status"
+                                order_number={{ order_number }}>Unhold
+                        </button>
+                    {% else %}
+                        <button tag='holded' content="Hold" type="button" class="btn btn-default btn active status"
+                                order_number={{ order_number }}>Hold
+                        </button>
+                    {% endif %}
+                {% endif %}
+
+            </div>
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'canceled' %}
+                    <button tag="canceled" content="Cancel" type="button" class="btn btn-default btn active status"
+                            disabled="disabled" order_number={{ order_number }}>Cancel
+                    </button>
+                {% else %}
+                    <button tag="canceled" content="Cancel" type="button" class="btn btn-default btn active status"
+                            order_number={{ order_number }}>Cancel
+                    </button>
+                {% endif %}
+            </div>
+            {#        push date button #}
+            {% if perms.oms.ACT_PUSH_DATE %}
+                <div style="float: left;margin-left: 5px;">
+                    <button id="pushDate" estimated_date="{{ form.estimated_ship_date.value|date:"Y-m-d" }}"
+                            targeted_date="{{ form.targeted_ship_date.value|date:"Y-m-d" }}"
+                            promised_date="{{ form.promised_ship_date.value |date:"Y-m-d" }}" type="button"
+                            class="btn btn-default btn active">Push Date
+                    </button>
+                </div>
+            {% endif %}
+            {#        shipping#}
+            <div style="float: left;margin-left: 5px;">
+                <button id="shipping" order_number="{{ order_number }}" type="button"
+                        class="btn btn-default btn active" {% if form.is_shiped_api.value %}disabled{% endif %}>Push
+                    Address
+                </button>
+            </div>
+            {#     add comments   #}
+            <div style="float: left;margin-left: 5px;">
+                <button id="add_comment" order_number="{{ form.order_number.value }}" type="button"
+                        class="btn btn-default btn active">Add Comment
+                </button>
+            </div>
+            {#     send comment  #}
+            {% if perms.oms.OTRC_VIEW %}
+                <div style="float: left;margin-left: 5px;">
+                    <a id="send_comment" type="button" class="btn btn-default btn active"
+                       href="/oms/send_message?p={{ form.order_number.value }}">Send Comment</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!--PgOrder Form-->
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">PgOrder Detail</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+
+                    <form class="form-horizontal" METHOD="post" action="/oms/pgorder_update/">
+                        {% csrf_token %}
+                        <input type="hidden" value="{{ order_number }}" name="order_number"/>
+                        <div class="box-body">
+                            <div style="display: none;">
+                                {{ form.order_number }}
+                                {{ form.order_datetime }}
+                                {{ form.status }}
+                                {{ form.status_control }}
+                                {{ form.is_inst }}
+                                {{ form.instruction }}
+                                {{ form.estimated_ship_date }}
+                                {{ form.final_date }}
+                                {{ form.targeted_ship_date }}
+                                {{ form.promised_ship_date }}
+                                {{ form.shipping_method }}
+                                {{ form.is_inlab }}
+
+                            </div>
+                            <div class="col-md-3">
+                                <!-- /.box-header -->
+                                <!-- form start -->
+                                <div class="box-body">
+                                    <div class="form-group">
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.order_number.label }}</b></div>
+                                            <div class="col-sm-8">
+
+                                                {{ form.order_number.value }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="col-sm-4"><b>{{ form.order_datetime.label }}</b></div>
+
+                                            <div class="col-sm-8">
+
+                                                {{ form.order_datetime.value }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.status.label }}</b></div>
+
+                                            <div class="col-sm-8">
+
+                                                {{ form.status.value }}
+                                            </div>
+                                        </div>
+
+                                        {% if form.is_inst.value == True %}
+                                            <div class="form-group">
+
+                                                <div class="col-sm-4"><b>{{ form.is_inst.label }}</b></div>
+                                                <div class="col-sm-8">
+
+                                                    {{ form.is_inst }}
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+
+                                                <div class="col-sm-4"><b>{{ form.instruction.label }}</b></div>
+                                                <div class="col-sm-8" style="color:red">
+                                                    {{ form.instruction.value }}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <div class="col-md-3">
+
+                                <!-- /.box-header -->
+                                <!-- form start -->
+
+                                <div class="box-body">
+
+
+                                    <div class="form-group">
+
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.estimated_ship_date.label }}</b></div>
+                                            <div class="col-sm-8">
+                                                {{ form.estimated_ship_date.value }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.final_date.label }}</b></div>
+
+                                            <div class="col-sm-8">
+                                                {{ form.final_date.value }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.targeted_ship_date.label }}</b></div>
+
+                                            <div class="col-sm-8">
+                                                {{ form.targeted_ship_date.value }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.promised_ship_date.label }}</b></div>
+
+                                            <div class="col-sm-8">
+                                                {{ form.promised_ship_date.value }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <!-- /.box-header -->
+                                <!-- form start -->
+                                <div class="box-body">
+                                    <div class="form-group">
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.shipping_method.label }}</b></div>
+                                            <div class="col-sm-8">
+                                                {{ form.ship_direction }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputPassword3" style="display:none"
+                                                   class="col-sm-4 control-label">{{ form.comments.label }}</label>
+                                            <div class="col-sm-4"><b>{{ form.comments.label }}</b></div>
+                                            <div class="col-sm-8">
+                                                {{ form.comments }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-default btn pull-right">Save PgOrder</button>
+                        </div>
+                        <!-- /.box-footer -->
+                    </form>
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+
+        <!--Activities-->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget collapsed-box" id="activity_toggle">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">Order Activities</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-plus" id="scan_toggle"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+
+                    <div class="box-body" id="tableActivity">
+
+
+                    </div>
+                    <!-- /.box-body -->
+
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+
+        <!--PgOrder Items-->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget collapsed-box">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">PgOrder Items</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+                    <form class="form-horizontal" METHOD="post" action="/oms/pgOrderItemUpdate/">
+                        {% csrf_token %}
+                        {{ formsets.management_form }}
+                        <input type="hidden" value={{ order_number }} name="order_number">
+                        <table class='table table-striped'>
+                            <thead>
+                            <tr>
+                                <th class='hid'>VIP</th>
+                                <th>WEBSITE ITEM ID</th>
+                                <th>ORDER DATE</th>
+                                <th>SHIPPING METHOD</th>
+                                <th class='hid'>FRAME</th>
+                                <th class='hid'>LENS SKU</th>
+                                <th class='hid'>LENS NAME</th>
+                                <th class='hid'>INSTRUCTION</th>
+                                <th class='hid'>COMMENTS</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for formset in formsets.forms %}
+                                <tr>
+                                    <td>{{ formset.vip.value }}</td>
+                                    <td class=""><!--btn btn-box-tool-->
+                                        <a name="poi_view"
+                                           href="javascript:void(0)"
+                                           order_number="{{ form.order_number.value }}"
+                                           item_id="{{ formset.item_id.value }}">
+                                            {{ formset.item_id.value }}</a>
+                                    </td>
+                                    <td>{{ formset.order_date.value }}</td>
+                                    <td>{{ formset.shipping_method.value }}</td>
+                                    <td>{{ formset.frame.value }}</td>
+                                    <td>{{ formset.lens_sku.value }}</td>
+                                    <td>{{ formset.lens_name.value }}</td>
+                                    <td>{{ formset.instruction.value }}</td>
+                                    <td>{{ formset.comments.value }}</td>
+                                    <td>
+                                        <a name="poi_view"
+                                           href="javascript:void(0)"
+                                           order_number="{{ form.order_number.value }}"
+                                           item_id="{{ formset.item_id.value }}">
+                                            View</a>
+                                        &nbsp;&nbsp;<a name="poi_edit" href="javascript:void(0)">Edit</a>
+                                    </td>
+                                </tr>
+                                <tr style="display:none">
+                                    <td colspan="10">
+                                        <div name="item">
+
+                                        </div>
+                                        {#                                        <div name="item_actions" class="col-md-12" style="text-align:right;">#}
+                                        {#                                            <input type="button" value="Edit" name="poi_edit"/>#}
+                                        {#                                        </div>#}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+
+                        <!-- /.box-body -->
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-default btn pull-right">Save Items</button>
+                        </div>
+                        <!-- /.box-footer -->
+                    </form>
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <div id="callBackPager" style="text-align: center;width: 100%"></div>
+        <div id="comments" style="display: none; margin:10px 10px;">
+            <textarea class="form-control" rows="6" id="remarks"></textarea>
+        </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $(function () {
+            //定义通用地变量
+            //1.发货方式
+            var ship_direction = ['Standard', 'Express', 'Employee'];
+
+            //Action 名字
+            var actions = ['SHIPPING', 'ADD COMMENTS'];
+
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            });
+
+            var order_number = {{ order_number|safe }}
+
+                function createTables(data) {
+                    var html = [];
+                    html.push("<table class='table table-striped'>");
+                    html.push("<thead>");
+                    html.push("<tr>");
+                    html.push("<th class='hid'>VIP</th>");
+                    html.push("<th>ORDER NUMBER</th>");
+                    html.push("<th>ORDER DATE</th>");
+                    html.push("<th>SHIPPING METHOD</th>");
+                    html.push("<th class='hid'>FRAME</th>");
+                    html.push("<th class='hid'>LENS SKU</th>");
+                    html.push("<th class='hid'>LENS NAME</th>");
+                    html.push("<th class='hid'>COMMENTS</th>");
+                    html.push("</tr>");
+                    html.push("</thead>");
+                    html.push("<tbody>");
+
+
+                    for (var i = 0; i < data.length; i++) {
+
+                        field = data[i].fields;
+                        if (i % 2 == 0) {
+                            html.push("<tr class='alltr'  orderNumber=" + field.order_number + " toggle=0 type='even'>");
+                        } else {
+                            html.push("<tr class='alltr'  orderNumber=" + field.order_number + " toggle=0 type='odd'>");
+                        }
+
+
+                        if (field.is_vip == true) {
+                            html.push("<td class='hid'><img src='{% static "image/icon-yes.svg"%}'></td>")
+                        } else {
+                            html.push("<td class='hid'>  </td>")
+                        }
+
+                        html.push("<td id='" + field.order_number + "' class='ondetail' productIndex=" + field.product_index + " orderNumber=" + field.order_number + " toggle=0><a target='_Blank' href='/oms/pgOrderItemDetail?pk=" + data[i].pk + "'>" + field.order_number + "</a></td>");
+                        html.push("<td>" + field.order_date + "</td>");
+
+                        if (field.ship_direction == 'STANDARD') {
+                            html.push("<td>" + ship_direction[0] + "</td>");
+                        } else if (field.ship_direction == 'EXPRESS') {
+                            html.push("<td>" + ship_direction[1] + "</td>");
+                        } else {
+                            html.push("<td>" + ship_direction[2] + "</td>");
+                        }
+
+                        html.push("<td class='hid'>" + field.frame + "</td>");
+                        html.push("<td class='hid'>" + field.lens_sku + "</td>");
+                        html.push("<td class='hid'>" + field.lens_name + "</td>");
+                        if (field.comments == '' || field.comments == null) {
+                            html.push("<td class='hid originValue'> </td>");
+                        } else {
+                            html.push("<td class='hid originValue'>" + field.comments + "</td>");
+                        }
+
+
+                        html.push("</tr>");
+                    }
+
+                    html.push("</tbody>");
+                    html.push("</table>");
+                    var tabcon = $("#tableContent");
+                    tabcon.html(html.join(''));
+                }
+
+            queryActivities(order_number);
+
+            function queryActivities(order_number) {
+                $.ajax({
+                    url: "/oms/queryActivities/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                        'obj_type': 'OPOR'
+                    },
+                    success: function (arg) {
+                        var data = JSON.parse(arg);
+                        var html = [];
+                        html.push("<table class='table table-striped'>");
+                        html.push("<thead><tr><th>Username</th><th>Comments</th><th>Create At</th><th>Modify</th><th>Is_Send</th><th>Send</th></tr></thead><tbody>");
+
+                        if (data.length > 0) {
+                            for (var i = 0; i < data.length; i++) {
+                                activity = data[i].fields;
+                                html.push("<tr>");
+                                html.push("<td>" + activity.user_name + "</td>");
+                                html.push("<td id='text-comments'>" + activity.comments + "</td>");
+                                html.push("<td>" + longTime(activity.create_at) + "</td>");
+                                html.push("<td><span class='fa fa-file-o text-change' pk=" + data[i].pk + "></span></td>");
+                                html.push("<td>" + activity.is_send + "</td>")
+                                if (activity.is_send) {
+                                    html.push("<td><a class='fa fa-send send_comment' href='/oms/redirectComment?num=" + activity.order_number + "&comment=" + activity.comments + "&pk=" + data[i].pk + "'></a></td>")
+                                } else {
+                                    html.push("<td><a class='fa fa-send send_comment' href='/oms/redirectComment?num=" + activity.order_number + "&comment=" + activity.comments + "&pk=" + data[i].pk + "'></a></td>")
+
+                                }
+                                html.push("</tr>")
+                            }
+
+                            $('#activity_toggle').attr('class', 'box box-widget');
+                            $('#scan_toggle').attr('class', 'fa fa-minus');
+                            $('#tableActivity').css('display', 'block')
+
+                        } else {
+                            html.push("<tr>");
+                            html.push("<td colspan='4'style='text-align:center'>There is no data</td>");
+                            html.push("</tr>")
+                        }
+                        html.push("</tbody></table>");
+                        var tableActivity = $("#tableActivity");
+                        tableActivity.empty();
+                        tableActivity.html(html.join(''));
+
+                    }
+                })
+            }
+
+
+//修改comments
+            $("#blockContent").on("click", ".text-change", function () {
+
+                var width = $(document).width();
+                if (width < 800) {
+                    poup = ['85%', '35%'];
+                } else {
+                    poup = ['30%', '35%'];
+                }
+                var pk = $(this).attr('pk');
+                var comments = $(this).parent().siblings("#text-comments").html();
+
+                $('#remarks').val(comments);
+                var $this = $(this);
+                var index = layer.open({
+                    title: 'Change Comments',
+                    type: 1,
+                    area: poup, //宽高
+                    content: $('#comments'),
+                    btn: ['SAVE', 'CANCEL'],
+                    yes: function () {
+                        var comments_value = $('#remarks').val();
+
+                        $.ajax({
+                            url: "/oms/changeComments/",
+                            type: 'POST',
+                            data: {
+                                'pk': pk,
+                                'comments_value': comments_value
+
+                            },
+                            success: function (arg) {
+                                layer.close(index);
+                                if (arg == "Success") {
+                                    $this.parent().siblings("#text-comments").html(comments_value);
+                                    layer.msg('The modification is successful', {time: 3000, icon: 6});
+                                } else {
+                                    layer.open({
+                                        title: 'Error',
+                                        content: arg,
+                                        time: 5000
+                                    });
+                                }
+                            }
+                        })
+                    }
+                })
+            });
+
+
+            var currentpage ={{ currentpage|safe }};
+            var filter = {{ filter|safe }};
+
+            $("#btnReview").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/pg_order_review/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "/oms/pgorder_list?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 10000, icon: 7}, function () {
+                                window.location.href = "/oms/pgorder_list?page=" + currentpage + "&filter=" + filter
+                            });
+
+                        }
+                    }
+                })
+
+            });
+
+            $("#btnApprove").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/pg_order_approve/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "/oms/pgorder_list?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 10000, icon: 7}, function () {
+                                window.location.href = "/oms/pgorder_list?page=" + currentpage + "&filter=" + filter
+                            });
+
+                        }
+                    }
+                })
+
+            });
+
+
+            $("#btnLab").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/generateLabOrders/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                        {#                        'currentpage':currentpage#}
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "/oms/pgorder_list?page=" + currentpage + "&filter=" + filter
+                            });
+                        } else {
+                            layer.msg(arg, {time: 5000, icon: 7}, function () {
+                                window.location.href = "/oms/pgorder_list?page=" + currentpage + "&filter=" + filter
+                            });
+                        }
+                    }
+                })
+            });
+
+            $(".status").on('click', function () {
+                content = $(this).attr('content');
+                tag = $(this).attr('tag');
+                number = $(this).attr('order_number');
+                $.ajax({
+                    url: "/oms/pgorder_status/",
+                    type: 'POST',
+                    data: {
+                        'content': content,
+                        'tag': tag,
+                        'order_number': number
+
+                    },
+                    success: function (arg) {
+                        if (arg == 'True') {
+                            layer.msg('The order status was modified successfully.', {
+                                icon: 6,
+                                time: 3000
+                            }, function () {
+                                window.location.href = "/oms/pgorder_list?number=" + number + "&page=" + currentpage + "&filter=" + filter
+                            });
+
+                        } else if (arg == "False") {
+                            layer.msg("The initial status of the order is holded..", {icon: 5, time: 5000})
+                        } else {
+                            layer.msg("The order has been generated LabOrder, please handle LabOrder first.", {
+                                icon: 5,
+                                time: 5000
+                            })
+                        }
+                    }
+                })
+            })
+
+            {#pushDate ajax#}
+            $("#pushDate").on('click', function () {
+                var promised_date = ($(this).attr("promised_date"));
+                var targeted_date = ($(this).attr("targeted_date"));
+                var estimated_date = ($(this).attr("estimated_date"));
+                var order_number = ('{{ base_entity }}');
+                var index = layer.load();
+                $.ajax({
+                    url: '/oms/pgOrderPushDate/',
+                    type: 'post',
+                    data: {
+                        promised_date: promised_date,
+                        targeted_date: targeted_date,
+                        estimated_date: estimated_date,
+                        order_number: order_number
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == "true") {
+                            layer.msg("success", {time: 3000, icon: 6})
+                        } else if (arg == "false") {
+                            layer.msg("fail", {time: 3000, icon: 5})
+                        } else {
+                            layer.msg("error", {time: 3000, icon: 5})
+                        }
+                    }
+                })
+            });
+
+            // push address
+            $("#shipping").on('click', function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/shipmentServer/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'success') {
+                            layer.msg('Success', {time: 2000, icon: 6}, function () {
+                                window.location.href = "/oms/pgorder_list?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 5000, icon: 7}, function () {
+                                window.location.href = "/oms/pgorder_list?page=" + currentpage + "&filter=" + filter
+                            });
+                        }
+                    }
+                })
+            });
+
+            {#    add Comment#}
+            $("#add_comment").on('click', function () {
+                var order_number = $(this).attr("order_number")
+                var $this = $(this);
+                $.ajax({
+                    url: '/oms/getOrderItem/',
+                    type: 'post',
+                    data: {
+                        "order_number": order_number
+                    },
+                    success: function (arg) {
+                        var x = JSON.parse(arg)
+
+                        var xx = x[0].fields
+
+                        var ordernum = xx.order_number
+                        var ordertype = xx.type
+                        var id = x[0].pk
+                        var action_value = "ADD COMMENTS"
+                        addCOMMENTS(ordernum, ordertype, id, action_value, $this);
+                    }
+                })
+            })
+        })
+
+
+        $("#tableActivity").on("click", '.send_comment', function () {
+
+            var order_number = $(this).attr('order_number')
+            var comment = $(this).closest("tr").find("#text-comments").html()
+
+            $.ajax({
+                url: "",
+                type: 'post',
+                data: {},
+                success: function (arg) {
+                }
+            })
+        });
+
+        $("a[name='poi_view']").each(function () {
+            $(this).bind("click", function () {
+                if ($(this).parents("tr").next().css('display') != 'none') {
+                    $(this).parents("tr").next().toggle(200);
+                    return true;
+                }
+
+                var index = layer.load(2); //换了种风格
+
+                var _html = [];
+                var item_content = this;
+
+                var order_number = $(this).attr('order_number');
+                var item_id = $(this).attr('item_id');
+                $.ajax({
+                    url: '/oms/pgorder_item_detail/',
+                    type: 'post',
+                    data: {
+                        "order_number": order_number,
+                        "item_id": item_id
+                    },
+                    success: function (arg) {
+                        var data = JSON.parse(arg);
+                        var obj = data[0].fields;
+
+                        var order_image_urls = eval(obj.order_image_urls);
+
+                        var html_image_urls = "";
+
+                        for (var a in  order_image_urls) {
+                            img_url = order_image_urls[a].image_url;
+                            image_type_name = order_image_urls[a].image_type_name;
+                            html_image_urls += "<div class=\"col-sm-2 order-images-each\">";
+                            html_image_urls += "<img src=\"" + img_url + "\" class=\"img-responsive center-block\" title=\""+image_type_name+"\" src=\""+image_type_name+"\"></img></div>"
+                        }
+                        //alert(obj.order_number);
+                        //_html.push(arg);
+                        _html.push("<div class=\"col-md-12\">");
+
+                        html_parent = "" +
+                            "<div class=\"form-group col-md-12\">" +
+                            "<div class=\"form-group col-sm-4\">" +
+                            "<div class=\"col-sm-4\">" + "<b>Frame</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.frame + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Name</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.name + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Quantity</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.quantity + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Size</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.size + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Lens Height</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.lens_height + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Lens Width</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.lens_width + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Lens SKU</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.lens_sku + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Lens Name</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.lens_name + "</div>" +
+                            {% if obj.coating_sku %} "<div class=\"col-sm-4\">" + "<b>Coating SKU</b>" + "</div>"
+                                + "<div class=\"col-sm-8\">" + obj.coating_sku + "</div>" +{% endif %}
+                            {% if obj.coating_name %} "<div class=\"col-sm-4\">" + "<b>Coating Name</b>" + "</div>"
+                                + "<div class=\"col-sm-8\">" + obj.coating_name + "</div>" +{% endif %}
+                            {% if obj.tint_sku %} "<div class=\"col-sm-4\">" + "<b>Tint SKU</b>" + "</div>"
+                                + "<div class=\"col-sm-8\">" + obj.tint_sku + "</div>" +{% endif %}
+                            {% if obj.tint_name %} "<div class=\"col-sm-4\">" + "<b>Tint Name</b>" + "</div>"
+                                + "<div class=\"col-sm-8\">" + obj.tint_name + "</div>" +{% endif %}
+                            "</div>" +
+
+                            "<div class=\"form-group col-sm-4\">" +
+                            "<div class=\"col-sm-4\">" + "<b>Order Number</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.order_number + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Shipping Method</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.ship_direction + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Is VIP</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.is_vip + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Item ID</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.item_id + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Product ID</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.product_id + "</div>" +
+
+                            "<div class=\"col-sm-4\">" + "<b>Pupils Position</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.pupils_position + "</div>" +
+                            "<div class=\"col-sm-4\">" + "<b>Pupils Position Name</b>" + "</div>" + "<div class=\"col-sm-8\">" + obj.pupils_position_name + "</div>" +
+                            "</div>" +
+
+
+                            "<div class=\"form-group col-sm-4 order-images-each\">" +
+                            "<img src=\"{{ prd_img_pre }}" + obj.thumbnail + "\" class=\"img-responsive center-block\"></img>" +
+
+                            "</div>" +
+                            "</div>" +
+
+                            "<div class=\"form-group col-md-12 order-imags\">" +
+
+                            html_image_urls +
+
+
+                            "</div>" +
+
+                            "";
+
+                        html_prescription_summary = "" +
+                            "<table class='table table-bordered'>" +
+                            "<caption>Prescription Summary</caption>" +
+                            "<tbody>" +
+                            "<tr>" +
+                            "<th>Prescription ID:</td>" + "<td>" + obj.prescription_id + "</td>" +
+                            "<th>Prescription Name:</td>" + "<td>" + obj.prescription_name + "</td>" +
+                            "<th>Type:</td>" + "<td>" + obj.prescription_type + "</td>" +
+                            "<th>Used For:</td>" + "<td>" + obj.used_for + "</td>" +
+                            "</tr>" +
+                            "</tbody>" +
+                            "</table>" +
+                            "";
+
+                        od_pd = "<td>" + obj.pd + "</td>";
+                        os_pd = "<td>-</td>";
+
+                        if (obj.is_singgle_pd == false) {
+                            od_pd = "<td>" + obj.od_pd + "</td>";
+                            os_pd = "<td>" + obj.os_pd + "</td>";
+                        }
+
+                        html_prescription = "" +
+                            "<table class='table table-bordered'>" +
+                            "<caption>Prescription</caption>" +
+                            "<tbody>" +
+                            "<tr>" +
+                            "<th></th>" +
+                            "<th>SPH</th>" +
+                            "<th>CYL</th>" +
+                            "<th>AXIS</th>" +
+                            "<th>ADD</th>" +
+                            "<th>PD</th>" +
+
+                            "</tr>" +
+                            "<tr>" +
+                            "<td>OD</td>" +
+                            "<td>" + obj.od_sph + "</td>" +
+                            "<td>" + obj.od_cyl + "</td>" +
+                            "<td>" + obj.od_axis + "</td>" +
+                            "<td>" + obj.od_add + "</td>" +
+                            od_pd +
+
+
+                            "</tr>" +
+                            "<tr>" +
+                            "<td>OS</td>" +
+                            "<td>" + obj.os_sph + "</td>" +
+                            "<td>" + obj.os_cyl + "</td>" +
+                            "<td>" + obj.os_axis + "</td>" +
+                            "<td>" + obj.os_add + "</td>" +
+                            os_pd +
+                            "</tr>" +
+                            "</tbody>" +
+                            "</table>" +
+                            "";
+
+                        html_prescription_prism = "" +
+                            "<table class='table table-bordered'>" +
+                            "<caption>Prism Values</caption>" +
+                            "<tbody>" +
+                            "<tr>" +
+                            "<th></th>" +
+                            "<th>Prism</th>" +
+                            "<th>Base</th>" +
+
+                            "</tr>" +
+                            "<tr>" +
+                            "<td>OD</td>" +
+                            "<td>" + obj.od_prism + "</td>" +
+                            "<td>" + obj.od_base + "</td>" +
+
+                            "</tr>" +
+                            "<tr>" +
+                            "<td>OS</td>" +
+                            "<td>" + obj.os_prism + "</td>" +
+                            "<td>" + obj.os_base + "</td>" +
+
+                            "</tr>" +
+                            "</tbody>" +
+                            "</table>" +
+                            "";
+
+                        html_instruction = "" +
+                            "<div class=\"form-group col-sm-12\">" +
+                            "<div class=\"col-sm-2\"> " + "<b>Instruction</b>" + "</div>" + "<div class=\"col-sm-10\"   style=\"color:red;\">" + obj.instruction + "</div>" +
+                            "</div>" +
+                            "";
+
+                        html_comments = "" +
+                            "<div class=\"form-group col-sm-12\">" +
+                            "<div class=\"col-sm-2\">" + "<b>Comments</b>" + "</div>" + "<div class=\"col-sm-10\">" + obj.comments + "</div>" +
+                            "</div>" +
+                            "";
+
+                        _html.push(html_parent);
+                        _html.push(html_prescription_summary);
+                        _html.push(html_prescription);
+
+                        if (obj.od_base) {
+                            _html.push(html_prescription_prism);
+                        }
+
+                        if (obj.instruction) {
+                            _html.push(html_instruction);
+                        }
+                        _html.push(html_comments);
+
+                        _html.push("</div>");
+
+                        $(item_content).parents("tr").next().find("td").find("div[name='item']").html(_html.join(''));
+
+                        layer.close(index);
+                    }
+                });
+                //$(this).parents("tr").next().find("td").html(_html);
+                $(this).parents("tr").next().toggle(1000);
+
+            });
+        });
+
+        $("a[name='poi_edit']").each(function () {
+            $(this).bind("click", function () {
+                alert('This function not complete. \nYou can only view pg order item now.');
+            });
+        });
+
+        $("input[name='poi_edit']").each(function () {
+            $(this).bind("click", function () {
+
+                var _html = [];
+                var item_content = this;
+
+                alert('This function not complete.');
+
+            });
+        });
+
+
+        $(document).on("click.order-images-each", ".order-images-each", function () {
+            var img = "<img src = '" + $(this).find("img").attr('src') + "' width='100%'>";
+            layer.open({title: false, shadeClose: false, content: img, area: '60%'});
+        })
+    </script>
+{% endblock %}

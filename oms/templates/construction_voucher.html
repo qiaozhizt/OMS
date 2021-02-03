@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders{% if page_info.total %}<span class="label label-default">{{ page_info.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}作业单{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-8">
+            <!--Search-->
+            <div style="float: left;">{% include 'search.html' %}</div>
+            <!--Search end-->
+
+            <!--Actions-->
+            <div class="cl">
+                <div style="float: left;margin-right: 3px;margin-left:10px; display:none;">
+                    <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                            onClick="javascript :history.back(-1);">返回
+                    </button>
+                </div>
+
+                <div style="float: left;margin-left: 5px;">
+                    <a class="btn btn-block btn-default"
+                       href={% url 'construction_voucher_print' %}?id={{ form_data.id }}&flag=printing
+                       target='view_window'>打印作业单</a>
+                </div>
+                <div style="float: left;margin-left: 5px;">
+                       <a class="btn btn-block btn-default"
+                       href={% url 'construction_voucher_print' %}?id={{ form_data.id }}&flag=repair&production_flag={{ form_data.production_flag }}
+                       target='view_window'>补打</a>
+                </div>
+
+                <div style="float: left;margin-left: 5px;">
+                       <a class="btn btn-block btn-danger"
+                       href={% url 'construction_voucher_print' %}?id={{ form_data.id }}&flag=printing&workshop=20
+                       target='view_window'>委外加工</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Actions end-->
+
+
+
+    <!--Table-->
+    <div class="row" >
+        {% include 'frame_image.html' %}
+        <div class="col-xs-8">
+            <div class="box box-default">
+                <div id="tableContent">
+
+                    <table class="table table-bordered table-striped dataTable">
+                        <caption>镜架</caption>
+                        <thead>
+
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>订单号</td>
+                            <td colspan="7"><b>{{ form_data.obj.lab_number }}</b></td>
+                            <td>发货方式</td>
+                            <td>{{ form_data.obj.get_ship_direction_display }}</td>
+                            <td>打印时间</td>
+                            <td>{{ form_data.created_at }}</td>
+                        </tr>
+                        <tr>
+                            <td>设计</td>
+                            <td>{{ form_data.obj.pal_design_name }}</td>
+                            <td>镜架</td>
+                            <td>{{ form_data.obj.frame }}</td>
+                            <td>数量</td>
+                            <td>{{ form_data.obj.quantity }}</td>
+                            <td>尺寸</td>
+                            <td>{{ form_data.obj.size }}</td>
+                            <td>直径</td>
+                            <td>{{ form_data.obj.dia_1 }}</td>
+                            <td>直径2</td>
+                            <td>{{ form_data.obj.dia_2 }}</td>
+                        </tr>
+                        <tr>
+
+                        </tr>
+
+                        </tbody>
+                    </table>
+                    <table class="table table-bordered table-striped dataTable">
+                        <caption>镜片</caption>
+                        <tbody>
+                        <tr>
+                            <td>镜片类型</td>
+                            <td>P/A</td>
+                            <td>产品名称</td>
+                            <td>折射率</td>
+                            <td>工艺</td>
+                            <td>染色</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="3">{{ item.lens_type }}</td>
+                            <td>计划</td>
+                            <td>{{ form_data.obj.lens_name }}</td>
+                            <td>{{ form_data.obj.lens_index }}</td>
+
+                            <td>HMC</td>
+                            <td>
+                                {% if form_data.obj.coating_name %}
+                                    {{ form_data.obj.coating_name }}
+                                {% endif %}
+                                {% if form_data.obj.tint_name %}
+                                    {{ form_data.obj.tint_name }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>实际</td>
+                            <td>{{ form_data.obj.act_lens_name }}</td>
+                            <td>{{ form_data.obj.lens_index }}</td>
+                            <td>HMC</td>
+                            <td>
+                                {% if form_data.obj.coating_name %}
+                                    {{ form_data.obj.coating_name }}
+                                {% endif %}
+                                {% if form_data.obj.tint_name %}
+                                    {{ form_data.obj.tint_name }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-hover">
+                        <caption>验光单</caption>
+                        <tr>
+                            <th>#</th>
+                            <th>SPH</th>
+                            <th>CYL</th>
+                            <th>AXIS</th>
+                            <th>ADD</th>
+                            <th>PD</th>
+                        </tr>
+                        <tr>
+                            <td>OD</td>
+                            <td>{{ item.od_sph }}</td>
+                            <td>{{ item.od_cyl }}</td>
+                            <td>{{ item.od_axis }}</td>
+                            <td>{{ item.od_add }}</td>
+                            <td>
+                                {% ifequal item.is_singgle_pd 1 %}{{ item.pd }}{% endifequal %}
+                                {% ifequal item.is_singgle_pd 0 %}{{ item.od_pd }}{% endifequal %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>OS</td>
+                            <td>{{ item.os_sph }}</td>
+                            <td>{{ item.os_cyl }}</td>
+                            <td>{{ item.os_axis }}</td>
+                            <td>{{ item.os_add }}</td>
+                            <td>
+                                {% ifequal item.is_singgle_pd 0 %}{{ item.os_pd }}{% endifequal %}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table class="table table-hover">
+                        <caption>验光单-扩展</caption>
+                        <tr>
+                            <th>#</th>
+                            <th>Prism-H</th>
+                            <th>Base-H</th>
+                            <th>Prism-V</th>
+                            <th>Base-V</th>
+                        </tr>
+                        <tr>
+                            <td>OD</td>
+                            <td>{{ item.od_prism }}</td>
+                            <td>{{ item.od_base }}</td>
+                            <td>{{ item.od_prism1 }}</td>
+                            <td>{{ item.od_base1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>OS</td>
+                            <td>{{ item.os_prism }}</td>
+                            <td>{{ item.os_base }}</td>
+                            <td>{{ item.os_prism1 }}</td>
+                            <td>{{ item.os_base1 }}</td>
+                        </tr>
+                    </table>
+                    <table class="table table-bordered table-striped dataTable">
+                        <caption>备注</caption>
+                        <thead>
+
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td colspan="2">备注1</td>
+                            <td colspan="8">{{ item.comments }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">备注2</td>
+                            <td colspan="8"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <!--paginator end-->
+
+{% endblock %}
+
+{% block jquery %}
+    <script>
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = '/oms/redirect_construction_voucher/?id=' + order_number;
+            }
+        });
+    </script>
+{% endblock %}
+

@@ -1,0 +1,10 @@
+{% for lbo in lbos %}
+<tr>
+    <td><input name="chk_items" value="{{ lbo.id }}" type="checkbox"></td>
+    <td>{{ lbo.lab_number }}</td>
+    <td>{{ lbo.frame }}</td>
+    <td>{{ lbo.act_lens_name }}</td>
+    <td>{{ lbo.quantity }}</td>
+    <td>{{ itm.lens_type }} | {{ itm.vendor }}</td>
+</tr>
+{% endfor %}

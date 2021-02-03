@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+{% block dashboard %}
+    <li class=" active treeview">
+    {#          <a href="/oms/dashboard">#}
+    {#            <i class="fa fa-dashboard"></i> <span>Dashboard</span>#}
+    {#            <span class="pull-right-container">#}
+    {#              <i class="fa fa-angle-left pull-right"></i>#}
+    {#            </span>#}
+    {#          </a>#}
+    {#        </li>#}
+{% endblock %}
+{% block style %}
+
+    <style>
+        .tdContent {
+            position: relative;
+        }
+
+        .showContent {
+            width: 350px;
+            height: 200px;
+            overflow: auto;
+            background: #ccc;
+            border-radius: 5px;
+            position: absolute;
+            left: 120px;
+            top: -40px;
+            z-index: 11;
+            padding: 5px;
+        }
+
+        .qipao {
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-right: 20px solid #ccc;
+            border-bottom: 20px solid transparent;
+            position: absolute;
+            left: -20px;
+            top: 55px;
+        }
+    </style>
+
+{% endblock %}
+
+{% block h1 %}
+    index
+{% endblock %}
+{% block small %}
+    index.html
+{% endblock %}
+{% block content %}
+
+
+    <div class="row">
+        {% if perms.oms.DASHBOARD_OPOR %}
+            <div class="col-md-6">
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <i class="fa fa-bullhorn"></i>
+
+                        <h3 class="box-title">Pg Order Comments </h3><br>
+                        <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+                            <button class="btn btn-default btn-lg dropdown-toggle" type="button" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                Filters <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li inlab="true"><a onclick="filterStatus('pg','all')">ALL</a></li>
+                                <li inlab="true"><a onclick="filterStatus('pg','new')">New</a></li>
+                                <li inlab="false"><a onclick="filterStatus('pg','processing')">Processing</a></li>
+                                <li inlab="false"><a onclick="filterStatus('pg','complete')">Complete</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="box">
+                                <div class="box-header">
+                                    {#              <h3 class="box-title">Responsive Hover Table</h3>#}
+
+
+                                </div>
+                                <!-- /.box-header -->
+                                <div class="box-body table-responsive no-padding">
+                                    <table class="table table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Order Number</th>
+                                            <th>Creat at</th>
+                                            <th>Comment</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="pg_Tbody">
+
+                                        </tbody>
+                                    </table>
+                                    <div id="pgCallBackPager"></div>
+                                </div>
+                                <!-- /.box-body -->
+                            </div>
+                            <!-- /.box -->
+                        </div>
+                    </div>
+
+                    <div class="box-body">
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        {% endif %}
+        {% if perms.oms.DASHBOARD_OLOR %}
+            <div class="col-md-6">
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <i class="fa fa-bullhorn"></i>
+
+                        <h3 class="box-title"> Lab Order Comments</h3><br>
+                        <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+                            <button class="btn btn-default btn-lg dropdown-toggle" type="button" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                Filters <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li inlab="true"><a onclick="filterStatus('lab','all')">ALL</a></li>
+                                <li inlab="true"><a onclick="filterStatus('lab','new')">New</a></li>
+                                <li inlab="false"><a onclick="filterStatus('lab','processing')">Processing</a></li>
+                                <li inlab="false"><a onclick="filterStatus('lab','complete')">Complete</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="box">
+                                <div class="box-header">
+                                    {#              <h3 class="box-title">Responsive Hover Table</h3>#}
+
+
+                                </div>
+                                <!-- /.box-header -->
+                                <div class="box-body table-responsive no-padding">
+                                    <table class="table table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Order Number</th>
+                                            <th>Creat at</th>
+                                            <th>Comment</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="lab_Tbody">
+
+                                        </tbody>
+
+                                    </table>
+                                    <div id="labCallBackPager"></div>
+                                </div>
+                                <!-- /.box-body -->
+                            </div>
+                            <!-- /.box -->
+                        </div>
+                    </div>
+
+                    <div class="box-body">
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        {% endif %}
+
+        <!-- /.col -->
+    </div>
+{% endblock %}
+{% block jquery %}
+
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $(document).ready(function () {
+            $(".tdContent").mouseover(function () {
+                // $(this).find('.showlittle').hide();
+                $(this).find('.showContent').show();
+
+            })
+            $(".tdContent").mouseout(function () {
+                //  $(this).find('.showlittle').show();
+                $(this).find('.showContent').hide();
+            })
+
+            $("tbody").on('click', '.button0', function () {
+                var order_number = $(this).attr("order_number")
+                var object_entity = $(this).attr("object_entity")
+                var action = $(this).attr("tag")
+
+                var type = $(this).attr("type")
+                var id = $(this).attr("id")
+                var $this = $(this)
+
+
+                $.ajax({
+                    url: "/oms/dealComments/",
+                    type: 'POST',
+                    data: {
+                        'action': action,
+                        'order_number': order_number,
+                        'object_entity': object_entity,
+                        'type': type,
+                        'id': id
+                    }, success: function (arg) {
+
+                        layer.msg(arg, {time: 500, icon: 6}, function () {
+
+                            if ($this.closest("tbody").attr("id") == "pg_Tbody") {
+                                $this.closest("tr").find('.orderStatus').html(action)
+                            }
+                            if ($this.closest("tbody").attr("id") == "lab_Tbody") {
+                                if (action == "PROCESSING") {
+                                    $this.closest("tr").find('.orderStatus').html("处理中")
+                                }
+                                if (action == "COMPLETE") {
+                                    $this.closest("tr").find('.orderStatus').html("完成")
+                                }
+                            }
+
+
+                        })
+
+
+                    }
+                })
+                {#if($(this).closest("tbody").attr("id") == "pg_Tbody" ){#}
+                {#    $(this).closest("tr").find('.orderStatus').html(action)#}
+
+                {#if($(this).parent().parent().parent().parent().parent().parent().attr("id") == "lab_Tbody" ){#}
+                {#    if(action == "PROCESSING"){#}
+                {#        $(this).parent().parent().parent().parent().parent().children('.orderStatus').html("处理中")#}
+                {#    }#}
+                {#     if(action == "COMPLETE"){#}
+                {#        $(this).parent().parent().parent().parent().parent().children('.orderStatus').html("完成")#}
+                {#    }#}
+
+
+            })
+
+            {#  获取lab comment和pg comment 的总个数  #}
+            $.ajax({
+                url: "/oms/dashboard/getNumber",
+                type: 'get',
+                success: function (result) {
+                    data = JSON.parse(result)
+                    var pgNum = data['pg']
+                    var labNum = data['lab']
+                    callBackPagination(pgNum, labNum, 'default', 'default')
+
+                }
+            })
+            createTable(1, "pg", "default");
+            createTable(1, "lab", "default");
+        });
+
+        {#分页方法#}
+
+        function callBackPagination(countPgPage, countLabPage, pgFilter, labFilter) {
+
+            var pgtotalCount = countPgPage;
+            var labtotalCount = countLabPage;
+            var pgFilter = pgFilter;
+            var labFilter = labFilter;
+            var showPage = 10;
+            var limit = 10;
+
+            if (countPgPage >= 0) {
+                $('#pgCallBackPager').extendPagination({
+
+                    totalCount: pgtotalCount,
+
+                    showPage: showPage,
+
+                    limit: limit,
+
+                    callback: function (curr, limit, totalCount) {
+                        currentPage = curr
+                        createTable(curr, "pg", pgFilter);
+                    }
+
+                });
+            }
+            if (countLabPage >= 0) {
+                $('#labCallBackPager').extendPagination({
+
+                    totalCount: countLabPage,
+
+                    showPage: showPage,
+
+                    limit: limit,
+
+                    callback: function (curr2, limit, totalCount) {
+                        currentPage = curr2
+                        createTable(curr2, "lab", labFilter);
+                    }
+
+                });
+            }
+
+
+        }
+
+
+        {#  createTable 方法  #}
+
+        function createTable(page, type, filter) {
+
+            $.ajax({
+                url: "/oms/dashboard/getPageInfo/",
+                type: 'post',
+                data: {
+                    page: page,
+                    type: type,
+                    filter: filter
+                },
+                success: function (arg) {
+
+                    datas = JSON.parse(arg)
+
+                    pushHtml(datas, type)
+
+                }
+            })
+        }
+
+        function pushHtml(data, type) {
+            var html = []
+
+            if (type == "pg") {
+                for (var i = 0; i < data.length; i++) {
+                    var field = data[i].fields
+                    html.push("<tr>")
+                    html.push("<td>" + data[i].pk + "</td>")
+                    html.push("<td>" + field.order_number + "</td>")
+                    html.push("<td>" + longTime(field.create_at) + "</td>")
+                    html.push('<td class="tdContent"><div class="showlittle" ><p style="max-width: 100px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;" >' + field.comments + '</p></div><div class="showContent" hidden><div class="qipao"></div>' + field.comments + '</div></td>\n')
+                    html.push(" <td class='orderStatus'>" + field.status + "</td>")
+                    html.push('<td><div class="btn-group">')
+                    html.push(' <button type="button" class="btn btn-default">Action</button>')
+                    html.push('<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">')
+                    html.push(" <span class='caret'></span><span class='sr-only'>Toggle Dropdown</span>")
+                    html.push('</button>')
+                    html.push('<ul class="dropdown-menu" role="menu" style="left: -40px !important;">')
+                    html.push('<li style="margin-bottom:5px;"><button id="' + data[i].pk + '" type="' + field.object_type + '" object_entity="' + field.object_entity + '" order_number="' + field.order_number + '"  class="btn btn-block btn-default button0" tag="PROCESSING" >PROCESSING</button></li>')
+                    html.push('<li style="margin-bottom:5px;"><button id="' + data[i].pk + '" type="' + field.object_type + '" object_entity="' + field.object_entity + '" order_number="' + field.order_number + '"  class="btn btn-block btn-default button0" tag="COMPLETE">COMPLETE</button></li>')
+                    html.push(' </ul></div></td> </tr>')
+                }
+                $("#pg_Tbody").html(html.join(''))
+                $(".tdContent").mouseover(function () {
+                    // $(this).find('.showlittle').hide();
+                    $(this).find('.showContent').show();
+
+                })
+                $(".tdContent").mouseout(function () {
+                    //  $(this).find('.showlittle').show();
+                    $(this).find('.showContent').hide();
+                })
+            } else if (type == "lab") {
+                for (var i = 0; i < data.length; i++) {
+                    var field = data[i].fields
+                    html.push("<tr>")
+                    html.push("<td>" + data[i].pk + "</td>")
+                    html.push("<td>" + field.order_number + "</td>")
+                    html.push("<td>" + longTime(field.create_at) + "</td>")
+                    html.push('<td class="tdContent"><div class="showlittle" ><p style="max-width: 100px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;" >' + field.comments + '</p></div><div class="showContent" hidden><div class="qipao"></div>' + field.comments + '</div></td>\n')
+                    if (field.status == 'PROCESING') {
+                        html.push(" <td class='orderStatus'>处理中</td>")
+                    } else if (field.status == 'COMPLETE') {
+                        html.push(" <td class='orderStatus'>完成</td>")
+                    } else {
+                        html.push(" <td class='orderStatus'>待处理</td>")
+                    }
+
+                    html.push('<td><div class="btn-group">')
+                    html.push(' <button type="button" class="btn btn-default">Action</button>')
+                    html.push('<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">')
+                    html.push(" <span class='caret'></span><span class='sr-only'>Toggle Dropdown</span>")
+                    html.push('</button>')
+                    html.push('<ul class="dropdown-menu" role="menu" style="left: -40px !important;">')
+                    html.push('<li style="margin-bottom:5px;"><button id="' + data[i].pk + '" type="' + field.object_type + '" object_entity="' + field.object_entity + '" order_number="' + field.order_number + '"  class="btn btn-block btn-default button0" tag="PROCESSING">处理中</button></li>')
+                    html.push('<li style="margin-bottom:5px;"><button id="' + data[i].pk + '" type="' + field.object_type + '" object_entity="' + field.object_entity + '" order_number="' + field.order_number + '"  class="btn btn-block btn-default button0" tag="COMPLETE">完成</button></li>')
+                    html.push(' </ul></div></td> </tr>')
+                }
+
+                $("#lab_Tbody").html(html.join(''))
+                $(".tdContent").mouseover(function () {
+                    // $(this).find('.showlittle').hide();
+                    $(this).find('.showContent').show();
+
+                })
+                $(".tdContent").mouseout(function () {
+                    //  $(this).find('.showlittle').show();
+                    $(this).find('.showContent').hide();
+                })
+
+            }
+
+
+        }
+
+        function filterStatus(arg1, arg2) {
+
+            if (arg1 == 'pg') {
+                $.ajax({
+                    url: "/oms/dashboard/getNumber?f=" + arg2,
+                    type: 'get',
+                    success: function (result) {
+                        data = JSON.parse(result)
+                        var pgNum = data['pg']
+                        var labNum = data['lab']
+                        createTable(1, "pg", arg2);
+                        callBackPagination(pgNum, -1, arg2, 'default')
+
+                    }
+                })
+
+
+            } else if (arg1 == 'lab') {
+                $.ajax({
+                    url: "/oms/dashboard/getNumber/",
+                    type: 'get',
+                    success: function (result) {
+                        data = JSON.parse(result)
+                        var pgNum = data['pg']
+                        var labNum = data['lab']
+                        createTable(1, "lab", arg2);
+                        callBackPagination(-1, labNum, 'default', arg2)
+
+                    }
+                })
+
+
+            }
+        }
+
+
+    </script>
+{% endblock %}

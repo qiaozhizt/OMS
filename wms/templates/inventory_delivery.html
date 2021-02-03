@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .box-default .form-group {
+            overflow: hidden;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}
+    WMS {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>{% endif %}
+{% endblock %}
+{% block small %}出库{% endblock %}
+{% block content %}
+
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <form class="form-horizontal box box-default" role="form" id="inventory_forms" method="POST">
+                {% csrf_token %}
+                <h4 class="box-header">&nbsp;&nbsp;输入产品信息</h4>
+                <div class="form-group">
+                    <label for="p_number" class="col-sm-2 control-label">单号</label>
+                    <div class="col-sm-4">
+                        <input name="p_number" type="text" class="form-control" id="p_number" value="{{ time_now }}"
+                               readonly="readonly"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="doc_type" class="col-sm-2 control-label">出库类型</label>
+                    <div class="col-sm-4">
+                        <select name="doc_type" id="doc_type" class="form-control">
+                            {% for key, value in invd_dict.items %}
+                                <option value="{{ key }}"
+                                        {% ifequal key 'GENERAL_OUT' %}selected="selected"{% endifequal %}>{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="wh_number" class="col-sm-2 control-label">仓库</label>
+                    <div class="col-sm-4">
+                        <select name="wh_number" id="wh_number" class="form-control">
+                            {% for wh in all_wh %}
+                                {% if wh.is_enabled == 1 and wh.used_to == 'FRAME' or wh.used_to == 'ACCESSORIES' %}
+                                    <option value="{{ wh.code }}">{{ wh.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="direction_box" style="display:none">
+                    <label for="direction" class="col-sm-2 control-label">出库方向</label>
+                    <div class="col-sm-4">
+                        <select name="direction" id="direction" class="form-control">
+                            <option value="None">请选择</option>
+                            {% for wh in all_wh %}
+                                {% if wh.is_enabled == 1 and wh.used_to == 'FRAME' or wh.used_to == 'ACCESSORIES' %}
+                                    <option value="{{ wh.code }}">{{ wh.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="channel_box" style="display:none">
+                    <label for="wh_channel" class="col-sm-2 control-label">渠道</label>
+                    <div class="col-sm-4">
+                        <select name="wh_channel" id="wh_channel" class="form-control">
+                            <option value="None">请选择</option>
+                            {% for ch in all_channel %}
+                                {% if ch.is_enabled == 1 %}
+                                    <option value="{{ ch.code }}">{{ ch.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sku" class="col-sm-2 control-label">SKU Name</label>
+                    <div class="col-sm-4">
+                        <input name="sku_name" type="text" class="form-control" id="sku_name" list="sku_name_datalist" placeholder="如不知SKU代码，可在此输入名称查找"/>
+                        <datalist id="sku_name_datalist">
+                           {% for product in all_products %}
+                                <option value="{{ product.name }}" data-value="{{ product.name }}"  data-id="{{ product.sku }}"></option>
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sku" class="col-sm-2 control-label">SKU</label>
+                    <div class="col-sm-4">
+                        <input name="sku" type="text" class="form-control" id="sku" placeholder="格式：0000X00"/>
+                    </div>
+                    <span style="color: #d73925; line-height: 35px;">格式：0000X00</span>
+                </div>
+                <div class="form-group" id="lab_number_div" >
+                    <label for="lab_number_select" class="col-sm-2 control-label" >手动输入工厂单号</label>
+                    <div class="col-sm-4">
+                        <input name="lab_number_input" type="text" class="form-control" id="lab_number_input" value="" placeholder="报损出库必填"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="quantity" class="col-sm-2 control-label">数量</label>
+                    <div class="col-sm-4">
+                        <input name="quantity" type="number" class="form-control" id="quantity" placeholder="产品数量"
+                               value="1"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="comments" class="col-sm-2 control-label">备注</label>
+                    <div class="col-sm-4">
+                        <textarea maxlength="128" class="form-control" id="comments" placeholder="请输入备注"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-4">
+                        <button id="delivery_submit" type="button" class="btn btn-default delivery_submit" data="sku_format_s" style="width:50%" >确认出库
+                        </button>
+                    </div>
+                </div>
+                <div class="box-header"></div>
+            </form>
+        </div>
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">确认SKU格式</h4>
+                    </div>
+                    <div class="modal-body">
+                        sku格式：<span style="color: #d73925;">0000X00</span>，录入的sku：<span class="Input_sku" style="color: #d73925;"></span>,请确认是否出库
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button id="delivery_submit" type="button" class="btn btn-primary delivery_submit" data="sku_format_e">确认出库</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <table class="table table-hover box box-default">
+                <thead>
+                <tr>
+                    <th style="padding-left:20px">编号</th>
+                    <th>SKU</th>
+                    <th>数量</th>
+                    <th>仓库</th>
+                    <th>创建时间</th>
+                    <th>出库类型</th>
+                    <th>用户</th>
+                    <th>订单号</th>
+                    <th>备注</th>
+                </tr>
+                </thead>
+                <tbody id="list_body">
+                {% for invd in list %}
+                    <tr>
+                        <td style="padding-left:20px">{{ invd.doc_number }}</td>
+                        <td>{{ invd.sku }}</td>
+                        <td>{{ invd.quantity }}</td>
+                        <td>{{ invd.warehouse.name }}</td>
+                        <td>{{ invd.created_at }}</td>
+                        <td>{{ invd.get_doc_type_display }}</td>
+                        <td>{{ invd.user_name }}</td>
+                        <td>{{ invd.lab_number }}</td>
+                        <td>{{ invd.comments }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        var direction = $("#direction"); // 出库方向select
+        var direction_box = $("#direction_box"); // 出库方向div
+        var channel_box = $("#channel_box"); //渠道div
+        var doc_type = $("#doc_type"); // 出库类型select
+        var wh_number = $("#wh_number"); // 仓库select
+        var wh_channel = $("#wh_channel"); // 渠道select
+
+        // 获取表单数据
+        function getFormData(form) {
+            let data = form.serialize().replace(/\+/g," ");
+            data = decodeURI(data);
+            let arr = data.split('&');
+            let item, key, value, newData = {};
+            for (let i = 0; i < arr.length; i++) {
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if (key.indexOf('[]') != -1) {
+                    key = key.replace('[]', '');
+                    if (!newData[key]) {
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                } else {
+                    newData[key] = value;
+                }
+            }
+            return newData;
+        }
+        $("#sku_name").on('change', function(){
+            var input_select=$("#sku_name").val();
+            var option_length=$("#sku_name_datalist option").length;
+            var option_id='';
+            for(var i=0;i<option_length;i++){
+                var option_value=$("#sku_name_datalist option").eq(i).attr('data-value');
+                if(input_select==option_value){
+                    option_id=$("#sku_name_datalist option").eq(i).attr('data-id');
+                    $("#sku").val(option_id);
+                    break;
+                }
+            }
+            console.log(input_select,option_length,option_id);
+        });
+
+        $(".delivery_submit").click(function (e) {
+            e.preventDefault();
+            //$("#delivery_submit").prop("disabled", true);
+            var sku_format = $(this).attr('data');
+            var _self = $("#inventory_forms");
+            var form_data = getFormData(_self);
+            form_data["sku"] = form_data["sku"].toUpperCase();
+            form_data["comments"] = $("#comments").val();
+
+            if (doc_type.val() == "ALLOTTED_OUT") {
+                if (direction.val() == "None") {
+                    layer.alert("请选择出库方向", {
+                        yes: function () {
+                            layer.closeAll();
+                        }
+                    });
+                    $("#delivery_submit").prop("disabled", false);
+                    return false;
+                }
+            } else if (doc_type.val() == "FAULTY" || doc_type.val() == "STOCK_TAKING" || doc_type.val() == "SAMPLE_OUT" || doc_type.val() == "GENERAL_OUT") {
+                if (wh_channel.val() == "None") {
+                    layer.alert("请选择渠道", {
+                        yes: function () {
+                            layer.closeAll();
+                        }
+                    });
+                    $("#delivery_submit").prop("disabled", false);
+                    return false;
+                }
+            }
+            if(form_data["sku"] == ""){
+                layer.alert("SKU格式不能为空",{
+                    yes: function(){
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+            if(form_data["sku"].length != 7 && sku_format == 'sku_format_s'){
+                $(".Input_sku").html('');
+                $(".Input_sku").html(form_data["sku"]);
+                $("#myModal").modal("show");
+                return false;
+            }
+            if (form_data["quantity"] == "" || form_data["quantity"] == '0') {
+                layer.alert("请输入商品数量", {
+                    yes: function () {
+                        $("#quantity").focus().select();
+                        layer.closeAll();
+                    }
+                });
+                $("#delivery_submit").prop("disabled", false);
+                return false;
+            }
+            if (parseInt(form_data["quantity"])<0){
+                layer.alert("商品数量不能为负数！",{
+                    yes: function(){
+                        $("#quantity").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+            if (doc_type.val() == "REFUNDS_OUT" && form_data["comments"] == '') {
+                layer.alert("请输入退货原因", {
+                    yes: function () {
+                        $("#sku").focus().select();
+                        layer.closeAll();
+                    }
+                });
+                $("#delivery_submit").prop("disabled", false);
+                return false;
+            }
+            console.log(form_data)
+            $.ajax({
+                url: "/wms/inventory_delivery_submit/",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                success: function (res) {
+                    if (res.code == -1) {
+                        layer.msg(res.error);
+                        console.log(res.error);
+                    } else {
+                        $("#list_body").prepend(res);
+                        layer.msg("添加成功");
+                        $("#sku").val("");
+                        $("#quantity").val("1");
+                        $("#skpriceu").val("");
+                        $("#comments").val("");
+                        $("#direction option[value='None']").attr("selected","selected");
+                        $("#myModal").modal("hide");
+                        $("input[name='interest']").removeAttr("checked");
+                        $("input[name='interest'][value='NO']").attr("checked",true);
+                    }
+                    $("#delivery_submit").prop("disabled", false);
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            if (doc_type.val() == "ALLOTTED_OUT") {
+                direction_box.show();
+                channel_box.hide();
+                direction.attr("name", "direction");
+            } else if (doc_type.val() == "FAULTY" || doc_type.val() == "STOCK_TAKING" || doc_type.val() == "SAMPLE_OUT" || doc_type.val() == "GENERAL_OUT") {
+                channel_box.show();
+                direction_box.hide();
+            } else {
+                direction_box.hide();
+                channel_box.hide();
+                direction.removeAttr("name");
+            }
+            var val_text = wh_number.find("option:selected").val();
+            direction.val("None");
+            direction.find("option").show();
+            direction.find("option[value='" + val_text + "']").hide();
+            doc_type.change(function () {
+                if ($(this).val() == "ALLOTTED_OUT") {
+                    direction_box.show();
+                    channel_box.hide();
+                    direction.attr("name", "direction");
+                } else if (doc_type.val() == "FAULTY" || doc_type.val() == "STOCK_TAKING" || doc_type.val() == "SAMPLE_OUT" || doc_type.val() == "GENERAL_OUT") {
+                    channel_box.show();
+                    direction_box.hide();
+                } else {
+                    direction_box.hide();
+                    channel_box.hide();
+                    direction.removeAttr("name");
+                }
+
+                {#console.log(_self.val());#}
+            });
+            wh_number.change(function () {
+                var val_text = $(this).find("option:selected").val();
+                direction.val("None");
+                direction.find("option").show();
+                direction.find("option[value='" + val_text + "']").hide();
+            });
+        });
+        $("input:checkbox[name=interest]").change(function(){
+            $("input[name='interest']").removeAttr("checked");
+            $("input[name='interest'][value='" + $(this).val() + "']").attr("checked",true);
+        });
+    </script>
+{% endblock %}

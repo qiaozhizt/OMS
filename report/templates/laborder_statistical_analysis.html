@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}订单状态{% endblock %}
+{% block content %}
+
+    <!-- Main content -->
+    <section class="content">
+        <!-- Info boxes -->
+        <div class="row">
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <div class="info-box">
+                    <span class="info-box-icon bg-aqua"><i class="ion ion-ios-cart-outline"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">{{ form_data.time_dimentions_new.title }}</span>
+                        <span class="info-box-number"><a href="{{ form_data.time_dimentions_new.url }}">
+                            {{ form_data.time_dimentions_new.number }}
+                        </a></span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+                <!-- /.info-box -->
+            </div>
+            <!-- /.col -->
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <div class="info-box">
+                    <span class="info-box-icon bg-aqua"><i class="ion ion-ios-cart-outline"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">{{ form_data.time_dimentions_week.title }}</span>
+                        <span class="info-box-number"><a href="{{ form_data.time_dimentions_week.url }}">
+                            {{ form_data.time_dimentions_week.number }}</a></span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+                <!-- /.info-box -->
+            </div>
+            <!-- /.col -->
+
+            <!-- fix for small devices only -->
+            <div class="clearfix visible-sm-block"></div>
+
+            <div class="col-md-3 col-sm-6 col-xs-12 hide">
+                <div class="info-box">
+                    <span class="info-box-icon bg-aqua"><i class="ion ion-ios-cart-outline"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">{{ form_data.time_dimentions_month.title }}</span>
+                        <span class="info-box-number"><a href="{{ form_data.time_dimentions_month.url }}">
+                            {{ form_data.time_dimentions_month.number }}
+                        </a></span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+                <!-- /.info-box -->
+            </div>
+            <!-- /.col -->
+            <div class="col-md-3 col-sm-6 col-xs-12 hide">
+                <div class="info-box">
+                    <span class="info-box-icon bg-aqua"><i class="ion ion-ios-cart-outline"></i></span>
+
+                    <div class="info-box-content">
+                        <span class="info-box-text">{{ form_data.time_dimentions_all.title }}</span>
+                        <span class="info-box-number"><a href="{{ form_data.time_dimentions_all.url }}">
+                            {{ form_data.time_dimentions_all.number }}</a> </span>
+                    </div>
+                    <!-- /.info-box-content -->
+                </div>
+                <!-- /.info-box -->
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+
+
+        <!-- Small boxes (Stat box) -->
+        <div class="row">
+            <!-- ./col -->
+            {% for item in form_data.status_dimentions %}
+                <div class="col-lg-2 col-sm-4 col-xs-6">
+                    <!-- small box -->
+                    <div class="small-box {{ item.style }}">
+                        <div class="inner">
+                            <h3>{{ item.number }}</h3>
+
+                            <p>{{ item.title }}</p>
+                        </div>
+                        <div class="icon">
+                            <i class="ion "></i>
+                        </div>
+                        <a href="{{ item.url }}" class="small-box-footer">查看列表 <i class="fa fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+            {% endfor %}
+            <!-- ./col -->
+        </div>
+    </section>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+    </script>
+{% endblock %}

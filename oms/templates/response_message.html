@@ -1,0 +1,11 @@
+{% ifequal error_code 0 %}
+    <div class="callout callout-success">
+        <h4>消息!</h4>
+        <p>{% if error_message %}{{ error_message }}{% else %}此操作已成功{% endif %}.</p>
+    </div>
+{% else %}
+    <div class="callout callout-danger">
+        <h4>出错啦!</h4>
+        <p>{% if error_message %}{{ error_message }}{% else %}遇到未知错误{% endif %}.</p>
+    </div>
+{% endifequal %}

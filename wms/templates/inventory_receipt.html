@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+    </style>
+
+{% endblock %}
+{% block h1 %}WMS {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}入库{% endblock %}
+{% block content %}
+
+<div class="row clearfix">
+    <div class="col-md-12 column">
+        <form class="form-horizontal box box-default" role="form" id="inventory_forms" method="POST">
+            {% csrf_token %}
+            <h4 class="box-header">&nbsp;&nbsp;输入产品信息</h4>
+            <div class="form-group">
+                <label for="p_number" class="col-sm-2 control-label">单号</label>
+                <div class="col-sm-4">
+                    <input name="p_number" type="text" class="form-control" id="p_number" value="{{ time_now }}" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="doc_type" class="col-sm-2 control-label">入库类型</label>
+                <div class="col-sm-4">
+                    <select name="doc_type" id="doc_type" class="form-control">
+                        {% for key, value in invr_dict.items %}
+                        <option value="{{ key }}" {% ifequal key 'GENERAL_IN' %}selected="selected"{% endifequal %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="wh_number" class="col-sm-2 control-label">仓库</label>
+                <div class="col-sm-4">
+                    <select name="wh_number" id="wh_number" class="form-control">
+                        {% for wh in all_wh %}
+                            {% if wh.is_enabled == 1 and wh.used_to == 'FRAME' or wh.used_to == 'ACCESSORIES'%}
+                            <option value="{{ wh.code }}">{{ wh.name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="sku" class="col-sm-2 control-label">SKU Name</label>
+                <div class="col-sm-4">
+                    <input name="sku_name" type="text" class="form-control" id="sku_name" list="sku_name_datalist" placeholder="如不知SKU代码，可在此输入名称查找"/>
+                    <datalist id="sku_name_datalist">
+                       {% for product in all_products %}
+                            <option value="{{ product.name }}" data-value="{{ product.name }}"  data-id="{{ product.sku }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="sku" class="col-sm-2 control-label">SKU</label>
+                <div class="col-sm-4">
+                    <input name="sku" type="text" class="form-control" id="sku" placeholder="格式：0000X00"/>
+                </div>
+                <span style="color: #d73925; line-height: 35px;">格式：0000X00</span>
+            </div>
+            <div class="form-group">
+                <label for="quantity" class="col-sm-2 control-label">数量</label>
+                <div class="col-sm-4">
+                    <input name="quantity" type="number" class="form-control" id="quantity" placeholder="产品数量" value="1"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="price" class="col-sm-2 control-label">价格</label>
+                <div class="col-sm-4">
+                    <input name="price" type="number" class="form-control" id="price" placeholder="产品单价" value="1"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="comments" class="col-sm-2 control-label">备注</label>
+                <div class="col-sm-4">
+                    <textarea name='comments' maxlength="128" class="form-control" id="comments" placeholder="请输入备注"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-4">
+                     <button id="inventory_form" type="button" class="btn btn-default inventory_form" data="sku_format_s" style="width:50%">确认入库</button>
+                </div>
+            </div>
+            <div class="box-header"></div>
+        </form>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">确认SKU格式</h4>
+                </div>
+                <div class="modal-body">
+                    sku格式：<span style="color: #d73925;">0000X00</span>，录入的sku：<span class="Input_sku" style="color: #d73925;"></span>,请确认是否入库
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button id="inventory_form" type="button" class="btn btn-primary inventory_form" data="sku_format_e">确认入库</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+</div>
+<div class="row clearfix">
+    <div class="col-md-12 column">
+        <table class="table table-hover box box-default">
+            <thead>
+                <tr>
+                    <th style="padding-left:20px">编号</th>
+                    <th>SKU</th>
+                    <th>数量</th>
+                    <th>仓库</th>
+                    <th>创建时间</th>
+                    <th>入库类型</th>
+                    <th>用户</th>
+                    <th>订单号</th>
+                    <th>备注</th>
+                </tr>
+            </thead>
+            <tbody id="list_body">
+            {% for invr in list %}
+                <tr>
+                    <td style="padding-left:20px">{{ invr.doc_number }}</td>
+                    <td>{{ invr.sku }}</td>
+                    <td>{{ invr.quantity }}</td>
+                    <td>{{ invr.warehouse.name }}</td>
+                    <td>{{ invr.created_at }}</td>
+                    <td>{{ invr.get_doc_type_display }}</td>
+                    <td>{{ invr.user_name }}</td>
+                    <td> {{ invr.lab_number }}</td>
+                    <td>{{ invr.comments }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+</div>
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        $("#sku_name").on('change', function(){
+            var input_select=$("#sku_name").val();
+            var option_length=$("#sku_name_datalist option").length;
+            var option_id='';
+            for(var i=0;i<option_length;i++){
+                var option_value=$("#sku_name_datalist option").eq(i).attr('data-value');
+                if(input_select==option_value){
+                    option_id=$("#sku_name_datalist option").eq(i).attr('data-id');
+                    $("#sku").val(option_id);
+                    break;
+                }
+            }
+            console.log(input_select,option_length,option_id);
+        });
+        // 获取表单数据
+        function getFormData(form){
+            let data = form.serialize().replace(/\+/g," ");
+            data = decodeURI(data);
+            let arr = data.split('&');
+            let item,key,value,newData={};
+            for(let i=0;i<arr.length;i++){
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if(key.indexOf('[]')!=-1){
+                    key = key.replace('[]','');
+                    if(!newData[key]){
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                }else{
+                    newData[key] = value;
+                }
+            }
+            console.log(newData)
+            return newData;
+        }
+
+        $(".inventory_form").click(function(e){
+            e.preventDefault();
+            var sku_format = $(this).attr('data');
+            //$("#receipt_submit").prop("disabled", true);
+            var _self = $("#inventory_forms");
+            var form_data = getFormData(_self);
+            if(form_data["sku"] == ""){
+                layer.alert("SKU格式不能为空",{
+                    yes: function(){
+                        $("#quantity").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+            form_data["sku"] = form_data["sku"].toUpperCase();
+            //form_data["comments"] = $("#comments").val();
+            if(form_data["sku"].length != 7 && sku_format == 'sku_format_s'){
+                $(".Input_sku").html('');
+                $(".Input_sku").html(form_data["sku"]);
+                $("#myModal").modal("show");
+                return false;
+            }
+            if(form_data["quantity"] == ""||form_data["quantity"] == '0'){
+                layer.alert("请输入商品数量",{
+                    yes: function(){
+                        $("#quantity").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+            if (parseInt(form_data["quantity"])<0){
+                layer.alert("商品数量不能为负数！",{
+                    yes: function(){
+                        $("#quantity").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+            if(form_data["price"] == ""){
+                layer.alert("请输入商品价格",{
+                    yes: function(){
+                        $("#price").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+            $.ajax({
+                url: "/wms/inventory_receipt_submit/",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                success: function(res){
+                    if(res.code == -1){
+                        layer.msg(res.error);
+                    }else{
+                        $("#list_body").prepend(res);
+                        layer.msg("添加成功");
+                        $("#sku").val("");
+                        $("#quantity").val("1");
+                        $("#skpriceu").val("");
+                        $("#comments").val("");
+                        $("#myModal").modal("hide");
+                        $("input[name='interest']").removeAttr("checked");
+                        $("input[name='interest'][value='NO']").attr("checked",true);
+                    }
+                    $("#receipt_submit").prop("disabled", false);
+                }
+            });
+
+        });
+    $("input:checkbox[name=interest]").change(function(){
+        $("input[name='interest']").removeAttr("checked");
+        $("input[name='interest'][value='" + $(this).val() + "']").attr("checked",true);
+    });
+    </script>
+{% endblock %}

@@ -1,0 +1,690 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" href="{% static 'layui/css/layui.css' %}"  media="all">
+    <script src="{% static 'layui/layui.js' %}"></script>
+    <style>
+        .span_title{
+            padding-right: 30px;
+        }
+        .stack_a{
+            cursor: pointer;
+            color: #ffffff;
+        }
+        /* 防止下拉框的下拉列表被隐藏---必须设置--- */
+        .layui-table-cell {overflow: visible !important;        }
+        /* 使得下拉框与单元格刚好合适 */
+        td .layui-form-select{
+            margin-top: -10px;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+    .input-top{
+        margin-top: 10px;
+    }
+    td .layui-table-cell{
+        height:auto;
+        overflow:visible;
+        text-overflow:inherit;
+        white-space:normal;
+    }
+    .accs_order_btn{
+        cursor: pointer;
+    }
+    </style>
+{% endblock %}
+{% block h1 %}nRX订单管理 {% if form_data.total %}<span class="label label-info">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}{{ title }}{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                {% include 'accsorder_list_search.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                {% include 'accsorder_list_actions.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">nRX订单列表：</h3>
+                </div>
+                <table class="layui-hide" id="stock_in_table" lay-filter="demo" style="overflow-x: hidden;"></table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Lab Order</h4>
+                </div>
+                <div class="modal-body">
+                    <label>Lab Order</label>
+                    <table class="layui-table">
+                          <colgroup>
+                            <col width="150">
+                            <col width="200">
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th>Lab Number</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody id="lab_table">
+                          </tbody>
+                    </table>
+                    <label>Accs Order</label>
+                    <table class="layui-table">
+                          <colgroup>
+                            <col width="150">
+                            <col width="100">
+                            <col width="100">
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th>Accs Order Number</th>
+                              <th>Status</th>
+                              <th>Order Number</th>
+                            </tr>
+                          </thead>
+                          <tbody id="accs_table">
+                          </tbody>
+                    </table>
+                    <div class="ckbox">
+                        <input id="accs_id" name="accs_id" type="hidden">
+                    </div>
+                    <div class="ckbox ckbox_lab"  style="display: none">
+                        <input id="is_laborder" name="is_laborder" type="checkbox"><label for="is_laborder">order is matched</label>
+                    </div>
+                  <div style="height: 50px;">
+                    <div class="col-sm-12 input-top">
+                        <label style="line-height: 50px;">Comments:</label>
+                        <textarea  rows="3" cols="50" id="ship_comments"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="btn_submit">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <div class="modal fade" id="restockModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title" id="myModalLabel_title"></h3>
+                </div>
+                <div class="modal-body">
+                  <input type="hidden"  id="accs_order_flag">
+                  <input type="hidden" style="width: 300px; height: 30px; line-height: 30px;" id="accs_order_id" disabled="disabled">
+                  <input type="hidden" style="width: 300px; height: 30px; line-height: 30px;" id="accs_order_quantity" disabled="disabled">
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">nRx订单号:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="accs_order_numbers" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">SKU:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="accs_sku" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">SKU 名称:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="accs_sku_name" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">数量:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="accs_quantity" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">图片:</label>
+                        <div class="images_list"></div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top" style="display: none;" id="repick_quantity_div">
+                        <label style="width: 150px;" id="qty_div_lable">RePick Quantity:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="repick_quantity" value="0">
+                    </div>
+                  </div>
+                    <div class="col-sm-12 input-top" id="accs_wh_div" style="display: none;">
+                        <div style="width: 400px;">
+                            <label style="width: 150px;">指派仓库:</label>
+                            <select name="accs_wh" id="accs_wh" style="width: 200px;height: 30px">
+                                <option value="">选择仓库</option>
+                                {% for item in warehouses %}
+                                    <option value="{{ item.code }}">{{ item.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top accs_comments">
+                        <label style="width: 150px;">备注:</label>
+                        <textarea  rows="3" cols="50" id="restock_comments"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="btn_close_restock">关闭</button>
+                    <button type="button" class="btn btn-primary" id="btn_submit_restock">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        $(document).ready(function (){
+            $("#accs_order_number").focus();
+        });
+
+        laydate.render({
+          elem: '#start_date'
+          ,type: 'datetime' //默认，可不填
+          ,format: 'yyyy-MM-dd HH:mm:ss'
+          ,value: new Date(new Date()- 1000*60*60*24*90)
+        });
+        laydate.render({
+          elem: '#finish_date'
+          ,type: 'datetime' //默认，可不填
+          ,format: 'yyyy-MM-dd HH:mm:ss'
+          ,value: new Date()
+        });
+        layui.use(['table', 'layer', 'element', 'jquery', 'form'], function() {
+            var table = layui.table;
+            var form = layui.form;
+            //第一个实例
+            table.render({
+                elem: '#stock_in_table'
+                ,toolbar: '#toolbarDemo'
+                , height: 'full-10'
+                , url: "{% url 'accs_order_list_data' %}"
+                ,data:[]
+                , where: {flag:'{{ flag }}'}
+                ,done: function(res, curr, count){
+                    console.log(res);
+                    //得到当前页码
+                    console.log(curr);
+                    //得到数据总量
+                    console.log(count);
+                }
+                , cellMinWidth: 100
+                , page: true //开启分页
+                , limit:30
+                , limits:[30,50,70,90,120,10000]
+                , even: true
+                , cols: [[ //表头
+                    {type:'checkbox'}
+                    , {field: 'id', title: 'ID',sort: true,width:80}
+                    , {field: 'accs_order_number', title: 'nRX订单号',width:200,  event:"accs_detail", templet: function(row){
+                            var barBtnsHTML = '<a class="accs_order_btn">'+row['accs_order_number']+'</a>'
+                            return barBtnsHTML;
+                    }}
+                    , {field: 'order_number', title: 'Order Number'}
+                    , {field: 'frame_sku', title: 'SKU'}
+                    , {field: 'name', title: 'SKU 名称'}
+                    , {field: 'image', title: 'Image', width:200, templet: function(row){
+                            if(row['image'] == ''){
+                                var barBtnsHTML = ''
+                            }else{
+                                var barBtnsHTML = '<div><img src="'+row['image']+'"/></div>'
+                            }
+                            return barBtnsHTML;
+                    }}
+                    , {field: 'status', title: '状态'}
+                    , {field: 'quantity', title: '数量', sort:true}
+                    , {field: 'repick_quantity', title: 'Re Quantity', sort:true}
+                    , {field: 'ship_direction', title: '发货方式'}
+                    , {field: 'warehouse', title: '仓库'}
+                    , {field: 'is_rx_have', title: 'RX/nRX',width:80}
+                    , {field: 'created_at', title: '下达日期', width: 170}
+                    , {field: 'order_date', title: '订单日期', width: 170}
+                    , {field: 'shipping_date', title: '发货日期', width: 170}
+                    , {field: 'lab_qty', title: 'Image', hide: true}
+                    , {field: 'comments', title: '备注', width:400}
+                ]]
+            });
+            $("#accs_order_number").bind("keypress", function (event) {
+                if (event.keyCode == 13) {
+                    $("#search_btn").click();
+                }
+            });
+            $("#search_btn").click(function () {
+                var accs_order_number = $("#accs_order_number").val();
+                var start_date = $("#start_date").val();
+                var finish_date = $("#finish_date").val();
+                var frame = $("#frame").val();
+                var order_status = $("#order_status").val();
+                var order_wh = $("#order_wh").val();
+                var order_delivery = $("#order_delivery").val();
+                var order_rx_have = $("#order_rx_have").val();
+                table.reload('stock_in_table',{
+                    url: "{% url 'accs_order_list_data' %}",
+                    where: {
+                        accs_order_number:accs_order_number,
+                        start_date:start_date,
+                        finish_date:finish_date,
+                        frame:frame,
+                        order_status:order_status,
+                        order_wh: order_wh,
+                        order_delivery:order_delivery,
+                        order_rx_have:order_rx_have
+                    },
+                    page:{
+                        curr:1
+                    },
+                    done: function(res, curr, count){
+                        $("#accs_order_number").val('');
+                        $("#accs_order_number").focus();
+                    }
+                })
+
+            });
+            //单元格点击事件
+            table.on('tool(demo)', function(obj) {
+              check_data = [];
+              var data = obj.data;
+              if(obj.event == 'accs_detail'){
+                  $(".accs_comments").hide();
+                  $("#btn_submit_restock").hide();
+                  check_data.push(data);
+                  set_params(check_data, 'nRX订单详情', 'accs_detail');
+              }
+            });
+            table.on('toolbar(demo)', function (obj) {
+                 var layEvent = obj.event;
+                 var checkStatus = table.checkStatus(obj.config.id);
+                 var flag = getUrlParam("flag");
+                 check_data = checkStatus.data;
+                 console.log(check_data)
+                 if(check_data.length == 0 && layEvent != 'accs_qc' && layEvent != 'LAYTABLE_COLS' && layEvent != 'LAYTABLE_EXPORT'&& layEvent != 'LAYTABLE_PRINT'){
+                    layer.msg('请选择要操作的数据', {time:3000,icon:7});
+                     return
+                 }
+                 if(layEvent == 'accs_assign'){
+                     var assign_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         if(check_data[i].status != 'Open'){
+                             assign_flag = true;
+                             break
+                         }
+                     }
+                     if(assign_flag){
+                         layer.msg('只有【OPen】状态可以进行Assign', {time:3000,icon:7});
+                         return
+                     }
+                     set_params(check_data, 'nRX订单分配', 'accs_assign');
+                     $("#accs_wh_div").show();
+                     return;
+                 }else if(layEvent == 'accs_print'){
+                     var print_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         console.log(check_data[i].status);
+                         if(check_data[i].status != 'Assigned' && check_data[i].status != 'RePick'){
+                             print_flag = true;
+                             break
+                         }
+                     }
+                     if(print_flag){
+                         layer.msg('只有【Assigned, RePick】状态可以进行Accs PR Print', {time:3000,icon:7});
+                         return
+                     }
+                     $(".accs_print").attr("disabled", "true");
+                 }else if(layEvent == 'accs_qc'){
+                    window.location.href = "{% url 'accs_order_list' %}?flag=qc"
+                     return;
+                 }else if(layEvent == 'accs_pass'){
+                     set_params(check_data, 'nRX订单质检', 'accs_pass');
+                     return;
+                 }else if(layEvent == 'accs_repick'){
+                     $("#accs_order_quantity").val(check_data[0].quantity);
+                     $("#qty_div_lable").html("RePick Quantity :");
+                     set_params(check_data, 'nRX订单再出库', 'accs_repick');
+                     $("#repick_quantity_div").show();
+                     return
+                 }else if(layEvent == 'accs_hold'){
+                     var hold_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         if(check_data[i].status == 'onHold'){
+                             hold_flag = true;
+                             break
+                         }
+                     }
+                     if(hold_flag){
+                         layer.msg('订单状态已是【onHold】', {time:3000,icon:7});
+                         return
+                     }
+                     set_params(check_data, 'nRX订单暂停', 'accs_hold');
+                     return
+                 }else if(layEvent == 'accs_pack'){
+                     var pack_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         if(check_data[i].status != 'QCed'){
+                             pack_flag = true;
+                             break
+                         }
+                     }
+                     if(pack_flag){
+                         layer.msg('只有【QCed】状态可以进行Accs Pack', {time:3000,icon:7});
+                         return
+                     }
+                     set_params(check_data, 'nRX订单包装', 'accs_pack');
+                     return
+                 }else if(layEvent == 'accs_cancel'){
+                     set_params(check_data, 'nRX订单取消', 'accs_cancel');
+                     return
+                 }else if(layEvent == 'accs_close'){
+                     set_params(check_data, 'nRX订单关闭', 'accs_close');
+                     return
+                 }else if(layEvent == 'accs_resume'){
+                     var resume_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         if(check_data[i].status != 'onHold'){
+                             resume_flag = true;
+                             break
+                         }
+                     }
+                     if(resume_flag){
+                         layer.msg('只有【onHold】状态可以进行Accs Resume', {time:3000,icon:7});
+                         return
+                     }
+                     $(".accs_resume").attr("disabled", "true");
+                 }else if(layEvent == 'accs_ship'){
+                     var ship_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         if(check_data[i].status != 'Packed'){
+                             ship_flag = true;
+                             break
+                         }
+                     }
+                     if(ship_flag){
+                         layer.msg('只有【Packed】状态可以进行Accs Ship', {time:3000,icon:7});
+                         return
+                     }
+                     $(".accs_ship").attr("disabled", "true");
+                 }else if(layEvent == 'accs_pick'){
+                     $(".accs_pick").attr("disabled", "true");
+                 }else if(layEvent == 'accs_reship'){
+                     $("#accs_order_quantity").val(check_data[0].quantity);
+                     $("#qty_div_lable").html("ReShip Quantity :");
+                     set_params(check_data, 'nRX订单发货', 'accs_reship');
+                     $("#repick_quantity_div").show();
+                     return
+                 }
+
+                if(layEvent != 'LAYTABLE_COLS' && layEvent != 'LAYTABLE_EXPORT'&& layEvent != 'LAYTABLE_PRINT' && layEvent != 'accs_to_lab'){
+                    var url = "{% url 'change_accs_order_status' %}";
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: {
+                            "checkdata":JSON.stringify(check_data),
+                            "action": layEvent,
+                            "flag": flag
+                        },
+                        dataType:'json',
+                        success: function (arg) {
+                            console.log(arg);
+                            if (arg.code == 0){
+                                qty_flag = false;
+                                layer.msg(arg.msg, {icon:6,time:3000});
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 1000)
+                            }else if(arg.code == 1){
+                                $("#lab_table").empty();
+                                var html = '';
+                                var lab_url = "{% url 'laborder_list_v2' %}";
+                                $("#accs_id").val('');
+                                $("#accs_id").val(arg.data.accs[0].order_number);
+                                for (i=0;i<arg.data.lab.length;i++){
+                                    lab_url = "{% url 'laborder_list_v2' %}?order_number="+arg.data.lab[i].lab_number
+                                    html = html + "<tr><td><a href='"+lab_url+"' target='_blank'>"+arg.data.lab[i].lab_number+"</a></td><td>"+arg.data.lab[i].status+"</td></tr>"
+                                }
+                                $("#lab_table").html(html);
+                                var accs_html = '';
+                                for (i=0;i<arg.data.accs.length;i++){
+                                    accs_html = accs_html + "<tr><td>"+arg.data.accs[i].accs_order_number+"</td><td>"+arg.data.accs[i].status+"</td><td>"+arg.data.accs[i].order_number+"</td></tr>"
+                                }
+                                $("#accs_table").html(accs_html);
+                                if(arg.data.accs.length >1 || arg.data.lab.length > 0){
+                                    $(".ckbox_lab").show();
+                                }
+                                $("#myModal").modal('show');
+                                $(".accs_ship").attr('disabled',false);
+                            }else if(arg.code == 2){
+                                $("#accs_table").empty();
+                                var accs_html = '';
+                                $("#accs_ordernumber").val('');
+                                $("#accs_ordernumber").val(arg.data[0].order_number);
+                                for (i=0;i<arg.data.length;i++){
+                                    accs_html = accs_html + "<tr><td>"+arg.data[i].accs_order_number+"</td><td>"+arg.data[i].status+"</td><td>"+arg.data[i].order_number+"</td></tr>"
+                                }
+                                $("#accs_table").html(accs_html);
+                                $("#accsModal").modal('show');
+                            } else {
+                                if(layEvent == 'accs_pick') {
+                                    $(".accs_pick").attr('disabled',false);
+                                }else if(layEvent == 'accs_ship'){
+                                    $(".accs_ship").attr('disabled',false);
+                                }else if(layEvent == 'accs_resume'){
+                                    $(".accs_resume").attr('disabled',false);
+                                }else if(layEvent == 'accs_print'){
+                                    $(".accs_print").attr("disabled", false);
+                                }
+                                layer.msg(arg.msg, {icon:7,time:3000})
+                            }
+                        }
+                    });
+                }else if(layEvent == 'accs_to_lab'){
+                    console.log(check_data)
+                    var url = "{% url 'accs_to_lab' %}";
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: {
+                            "checkdata": JSON.stringify(check_data),
+                        },
+                        dataType: 'json',
+                        success: function (arg) {
+                           if (arg.code == 0){
+                                layer.msg(arg.msg, {icon:6,time:3000});
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 1000)
+                           }else{
+                               layer.msg(arg.msg, {icon:7,time:3000});
+                           }
+                        }
+                    })
+                }
+            });
+            $("#btn_submit").click(function () {
+                var is_laborder= $('#is_laborder').is(':checked');
+                var accs_id = $('#accs_id').val();
+                var comments = $("#ship_comments").val();
+                if(accs_id == ''){
+                    layer.msg("参数错误", {icon:7,time:3000})
+                    return
+                }
+                var accs_table_length = $("#accs_table").find("tr").length;
+                var lab_table_length = $("#lab_table").find("tr").length;
+                if(accs_table_length>1 || lab_table_length>0){
+                    if(!is_laborder){
+                        layer.msg("订单未配对,不允许Accs Ship", {icon:7,time:3000})
+                        return
+                    }
+                }
+                 var url = "{% url 'accs_order_ship' %}";
+                 $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        "accs_id":accs_id,
+                        "flag": "lab",
+                        "comments":comments
+                    },
+                    dataType:'json',
+                    success: function (arg) {
+                        if (arg.code == 0){
+                            qty_flag = false;
+                            layer.msg(arg.msg, {icon:6,time:3000});
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 1000)
+                        }else {
+                            layer.msg(arg.msg, {icon:7,time:3000})
+                        }
+                    }
+                 });
+            });
+            $("#btn_submit_restock").click(function () {
+                $(this).attr("disabled", "true");
+                 var accs_order_id = $("#accs_order_id").val();
+                 var restock_comments = $("#restock_comments").val();
+                 var accs_order_flag = $("#accs_order_flag").val();
+                 var accs_wh = $("#accs_wh").val();
+                 var repick_quantity = $("#repick_quantity").val();
+                 var accs_order_quantity = $("#accs_order_quantity").val();
+                 if(accs_order_flag == 'accs_assign'){
+                     if(accs_wh == ''){
+                         $(this).attr("disabled", false);
+                         layer.msg("请选择Warehouse", {icon:7,time:2000})
+                         return
+                     }
+                 }
+                 if(accs_order_id == ''){
+                     $(this).attr("disabled", false);
+                     layer.msg("参数错误", {icon:7,time:2000})
+                     return
+                 }
+                 if(accs_order_flag != 'accs_assign'){
+                     if(restock_comments == ""){
+                         $(this).attr("disabled", false);
+                         layer.msg("请填写Comments", {icon:7,time:2000})
+                         return
+                     }
+                 }
+                 if(accs_order_flag == 'accs_repick'){
+                     if(repick_quantity == "" || repick_quantity == "0" || repick_quantity == 0){
+                         $(this).attr("disabled", false);
+                         layer.msg("请填写RePick Quantity", {icon:7,time:2000})
+                         return
+                     }
+                     diff_quantity = parseInt(repick_quantity) - parseInt(accs_order_quantity);
+                     if(diff_quantity > 0){
+                         $(this).attr("disabled", false);
+                         layer.msg("RePick Quantity 不能大于订单数量", {icon:7,time:2000})
+                         return
+                     }
+                 }
+                 if(accs_order_flag == 'accs_reship'){
+                     if(repick_quantity == "" || repick_quantity == "0" || repick_quantity == 0){
+                         $(this).attr("disabled", false);
+                         layer.msg("请填写ReShip Quantity", {icon:7,time:2000})
+                         return
+                     }
+                     diff_quantity = parseInt(repick_quantity) - parseInt(accs_order_quantity);
+                     if(diff_quantity > 0){
+                         $(this).attr("disabled", false);
+                         layer.msg("ReShip Quantity 不能大于订单数量", {icon:7,time:2000})
+                         return
+                     }
+                 }
+                 var url = "{% url 'accs_order_action' %}";
+                 $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        "accs_order_id":accs_order_id,
+                        "restock_comments": restock_comments,
+                        "accs_order_flag": accs_order_flag,
+                        "accs_wh": accs_wh,
+                        "repick_quantity": repick_quantity
+                    },
+                    dataType:'json',
+                    success: function (arg) {
+                        if (arg.code == 0){
+                            qty_flag = false;
+                            layer.msg(arg.msg, {icon:6,time:3000});
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 1000)
+                        }else {
+                            $(this).attr("disabled", false);
+                            layer.msg(arg.msg, {icon:7,time:3000})
+                        }
+                    }
+                 });
+            });
+            $("#btn_close_restock").click(function () {
+                $(".accs_comments").show();
+                $("#btn_submit_restock").show();
+                $("#restock_comments").val('');
+            });
+        });
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+            if (r!=null) return unescape(r[2]); return null; //返回参数值
+        }
+        function set_params(check_data, title, flag) {
+             var restock_html = '';
+             var restock_html_order_number = '';
+             var sku_html = '';
+             var sku_name_html = '';
+             var image_html = '';
+             var quantity_html = ''
+             for (var i=0; i< check_data.length; i++){
+                restock_html = restock_html + check_data[i].id + ","
+                restock_html_order_number = restock_html_order_number + check_data[i].accs_order_number + ","
+                sku_html = sku_html + check_data[i].frame_sku + ","
+                sku_name_html = sku_name_html + check_data[i].name + ","
+                quantity_html = quantity_html + check_data[i].quantity + ","
+                image_html = image_html + '<div><img src="'+check_data[i].image+'" width="100%"/></div>'
+             }
+             $("#accs_order_id").val(restock_html);
+             $("#accs_order_numbers").val(restock_html_order_number);
+             $("#accs_sku").val(sku_html);
+             $("#accs_sku_name").val(sku_name_html);
+             $("#accs_quantity").val(quantity_html);
+             $(".images_list").html(image_html);
+
+             $("#myModalLabel_title").html(title);
+             $("#accs_order_flag").val(flag);
+             $("#accs_wh_div").hide();
+             $("#repick_quantity_div").hide();
+             $("#restockModal").modal("show");
+
+        }
+    </script>
+{% endblock %}

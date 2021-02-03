@@ -1,0 +1,1744 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .cl:after {
+            display: block;
+            clear: both;
+            content: "";
+        }
+
+        .cl {
+            zoom: 1
+        }
+
+        .trDetail div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .trDetail span {
+            margin-right: 10px;
+        }
+
+        .divDetail {
+            display: inline-block;
+            text-align: center !important;
+            width: 100%;
+            background: #fff;
+            margin-bottom: -1px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .positionBox {
+            display: inline-block;
+        }
+
+        .divDetail hr {
+            width: 100%;
+            border: 1px dashed #000;
+        }
+
+        tbody .ondetail {
+            cursor: pointer;
+        }
+
+        #tabDiv td {
+            padding-right: 5px;
+        }
+
+        #topbtn button:hover {
+            background-color: #d58512 !important;
+        }
+
+        #bottom button:hover {
+            background-color: #367fa9 !important;
+            border: 1px solid #3c8dbc;
+        }
+
+        .filterLab {
+            margin-bottom: 20px;
+        }
+
+        .filterLab div {
+            margin-right: 20px;
+        }
+
+        .ulStyle {
+            -webkit-padding-start: 0px !important;
+            padding: 0;
+
+        }
+
+        .liStyle {
+            float: left;
+            list-style: none;
+            margin-right: 10px;
+            border-radius: 3px;
+            color: #fff;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .ulStyle .labOrderLog {
+            list-style: none;
+            float: right;
+            cursor: pointer;
+        }
+
+        .estime {
+            margin-right: 30px;
+        }
+
+        .mixtable td {
+            text-align: center;
+        }
+
+        #lens_t {
+            display: none;
+        }
+
+        .tdContent {
+            position: relative;
+        }
+
+        .showContent {
+            width: 350px;
+            height: 200px;
+            overflow-y: auto;
+            background: #ccc;
+            border-radius: 5px;
+            position: absolute;
+            left: -370px;
+            top: -52px;
+            z-index: 11;
+            padding: 5px;
+        }
+
+        .qipao {
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-right: 20px solid #ccc;
+            border-bottom: 20px solid transparent;
+            position: absolute;
+            left: -20px;
+            top: 55px;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}Lab Orders{% endblock %}
+{% block small %}{{ small }}{% endblock %}
+{% block content %}
+    <div class="blockContented" id="blockContents">
+        <div class="filterLab">
+            <form class="form-inline" id="formValue" method="POST">
+                <div class="form-group input-group-xs">
+                    <label for="labnumber">单号</label>
+                    <input type="text" class="form-control" name="labnum" id="labnumber" placeholder="请输入单号"
+                           autofocus="autofocus" onfocus=”select_all()” onmouseover=”select_all()”>
+                </div>
+                <div class="form-group input-group-xs">
+                    <label for="shipdirection">发货方式</label>
+                    <select class="form-control" name="labstatus" id="shipdirection">
+                        <option value="">----</option>
+                        <option value="STANDARD">普通</option>
+                        <option value="EXPRESS">加急</option>
+                        <option value="EMPLOYEE">内部</option>
+                        <option value="FLATRATE">批量</option>
+                    </select>
+
+                </div>
+                <div class="form-group input-group-xs">
+                    <label for="labdate">订单时间</label>
+                    <input type="text" class="form-control" name="begintime" id="begindate" placeholder="请输入时间"
+                           style="width: 100px">
+                    <span><----></span>
+                    <input type="text" class="form-control" name="endtime" id="enddate" placeholder="请输入时间"
+                           style="width: 100px">
+                </div>
+                <div class="form-group input-group-xs">
+                    <label for="status">状态</label>
+                    <select class="form-control" name="labstatus" id="status">
+                        <option value="">----</option>
+                        <option value="PRINTED">待打印</option>
+
+                    </select>
+                </div>
+
+                <div class="form-group input-group-xs">
+                    <label for="labdate">距规定时间</label>
+                    <input style="width: 70px" type="number" class="form-control" step="0.1" name="start_hour"
+                           id="start_hour" placeholder="时间">
+                    <span><----></span>
+                    <input style="width: 70px" type="number" class="form-control" step="0.1" name="end_hour"
+                           id="end_hour" placeholder="时间">
+                </div>
+                <div class="checkbox input-group-xs">
+                    <label>
+                        <input type="checkbox" value="LENS_RECEIVE" id="check_lens"> <b>未镜片收货</b>
+                    </label>
+                </div>
+                {#                <button type="button" class="btn btn-default" id="btn">Search</button>#}
+
+
+                <div class="form-group input-group-xs">
+                    <button type="button" class="btn btn-default active" id="btn_search" style="float: left">
+                        &nbspSearch&nbsp
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+        <div id="tableContented">
+
+        </div>
+
+
+        <div id="callBackPager" style="text-align: center;width: 100%"></div>
+
+    </div>
+    <div id="formList" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            <label>承运商</label>
+            <select class="form-control" name="carrier" id="carrier">
+                <option value="UPS">UPS</option>
+                <option value="EMS">邮政(EMS)</option>
+                <option value="EMPLOYEE">顺丰</option>
+
+            </select>
+        </div>
+        <div class="form-group" style="padding: 0 5px;">
+            <label>快递单号</label>
+            <input class="form-control" type="text" value="" name="ship" id="ship">
+        </div>
+
+
+    </div>
+
+    <div id="shippingtime" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            <label>预计发货时间</label>
+            <input class="form-control" type="text" value="" name="shiptime" id="shiptime" placeholder="请填写预计发货时间">
+        </div>
+    </div>
+
+    <div id="lensform" style="display: none;">
+
+        <label class="radio-inline">
+            <input type="radio" name="lens" id="lens_y" value="yes"><b>合格</b>
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="lens" id="lens_n" value="no"><b>不合格</b>
+        </label>
+        <div id="lens_textarea" style="margin-top:20px;display: none;">
+            <div class="form-group" style="padding: 0 5px;">
+                <label>原因</label>
+                <textarea class="form-control" rows="5" placeholder="请输入原因" id="lens_t"></textarea>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="box" style="display: none" id="cancelled_reason">
+        <div class="form-group" style="padding: 0 5px;">
+            <label>原因</label>
+            <textarea class="form-control" rows="5" placeholder="请输入原因" id="cancel_reason"></textarea>
+        </div>
+
+    </div>
+
+    <div id="comments" style="display: none; margin:10px 10px;">
+        <textarea class="form-control" rows="6" id="remarks"></textarea>
+    </div>
+
+
+
+
+    <div class="panel panel-default" id="lablog" style="display: none">
+        <div class="panel-heading">
+            <h3 class="panel-title">操作记录</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>index</th>
+                    <th>操作</th>
+                    <th>操作人</th>
+                    <th>操作时间</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+
+        //定义公共的变量
+
+        //1.ship_direction  发送方式
+        var ship_direction = ['普通', '加急', '批量', '内部'];
+
+
+        //获取actions
+        var upActions =
+        {{ upActions|safe }}
+        var downActions =
+        {{ downActions|safe }}
+        var type =
+        {{ type|safe }}
+        //按照actions过滤
+        var options = [];
+        $.each(downActions, function (i, downAction) {
+            options.push('<option value=' + downAction.key + '>' + downAction.value + '</option>');
+        });
+        $.each(upActions, function (j, element) {
+            options.push('<option value=' + element.key + '>' + element.value + '</option>');
+        })
+        $('#status').append(options.join(''));
+
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        {#        var five = {{ formsets|safe }}#}
+
+
+        function createTable(currpage) {
+            var labnum = $("#labnumber").val();
+            var begintime = $("#begindate").val();
+            var endtime = $("#enddate").val();
+            var labstatus = $("#status").val();
+            var shipdirection = $('#shipdirection').val();
+            var start_hour = $('#start_hour').val();
+            var end_hour = $('#end_hour').val();
+            var flag = $("#check_lens").is(":checked");
+            var lens_receive = null
+            if (flag) {
+                lens_receive = $("#check_lens").attr("value")
+            }
+
+            $.ajax({
+                url: '/oms/labOrderLists/',
+                type: 'POST',
+                data: {
+                    'currPage': currpage,
+                    'labnum': labnum,
+                    'begintime': begintime,
+                    'endtime': endtime,
+                    'labstatus': labstatus,
+                    'shipdirection': shipdirection,
+                    'start_hour': start_hour,
+                    'end_hour': end_hour,
+                    'lens_receive': lens_receive,
+                    'type': type
+
+                },
+                async: false,
+                success: function (arg) {
+
+                    data = JSON.parse(arg);
+
+                    var html = [];
+                    html.push("<table class='table table-striped'>");
+                    html.push("<thead>");
+                    html.push("<tr>");
+
+                    html.push("<th>订单号</th>");
+                    html.push("<th class='hid'>发货方式</th>");
+                    html.push("<th class='hid'>高散</th>");
+                    html.push("<th>镜架</th>");
+                    html.push("<th class='hid'>镜片名称</th>");
+                    html.push("<th class='hid'>下单日期</th>");
+                    html.push("<th class='hid'>预计完成时间</th>");
+                    html.push("<th class='hid'>生产天数</th>");
+                    html.push("<th class='hid'>规定完成时间</th>");
+                    html.push("<th class='hid'>距规定时间</th>");
+                    html.push("<th>状态</th>");
+                    html.push("<th class='hid'>VIP</th>");
+                    html.push("<th>备注</th>");
+                    html.push("</tr>");
+                    html.push("</thead>");
+                    html.push("<tbody>");
+
+                    if (data.length > 0) {
+                        for (var i = 0; i < data.length; i++) {
+
+                            field = data[i].fields;
+                            if (i % 2 == 0) {
+                                html.push("<tr class='alltr' orderNumber=" + field.lab_number + " toggle='0' type='even'>");
+                            } else {
+                                html.push("<tr class='alltr' orderNumber=" + field.lab_number + " toggle='0' type = 'odd'>");
+                            }
+
+
+                            html.push("<td id='" + field.lab_number + "' class='ondetail' orderNumber=" + field.lab_number + " toggle='0'><a href='#" + field.lab_number + "'>" + field.lab_number + "</a></td>");
+
+                            if (field.ship_direction == 'STANDARD') {
+                                html.push("<td class='hid'>" + ship_direction[0] + "</td>");
+                            } else if (field.ship_direction == 'EXPRESS') {
+                                html.push("<td class='hid'>" + ship_direction[1] + "</td>");
+                            } else if (field.ship_direction == 'FLATRATE') {
+                                html.push("<td class='hid'>" + ship_direction[2] + "</td>");
+                            } else {
+                                html.push("<td class='hid'>" + ship_direction[3] + "</td>");
+                            }
+                            //判断是否是高散，os_cyl或者od_cyl只要>2.00就是高散
+                            os_cyl = Math.abs(field.os_cyl);
+                            od_cyl = Math.abs(field.od_cyl);
+                            if (os_cyl > 2.00 || od_cyl > 2.00) {
+                                html.push('<td><img src="{% static "image/icon-yes.svg"%}"></td>');
+                            } else {
+                                html.push('<td><img src="{% static "image/icon-no.svg"%}"></td>');
+                            }
+
+                            html.push("<td>" + field.frame + "</td>");
+                            html.push("<td class='hid'>" + field.lens_name + "</td>");
+                            html.push("<td class='hid'>" + field.order_date + "</td>");
+
+                            if (field.estimated_date == null) {
+                                html.push("<td class='nowtime hid'>--</td>");
+                            } else {
+                                html.push("<td class='nowtime hid'>" + longTime(field.estimated_date) + "</td>");
+                            }
+                            if (field.production_days == '' || field.production_days == null) {
+                                html.push("<td class='hid'>--</td>");
+                            } else {
+                                html.push("<td class='hid'>" + field.production_days + "</td>");
+                            }
+                            if (field.targeted_date == '' || field.targeted_date == null) {
+                                html.push("<td class='hid'>--</td>");
+                            } else {
+                                html.push("<td class='hid'>" + longTime(field.targeted_date) + "</td>");
+                            }
+
+                            if (field.set_time == null || field.set_time == '') {
+                                html.push("<td class='hid'>--</td>");
+                            } else {
+                                if (field.set_time < 0) {
+                                    html.push("<td class='hid' style='background:#E74C3C'>" + field.set_time + "</td>");
+                                }
+                                else if (field.set_time > 0 && field.set_time <= 24) {
+                                    html.push("<td  class='hid' style='background:#F9E79F'>" + field.set_time + "</td>");
+                                } else {
+                                    html.push("<td class='hid'>" + field.set_time + "</td>");
+                                }
+
+                            }
+
+                            if (field.status == '' || field.status == null) {
+                                html.push("<td class='status'>待打印</td>");
+                            }
+                            else if (field.status == 'PRINT_DATE') {
+                                html.push("<td class='status'>打印</td>");
+                            } else if (field.status == 'REQUEST_NOTES') {
+                                html.push("<td class='status'>出库申请</td>");
+                            } else if (field.status == 'FRAME_OUTBOUND') {
+                                html.push("<td class='status'>镜架出库</td>");
+                            } else if (field.status == 'ADD_HARDENED') {
+                                html.push("<td class='status'>加硬</td>");
+                            } else if (field.status == 'COATING') {
+                                html.push("<td class='status'>加膜</td>");
+                            } else if (field.status == 'TINT') {
+                                html.push("<td class='status'>染色</td>");
+                            } else if (field.status == 'RX_LAB') {
+                                html.push("<td class='status'>车房</td>");
+                            } else if (field.status == 'LENS_RECEIVE') {
+                                html.push("<td class='status'>镜片收货</td>");
+                            } else if (field.status == 'ASSEMBLING') {
+                                html.push("<td class='status'>装配</td>");
+                            } else if (field.status == 'INITIAL_INSPECTION') {
+                                html.push("<td class='status'>初检</td>");
+                            } else if (field.status == 'SHAPING') {
+                                html.push("<td class='status'>整形</td>");
+                            } else if (field.status == 'PURGING') {
+                                html.push("<td class='status'>清洗</td>");
+                            } else if (field.status == 'FINAL_INSPECTION') {
+                                html.push("<td class='status'>终检</td>");
+                            } else if (field.status == 'ORDER_MATCH') {
+                                html.push("<td class='status'>订单配对</td>");
+                            } else if (field.status == 'PACKAGE') {
+                                html.push("<td class='status'>包装</td>");
+                            } else if (field.status == 'SHIPPING') {
+                                html.push("<td class='status' style='background-color: #00a65a;color: #fff'>发货</td>");
+                            } else if (field.status == 'COMPLETE') {
+                                html.push("<td class='status' style='background-color: #00a65a;color: #fff'>完成</td>");
+                            } else if (field.status == 'ONHOLD') {
+                                html.push("<td class='status'>暂停</td>");
+                            } else if (field.status == 'CANCELLED') {
+                                html.push("<td class='status'>取消</td>");
+                            } else if (field.status == 'REDO') {
+                                html.push("<td class='status'>重做</td>");
+                            }
+
+
+                            if (field.is_vip == true) {
+                                html.push("<td class='hid'><img src='{% static "image/icon-yes.svg"%}'></td>")
+                            } else {
+                                html.push("<td class='hid'>  </td>")
+                            }
+                            {#                            html.push("<td class='originValue'>" + field.comments + "</td>");#}
+                            html.push('<td class="tdContent"><div class="showlittle" ><p class="td_show" style="max-width: 100px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;" >' + field.comments + '</p></div><div class="showContent" hidden><div class="qipao"></div>' + field.comments + '</div></td>')
+
+
+                            html.push("</tr>");
+                        }
+                    } else {
+                        html.push("<tr><td colspan='13' style='text-align:center'>NO Data</td></tr>");
+                    }
+
+
+                    html.push("</tbody>");
+                    html.push("</table>");
+                    var tabcon = $("#tableContented");
+                    tabcon.html(html.join(''));
+
+                    if (data.length == 1) {
+                        $('.ondetail').click();
+                    }
+
+                    $("tbody .tdContent").mouseover(function () {
+                        // $(this).find('.showlittle').hide();
+                        $(this).find('.showContent').show();
+
+                    });
+                    $("tbody .tdContent").mouseout(function () {
+                        //  $(this).find('.showlittle').show();
+                        $(this).find('.showContent').hide();
+                    })
+
+                }
+            })
+        }
+
+        var countPage =
+        {{ pageNum|safe }}
+        var currentPage = 1;
+
+        callBackPagination(countPage);
+
+        function callBackPagination(countPage) {
+
+            var totalCount = countPage;
+            var showPage = 10;
+            var limit = 20;
+            createTable(1);
+            $('#callBackPager').extendPagination({
+
+                totalCount: totalCount,
+
+                showPage: showPage,
+
+                limit: limit,
+
+                callback: function (curr, limit, totalCount) {
+                    currentPage = curr
+                    createTable(curr);
+                }
+
+            });
+
+        }
+
+        {#        $(document).ready(function(){#}
+
+        function formateTime(date) {
+            var f = date.split('T');
+            var md = f[0].split('-');
+            var g = f[1].split('Z');
+            var xf = g[0].split(":");
+            var order_date = md[1] + '-' + md[2] + ' ' + xf[0] + ':' + xf[1];
+            return order_date;
+        }
+
+        function add(eye) {
+            var eyes = '';
+            if (eye <= 0) {
+                return eye;
+
+            } else {
+                eyes = '+' + eye;
+                return eyes;
+            }
+        }
+
+        function longTime(date) {
+            var t = date.split('T');
+            var z = t[1].split('Z');
+            var longtime = t[0] + " " + z[0];
+            return longtime;
+        }
+
+
+        //  点击显示详情
+
+        $('#tableContented').on('click', '.ondetail', function () {
+
+            var $this = $(this);
+            var toggle = $this.attr("toggle");
+            var types = $this.closest("tr").attr('type');
+            if (toggle == '1') {
+
+                $(this).closest("tr").next().remove();
+                $(this).attr("toggle", '0');
+                if (types == 'even') {
+                    $this.closest("tr").css('backgroundColor', '#f9f9f9');
+                } else {
+                    $this.closest("tr").css('backgroundColor', 'transparent');
+                }
+            } else {
+                $this.closest("tr").css('backgroundColor', '#FFFACD');
+                if ($(".trDetail").length > 0) {
+                    $(".trDetail").each(function (index, element) {
+                        $(this).prev().find(".ondetail").attr("toggle", '0');
+                        var type = $(this).prev().attr('type');
+                        if (type == 'even') {
+                            $(this).prev().css('backgroundColor', '#f9f9f9');
+                        } else {
+                            $(this).prev().css('backgroundColor', 'transparent');
+                        }
+                        element.remove();
+
+                    });
+                }
+
+                $($this).closest('tr').after("<tr class='trDetail'></tr>");
+                $(this).attr("toggle", '1');
+                var orderNumber = $(this).attr('orderNumber');
+
+                $.ajax({
+                    url: "/oms/labOrderDetail/",
+                    type: 'POST',
+                    data: {
+                        'orderNumber': orderNumber
+                    },
+                    async: false,
+                    success: function (arg) {
+                        data = JSON.parse(arg);
+                        field = data[0].fields;
+                        var html = [];
+                        html.push("<td colspan = '13'><div class='cl divDetail'><div class='positionBox'>");
+
+                        html.push('<div class="tdBox" id="tabDiv">');
+                        html.push('<ul class="cl ulStyle" id="topbtn">');
+                        if (field.estimated_date == null) {
+                            html.push('<li class="liStyle estime ESTIMATED_DATE" id="asd"><button class="btn btn-block btn-default" labid=' + field.lab_number + ' aliasname="ESTIMATED_DATE">预计完成时间</button></li>');
+                        } else {
+                            html.push('<li class="liStyle estime ESTIMATED_DATE" id="asd"><button class="btn btn-block btn-default" labid=' + field.lab_number + ' aliasname="ESTIMATED_DATE">更新预计完成时间</button></li>');
+                        }
+                        html.push('<li class="liStyle"><a  target="view_window" href="/oms/print_laborder?p=' + field.lab_number + '" class="btn btn-block btn-default PRINTORDER">打印订单</a></li>');
+                        html.push('<li class="liStyle"><button class="btn btn-block btn-default addComments ADDCOMMENT" tag="ADD COMMENTS" id=' + data[0].pk + ' type=' + field.type + ' labid=' + field.lab_number + ' aliasname="ADDCOMMENT">添加评论</button></li>');
+
+                        $.each(upActions, function (i, element) {
+                            if (element.key == 'REDO') {
+                                html.push('<li class="liStyle redo"><button class="btn btn-block btn-default REDO" labid=' + field.lab_number + ' aliasname=' + element.key + '>' + element.value + '</button></li>');
+                            } else {
+                                if (element.key == 'ONHOLD') {
+                                    if (field.status == 'ONHOLD') {
+                                        html.push('<li class="liStyle holdbtn ONHOLD"><button class="btn btn-block btn-default CANCEL_HOLD" labid=' + field.lab_number + ' aliasname="CANCEL_HOLD">取消暂停</button></li>');
+                                    } else {
+                                        html.push('<li class="liStyle holdbtn ONHOLD"><button class="btn btn-block btn-default ' + element.value + '" labid=' + field.lab_number + ' aliasname=' + element.key + '>' + element.value + '</button></li>');
+                                    }
+                                } else {
+                                    html.push('<li class="liStyle CANCELLED"><button class="btn btn-block btn-default ' + element.value + '" labid=' + field.lab_number + ' aliasname=' + element.key + '>' + element.value + '</button></li>')
+                                }
+
+                            }
+                        });
+
+                        html.push('<li class="labOrderLog" labid=' + field.lab_number + ' style="text-decoration:underline">操作记录</li>');
+                        html.push("</ul></div>");
+
+                        html.push('<hr  class="tdBox"></hr>');
+                        html.push("<div id='print_div'>");
+                        html.push("<div class='tdBox'>");
+                        if (field.ship_direction == 'STANDARD') {
+                            html.push("<span><b>发运方式</b>：" + ship_direction[0] + "</span>");
+                        } else if (field.ship_direction == 'EXPRESS') {
+                            html.push("<span><b>发运方式</b>：" + ship_direction[1] + "</span>");
+                        } else if (field.ship_direction == 'FLATRATE') {
+                            html.push("<span><b>发运方式</b>：" + ship_direction[2] + "</span>");
+                        } else {
+                            html.push("<span><b>发运方式</b>：" + ship_direction[3] + "</span>");
+                        }
+                        html.push("<span><b>订单号</b>：" + field.lab_number + "</span>");
+                        html.push("<span><b>订单日期</b>：" + field.order_date + "</span>");
+                        if (field.estimated_time != null && field.estimated_time != '') {
+                            html.push("<span><b>预计完成时间</b>：" + field.estimated_time + "</span>");
+                        }
+                        if (field.final_time != null && field.final_time != '') {
+                            html.push("<span><b>实际完成时间</b>：" + longTime(field.final_time) + "</span>");
+                        }
+
+
+                        if (field.status == '' || field.status == null) {
+                            html.push("<span><b>状态</b>：待打印</span>");
+                        }
+                        else if (field.status == 'PRINT_DATE') {
+                            html.push("<span><b>状态</b>：打印</span>");
+                        } else if (field.status == 'REQUEST_NOTES') {
+                            html.push("<span><b>状态</b>：出库申请</span>");
+                        } else if (field.status == 'FRAME_OUTBOUND') {
+                            html.push("<span><b>状态</b>：镜架出库</span>");
+                        } else if (field.status == 'ADD_HARDENED') {
+                            html.push("<span><b>状态</b>：加硬</span>");
+                        } else if (field.status == 'RX_LAB') {
+                            html.push("<span><b>状态</b>：车房</span>");
+                        } else if (field.status == 'COATING') {
+                            html.push("<span><b>状态</b>：加膜</span>");
+                        } else if (field.status == 'TINT') {
+                            html.push("<span><b>状态</b>：染色</span>");
+                        } else if (field.status == 'LENS_RECEIVE') {
+                            html.push("<span><b>状态</b>：镜片收货</span>");
+                        } else if (field.status == 'ASSEMBLING') {
+                            html.push("<span><b>状态</b>：装配</span>");
+                        } else if (field.status == 'INITIAL_INSPECTION') {
+                            html.push("<span><b>状态</b>：初验</span>");
+                        } else if (field.status == 'SHAPING') {
+                            html.push("<span><b>状态</b>：整形</span>");
+                        } else if (field.status == 'PURGING') {
+                            html.push("<span><b>状态</b>：清洗</span>");
+                        } else if (field.status == 'FINAL_INSPECTION') {
+                            html.push("<span><b>状态</b>：终验</span>");
+                        } else if (field.status == 'ORDER_MATCH') {
+                            html.push("<span><b>状态</b>：订单配对</span>");
+                        } else if (field.status == 'PACKAGE') {
+                            html.push("<span><b>状态</b>：打包</span>");
+                        } else if (field.status == 'SHIPPING') {
+                            html.push("<span><b>状态</b>：发货</span>");
+                        } else if (field.status == 'COMPLETE') {
+                            html.push("<span><b>状态</b>：完成</span>");
+                        } else if (field.status == 'ONHOLD') {
+                            html.push("<span><b>状态</b>：暂停</span>");
+                        } else if (field.status == 'CANCELLED') {
+                            html.push("<span><b>状态</b>：取消</span>");
+                        } else if (field.status == 'REDO') {
+                            html.push("<span><b>状态</b>：重做</span>");
+                        }
+
+
+                        if (field.comments != '' && field.comments != null) {
+                            html.push("<span><b>备注</b>：" + field.comments + "</span>");
+                        }
+
+                        html.push("</div>");
+
+                        html.push('<hr  class="tdBox"></hr>');
+
+                        html.push("<div class='tdBox'>");
+                        html.push("<span><b>设计</b>：" + field.pal_design_name + "</span>");
+                        html.push("<span><b>尺寸</b>：" + field.size + "</span>");
+                        html.push("<span><b>数量</b>：" + field.quantity + "</span>");
+                        html.push("<span><b>用户</b>：" + field.profile_name + "</span>");
+                        html.push("</div>");
+
+                        html.push("<hr  class='tdBox'></hr>");
+
+                        html.push("<div class='tdBox'>");
+                        html.push("<span><b>镜架</b>：" + field.frame + "</span>");
+                        {#                        html.push("<span><b>镜片</b>：" + field.lens_sku + "</span>");#}
+                        {#                        html.push("<span><b>镜片名称</b>：" + field.lens_name + "</span>");#}
+                        html.push("<span><b>订单镜片</b>：【" + field.lens_sku + "】" + field.lens_name + "</span>");
+                        if (field.act_lens_sku != null & field.act_lens_sku != '') {
+                            html.push("<span><b>实际镜片</b>：【" + field.act_lens_sku + "】" + field.act_lens_name + "</span>");
+                        }
+
+                        if (field.coating_sku != '' && field.coating_sku != null) {
+                            html.push("<span><b>涂层</b>：" + field.coating_sku + "</span>");
+                            html.push("<span><b>涂层名称</b>：" + field.coating_name + "</span>");
+                        }
+                        if (field.tint_sku != '' && field.tint_sku != null) {
+                            html.push("<span><b>染色</b>：" + field.tint_sku + "</span>");
+                            html.push("<span><b>染色名称</b>：" + field.tint_name + "</span>");
+                        }
+
+
+                        html.push("</div>");
+
+                        html.push("<hr  class='tdBox'></hr>");
+
+                        html.push("<div class=' tdBox cl'>");
+                        {#                        html.push("<div>");#}
+                        {#                        html.push('<div class="col-md-12">');#}
+                        html.push("<div style='width:40%; float:left;margin-right:10px'>");
+                        html.push('<table class="mixtable"  border="1" cellpadding="0" cellspacing="0" style="width:100%"><tr><td></td><td><b>光度</b></td><td><b>散光</b></td><td><b>轴位</b></td></<tr><tr><td><b>右眼</b></td><td>' + add(field.od_sph) + '</td><td>' + add(field.od_cyl) + '</td><td>' + field.od_axis + '</td></<tr><tr><td><b>左眼</b></td><td>' + add(field.os_sph) + '</td><td>' + add(field.os_cyl) + '</td><td>' + field.os_axis + '</td></<tr></table>');
+                        html.push('</div>');
+                        html.push("<div style='width:40%;float:left;margin-right:10px'>");
+                        html.push('<table class="mixtable" width="auto" border="1" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td></td><td><b>ADD</b></td><td><b>Prism</b></td><td><b>Base</b></td></<tr><tr><td><b>右眼</b></td><td>' + add(field.od_add) + '</td><td>' + field.od_prism + '</td><td>' + field.od_base + '</td></<tr><tr><td><b>左眼</b></td><td>' + add(field.os_add) + '</td><td>' + field.os_prism + '</td><td>' + field.os_base + '</td></<tr></table>');
+                        html.push('</div>');
+                        if (field.is_singgle_pd) {
+                            html.push("<div style='float:left;margin-right:10px'>");
+                            html.push("<span><b>瞳距</b>:" + field.pd + "</span>");
+                            html.push('</div>');
+                        } else {
+                            html.push("<div style='width:20%;float:left'>");
+                            html.push('<table class="mixtable" border="1" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td></td><td><b>PD</b></td></<tr><tr><td><b>右眼</b></td><td>' + field.od_pd + '</td></<tr><tr><td><b>左眼</b></td><td>' + field.os_pd + '</td></<tr></table>');
+                            html.push('</div>');
+                        }
+                        html.push("<div style='width:40%;'>");
+                        html.push("<span><b>直径1</b>：" + field.dia_1 + "</span>");
+                        html.push("<span><b>直径2</b>：" + field.dia_2 + "</span>");
+                        html.push('</div>');
+                        html.push("</div>");
+
+
+                        html.push("<hr  class='tdBox'></hr>");
+
+
+                        html.push("<div class='tdbox'>");
+                        if (field.prescription_id != '' && field.prescription_id != null) {
+                            html.push("<span><b>验光单ID</b>：" + field.prescription_id + "</span>");
+                        }
+                        if (field.prescription_name != '' && field.prescription_name != null) {
+                            html.push(" <span><b>名称</b>：" + field.prescription_name + "</span>");
+                        }
+
+
+                        if (field.prescription_type != '' && field.prescription_type != null) {
+                            html.push("<span><b>类型</b>：" + field.prescription_type + "</span>");
+                        }
+                        if (field.used_for != '' && field.used_for != null) {
+                            html.push("<span><b>用途</b>：" + field.used_for + "</span>");
+                        }
+                        html.push('<p style="word-break:break-all; width:200px;">&nbsp</p>')
+
+                        html.push("<br/><span><B>下单日期</B>：" + formateTime(field.create_at) + "</span>");
+                        html.push("<span><B>更新日期</B>：" + formateTime(field.update_at) + "</span>");
+                        html.push("</div>");
+
+                        html.push("<hr  class='tdBox'></hr>");
+                        html.push("</div>");
+                        {#print_div#}
+
+                        html.push('<div class="tdBox" id="tabDiv">');
+                        html.push('<ul class="cl ulStyle" id="bottombtn">');
+                        for (var j = 0; j < downActions.length; j++) {
+                            var action = downActions[j];
+                            html.push('<li class="liStyle"><button class="btn btn-block btn-default ' + action.key + '" type="button"   labid=' + field.lab_number + ' aliasname=' + action.key + '>' + action.value + '</button></li>');
+
+                        }
+
+                        html.push("</ul></div>");
+
+                        html.push("</div></div></td>");
+                        var tr = $($this).closest('tr').next();
+                        tr.html(html.join(''));
+
+
+                    }
+
+                });
+
+
+                var $btnList = $this.closest('tr').next('tr').find('.liStyle button');//获取所有的action
+                actionStatus(orderNumber, $btnList);
+
+            }
+
+            {#        {% if not perms.oms.ACT_PRINT_DATE %}#}
+            {##}
+            {#            $(".PRINTORDER").hide()#}
+            {#        {% endif %}#}
+
+            {% if not perms.oms.ACT_PRINT_DATE %}
+                $(".PRINT_DATE").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_FRAME_OUTBOUND %}
+                $(".FRAME_OUTBOUND").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_TINT %}
+                $(".TINT").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_RX_LAB %}
+                $(".RX_LAB").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_ADD_HARDENED %}
+                $(".ADD_HARDENED").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_COATING %}
+                $(".COATING").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_LENS_RECEIVE %}
+                $(".LENS_RECEIVE").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_INITIAL_INSPECTION %}
+                $(".INITIAL_INSPECTION").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_ASSEMBLING %}
+                $(".ASSEMBLING").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_SHAPING %}
+                $(".SHAPING").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_FINAL_INSPECTION %}
+                $(".FINAL_INSPECTION").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_PURGING %}
+                $(".PURGING").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_ORDER_MATCH %}
+                $(".ORDER_MATCH").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_PACKAGE %}
+                $(".PACKAGE").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_SHIPPING %}
+                $(".SHIPPING").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_COMPLETE %}
+                $(".完成").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_ESTIMATED_DATE %}
+                $(".ESTIMATED_DATE").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_CANCEL_HOLD %}
+                $(".CANCEL_HOLD").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_ONHOLD %}
+                $(".ONHOLD").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_CANCELLED %}
+                $(".CANCELLED").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_REDO %}
+                $(".REDO").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_COMMENT %}
+                $(".ADDCOMMENT").hide();
+            {% endif %}
+
+            {% if not perms.oms.ACT_PRINTORDER %}
+                $(".PRINTORDER").hide();
+            {% endif %}
+
+        });
+
+        //各个action的状态
+        function actionStatus(labid, btnList) {
+            $.ajax({
+                url: "/oms/action_status/",
+                type: 'POST',
+                data: {
+                    'order_number': labid
+                },
+                success: function (arg) {
+                    data = JSON.parse(arg);
+                    if (data.length > 0) {
+                        field = data[0].fields;
+                        var status = field.action;
+
+                        if (status == 'ONHOLD') {
+                            $(btnList).each(function () {
+                                var aliasname = $(this).attr('aliasname');
+                                if (aliasname != 'ONHOLD' && aliasname != 'CANCEL_HOLD' && aliasname != 'ADDCOMMENT') {
+                                    $(this).attr("disabled", "disabled");
+                                }
+
+                            });
+                        } else if (status == 'REDO') {
+                            $(btnList).each(function () {
+                                $(this).attr("disabled", "disabled");
+                            })
+                        } else {
+
+                            $(btnList).each(function () {
+                                {#                                var btnstatus = $(this).attr('aliasname');#}
+                                {#                                if ( btnstatus != 'REDO') {#}
+                                $(this).removeAttr("disabled");
+                                {#                                }#}
+
+                            });
+                            for (var i = 0; i < data.length; i++) {
+                                orderStatus = data[i].fields;
+
+                                var labaction = orderStatus.action;
+
+                                if (labaction != 'ESTIMATED_DATE' && labaction != 'ONHOLD' && labaction != 'CANCEL_HOLD' && labaction != 'REDO') {
+                                    $(btnList).each(function () {
+
+                                        var alias = $(this).attr('aliasname');
+
+                                        if (labaction == alias) {
+
+                                            $(this).attr('disabled', 'disabled');
+                                        }
+                                    })
+
+                                }
+                            }
+
+                        }
+
+
+                    }
+                }
+            });
+        }
+
+        var width = $(document).width();
+        var poup = new Array();
+
+        if (width < 800) {
+            poup = ['85%', '35%'];
+        } else {
+            poup = ['500px', '300px'];
+        }
+
+        //        点击 打印--》发货 的操作
+
+
+        $('#tableContented').on('click', '#bottombtn   button', function () {
+            var width = $(document).width();
+            var $this = $(this);
+            {#            if (width < 800) {#}
+            {#                poup = ['85%', '35%'];#}
+            {#            } else {#}
+            {#                poup = ['30%', '35%'];#}
+            {#            }#}
+            var aliasname = $this.attr('aliasname');
+            alert(aliasname)
+            var labid = $(this).attr('labid');
+            var content = $(this).html();
+            {#            $(this).attr("disabled","disabled");#}
+
+            if (aliasname == "SHIPPING") {
+
+                var index = layer.open({
+                    title: 'Carriers&Shipping Number',
+                    type: 1,
+                    area: poup, //宽高
+                    content: $('#formList'),
+                    btn: ['保存', '取消'],
+                    yes: function () {
+                        var carrier = $("#carrier").val();
+                        var ship = $("#ship").val();
+
+                        if (ship == null || ship == "") {
+                            layer.msg('请填写运单号', {icon: 5});
+                            return false;
+                        }
+
+                        $.ajax({
+                            url: "/oms/laborder_status/",
+                            type: "POST",
+                            data: {
+                                'content': content,
+                                'labid': labid,
+                                'aliasname': aliasname,
+                                'carrier': carrier,
+                                'ship': ship
+                            },
+                            error: function () {
+                                layer.msg('添加失败，请稍后重试', {icon: 5});
+                            },
+                            success: function (arg) {
+                                layer.close(index);
+                                if (arg == "True") {
+                                    $($this).closest("tr").prev().find(".status").text(content);
+                                    $($this).closest("tr").prev().find(".status").css('backgroundColor', '#00a65a').css('color', '#fff');
+                                    $($this).attr('disabled', 'disabled');
+                                    layer.open({
+                                        title: 'Order Tracking',
+                                        content: '订单' + labid + '已' + content,
+                                        time: 10000
+                                    });
+                                } else if (arg == 'False') {
+                                    layer.open({
+                                        title: 'Order Tracking',
+                                        content: '订单' + labid + '已' + content + ',不能重复' + content,
+                                        time: 10000
+                                    });
+                                } else if (arg == 'no') {
+                                    layer.open({
+                                        title: 'Order Tracking',
+                                        content: '无法获取承运商或者运单号',
+                                        time: 10000
+                                    });
+                                } else {
+
+                                    layer.open({
+                                        title: 'Error',
+                                        content: arg,
+                                        time: 10000
+                                    });
+                                }
+                            }
+                        });
+                    }
+                })
+            } else if (aliasname == "LENS_RECEIVE" || aliasname == "FINAL_INSPECTION") {
+                var index = layer.open({
+                    title: '初检/终检',
+                    type: 1,
+                    area: poup, //宽高
+                    content: $('#lensform'),
+                    btn: ['确定', '取消'],
+                    yes: function () {
+                        var formData = $("#lens_t").val();
+                        var select_radio = $('input[name="lens"]:checked').val();
+                        if (select_radio == 'no') {
+                            if (formData == null || formData == '') {
+                                layer.msg('请填写原因', {icon: 5});
+                                return false
+                            }
+                        }
+
+                        $.ajax({
+                            url: "/oms/laborder_status/",
+                            type: "POST",
+                            data: {
+                                'content': content,
+                                'labid': labid,
+                                'aliasname': aliasname,
+                                'carrier': 'null',
+                                'ship': 'null',
+                                'form': formData,
+                            },
+                            error: function () {
+                                layer.msg('添加失败，请稍后重试', {icon: 5});
+                            },
+                            success: function (arg) {
+                                layer.close(index);
+                                if (arg == "True") {
+                                    $($this).closest("tr").prev().find(".status").text(content);
+                                    $($this).attr('disabled', 'disabled');
+                                    layer.open({
+                                        title: 'Order Tracking',
+                                        content: '订单' + labid + '已' + content,
+                                        time: 10000
+                                    });
+                                } else if (arg == 'False') {
+                                    layer.open({
+                                        title: 'Order Tracking',
+                                        content: '订单' + labid + '已' + content + ',不能重复' + content,
+                                        time: 10000
+                                    });
+                                } else if (arg == 'no') {
+                                    layer.open({
+                                        title: 'Order Tracking',
+                                        content: '无法获取承运商或者运单号',
+                                        time: 10000
+                                    });
+                                } else if (arg == 'Error') {
+                                    var $btnList = $this.closest('tr').find('.liStyle button');//获取所有的action
+                                    actionStatus(labid, $btnList);
+                                    layer.open({
+                                        title: 'Order Tracking',
+                                        content: '生产不合格',
+                                        time: 10000
+                                    });
+                                    {# var $btnList = $this.closest('tr').next('tr').find('.liStyle button');//获取所有的action#}
+                                    {#actionStatus(labid, $btnList);#}
+                                } else {
+
+                                    layer.open({
+                                        title: 'Error',
+                                        content: arg,
+                                        time: 10000
+                                    });
+                                }
+                            }
+                        });
+                    }
+                })
+            } else {
+                $.ajax({
+                    url: "/oms/laborder_status/",
+                    type: "POST",
+                    data: {
+                        'content': content,
+                        'labid': labid,
+                        'aliasname': aliasname,
+                        'carrier': 'null',
+                        'ship': 'null'
+                    },
+                    success: function (arg) {
+
+                        if (arg == "True") {
+                            $($this).closest("tr").prev().find(".status").text(content);
+                            $($this).attr('disabled', 'disabled');
+                            layer.open({
+                                title: 'Order Tracking',
+                                content: '订单' + labid + '已' + content,
+                                time: 10000
+                            });
+                        } else if (arg == 'False') {
+                            layer.open({
+                                title: 'Order Tracking',
+                                content: '订单' + labid + '已' + content + ',不能重复' + content,
+                                time: 10000
+                            });
+                        } else {
+                            layer.open({
+                                title: 'Error',
+                                content: arg,
+                                time: 10000
+                            });
+                        }
+                    }
+                })
+
+            }
+
+        })
+
+        //判断初检和终检选择的是合格还是合格
+        $('input[name="lens"]').click(function () {
+            if ($(this).val() == 'yes') {
+                $('#lens_textarea').css('display', 'none');
+                $('#lens_t').val('');
+            } else if ($(this).val() == 'no') {
+                $('#lens_textarea').css('display', 'block');
+                $('#lens_t').css('display', 'block');
+            }
+        });
+
+        laydate.render({
+            elem: '#shiptime', //指定元素
+            type: 'datetime'
+        });
+
+        laydate.render({
+            elem: '#begindate', //指定元素
+        });
+        laydate.render({
+            elem: '#enddate', //指定元素
+        });
+
+
+        //预计发货时间
+
+        $("#tableContented").on('click', '.estime button', function () {
+
+
+            var $this = $(this);
+            var labid = $(this).attr('labid');
+            var alias = $(this).attr('aliasname');
+            var content = $(this).html();
+
+            var width = $(document).width();
+            {#            if (width < 800) {#}
+            {#                poup = ['85%', '35%'];#}
+            {#            } else {#}
+            {#                poup = ['30%', '35%'];#}
+            {#            }#}
+
+            var index = layer.open({
+                title: content,
+                type: 1,
+                area: poup, //宽高
+                content: $('#shippingtime'),
+                btn: ['保存', '取消'],
+                yes: function () {
+                    var shiptime = $('#shiptime').val();
+                    if (shiptime == '' || shiptime == null) {
+                        layer.msg('请填写预计完成时间', {icon: 5});
+                        return false;
+                    } else {
+                        $.ajax({
+                            url: "/oms/esTime/",
+                            type: "POST",
+                            data: {
+                                'shiptime': shiptime,
+                                'labid': labid,
+                                'content': content,
+                                'alias': alias
+                            },
+                            error: function () {
+                                layer.msg('添加失败，请稍后重试', {icon: 5});
+                            },
+                            success: function (arg) {
+                                var time = $('#shiptime').val();
+                                $($this).closest("tr").prev().find(".nowtime").text(time);
+                                if (content == '预计完成时间') {
+                                    $($this).html('更新预计完成时间');
+                                }
+
+                                layer.close(index);
+                                if (arg == "True") {
+
+                                    layer.open({
+                                        title: 'Order Tracking',
+                                        content: '订单' + labid + '已添加预期发货时间',
+                                        time: 10000
+                                    });
+                                } else {
+                                    layer.open({
+                                        title: 'Error',
+                                        content: arg,
+                                        time: 10000
+                                    });
+                                }
+                            }
+                        })
+
+                    }
+
+                }
+            })
+
+        });
+
+
+        //暂停操作
+        $("#tableContented").on("click", ".holdbtn button", function () {
+            $this = $(this);
+            var labid = $(this).attr("labid"); // 获取工厂订单号
+
+            var alias = $(this).attr("aliasname"); // 获取状态属性
+
+            var content = $(this).html(); // 获取按钮内容  取消 / 暂停
+
+
+            var index = layer.open({
+                title: content,
+                type: 1,
+                area: poup, //宽高
+                content: '<p><br/>&nbsp;&nbsp;    是否对订单[ ' + labid + ' ]进行 [' + content + '] 操作？</p>',
+                btn: ['确定', '取消'],
+                yes: function () {
+                    $.ajax({
+                        url: "/oms/labOrderHold/",
+                        type: "POST",
+                        data: {
+                            'labid': labid,
+                            'alias': alias,
+                            'content': content
+                        },
+                        success: function (arg) {
+                            layer.close(index);
+                            if (arg == 'True') {
+                                if (alias == "ONHOLD") {
+                                    $this.html('取消暂停');
+                                    $this.attr("aliasname", 'CANCEL_HOLD');
+                                    $this.closest("tr").prev().find(".status").text(content);
+
+                                } else {
+                                    $this.html("暂停");
+                                    $this.attr("aliasname", 'ONHOLD');
+                                    //当点击取消暂停时，订单的状态要返回到原先的状态
+                                    var statusList = ["ONHOLD", "CANCEL_HOLD", "ESTIMATED_TIME"];
+                                    actionLogs(labid);
+                                    var toggle = true;
+                                    for (var i = 0; i < logs.length; i++) {
+
+                                        var field = logs[i].fields;
+                                        var status = field.action;
+                                        if ($.inArray(status, statusList) == -1) {
+                                            toggle = false;
+                                            $this.closest("tr").prev().find(".status").text(field.action_value);
+                                            break;
+                                        }
+                                    }
+                                    if (toggle) {
+                                        $this.closest("tr").prev().find(".status").text("待打印");
+                                    }
+                                }
+
+                                layer.open({
+                                    title: content,
+                                    content: '订单' + labid + '已' + content,
+                                    time: 10000
+                                });
+
+                            } else {
+                                layer.open({
+                                    title: 'Error',
+                                    content: arg,
+                                    time: 10000
+                                });
+                            }
+                            var $aaa = $this.closest('tr').find('.liStyle button');
+                            actionStatus(labid, $aaa);
+
+                        }
+
+                    });
+                }
+            })
+
+
+        });
+
+
+        //取消订单操作
+        $("#tableContented").on("click", ".cancelled button", function () {
+            var labid = $(this).attr("labid"); //获取lab_number
+            var alias = $(this).attr("aliasname");//获取action key
+            var content = $(this).html();//获取action value
+            var $this = $(this);
+            var index = layer.open({
+                title: content,
+                type: 1,
+                area: poup, //宽高
+                content: $('#cancelled_reason'),
+                btn: ['确定', '取消'],
+                yes: function () {
+                    var reason = $("#cancel_reason").val();
+                    if (reason == null || reason == '') {
+                        layer.msg('请填写取消原因', {icon: 5});
+                        return false
+                    }
+                    $.ajax({
+                        url: "/oms/labOrderCancelled/",
+                        type: "POST",
+                        data: {
+                            'labid': labid,
+                            'alias': alias,
+                            'content': content,
+                            'reason': reason
+                        },
+                        success: function (arg) {
+                            layer.close(index);
+                            if (arg == 'True') {
+                                $($this).attr('disabled', 'disabled');
+                                var tip = layer.open({
+                                    title: content,
+                                    content: '订单' + labid + '已' + content,
+                                    time: 10000,
+                                    btn: ['确定'],
+                                    yes: function () {
+                                        layer.close(tip);
+                                        createTable(currentPage); //table表格重写
+
+                                    }
+                                });
+
+                            }
+                        }
+                    })
+                }
+            })
+        });
+
+
+        //订单重做
+        $("#tableContented").on("click", ".redo button", function () {
+            var labid = $(this).attr("labid"); //获取lab_number
+            var alias = $(this).attr("aliasname");//获取action key
+            var content = $(this).html();//获取action value
+            var $this = $(this);
+            var index = layer.open({
+                title: content,
+                type: 1,
+                area: poup, //宽高
+                content: '<p><br/>&nbsp;&nbsp;    是否对订单[ ' + labid + ' ]进行 [' + content + '] 操作？</p>',
+                btn: ['确定', '取消'],
+                yes: function () {
+                    window.location.href = "/oms/labOrderRedo?labid=" + labid + "&alias=" + alias + "&content=" + content + "&type=" + type
+                }
+            })
+        });
+
+
+        $("#labnumber").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btn_search").click();
+            }
+        });
+
+
+        //条件查询分页
+        $('#btn_search').click(function () {
+            var labnum = $("#labnumber").val();
+            $("#labnumber").select();
+            var begintime = $("#begindate").val();
+            var endtime = $("#enddate").val();
+            var labstatus = $("#status").val();
+            var shipdirection = $("#shipdirection").val();
+            var start_hour = $('#start_hour').val();
+            var end_hour = $('#end_hour').val();
+            var flag = $("#check_lens").is(":checked");
+            var lens_receive = null
+            if (flag) {
+                lens_receive = $("#check_lens").attr("value")
+            }
+            $.ajax({
+                url: '/oms/labOrderListcount/',
+                type: 'POST',
+                data: {
+                    'labnum': labnum,
+                    'begintime': begintime,
+                    'endtime': endtime,
+                    'labstatus': labstatus,
+                    'shipdirection': shipdirection,
+                    'start_hour': start_hour,
+                    'end_hour': end_hour,
+                    'lens_receive': lens_receive,
+                    'type': type
+
+                },
+                success: function (arg) {
+                    callBackPagination(arg);
+                }
+            });
+
+
+        });
+
+
+        //laborder 点击操作记录查询
+        $("#tableContented").on("click", ".labOrderLog", function () {
+            var labid = $(this).attr("labid");
+            actionLogs(labid);
+            var html = [];
+            if (logs.length > 0) {
+                for (var i = 0; i < logs.length; i++) {
+                    field = logs[i].fields;
+                    html.push("<tr>");
+                    html.push("<td>" + (i + 1) + "</td>");
+                    html.push("<td>" + field.action_value + "</td>");
+                    html.push("<td>" + field.username + "</td>");
+                    html.push("<td>" + longTime(field.create_at) + "</td>");
+                    html.push("</tr>");
+                }
+            } else {
+                html.push("<tr>");
+                html.push("<td colspan ='4'>no log</td></tr>");
+            }
+
+            var tbody = $('#lablog tbody');
+            tbody.html(html.join(''));
+
+            var index = layer.open({
+                type: 1,
+                area: ['30%',], //宽高
+                content: $('#lablog'),
+                btn: ['关闭'],
+                yes: function () {
+                    layer.close(index);
+                }
+            });
+        });
+
+
+        var logs = [];
+
+        //查询操作记录方法
+        function actionLogs(id) {
+
+            $.ajax({
+                url: "/oms/labOrderLog/",
+                type: "POST",
+                data: {
+                    'labNumber': id
+                },
+                async: false,
+                success: function (arg) {
+                    logs = JSON.parse(arg);
+
+                }
+            })
+
+        }
+
+        //添加comment
+        $('#tableContented').on('click', '.addComments', function () {
+            var ordernumber = $(this).attr('labid');
+            var ordertype = $(this).attr('type');
+            var id = $(this).attr('id');
+            var action_value = $(this).attr('tag');
+            var $this = $(this);
+            addCOMMENTS(ordernumber, ordertype, id, action_value, $this);
+        })
+
+
+        $('#tableContented').on('click', '#print_order', function () {
+            {#var headstr = "<html><head><title></title></head><body>";#}
+            {#  var footstr = "</body>";#}
+            {#  var newstr = document.all.item('print_div').innerHTML;#}
+            {#  var oldstr = document.body.innerHTML;#}
+            {#  document.body.innerHTML = headstr+newstr+footstr;#}
+            {#  window.print();#}
+            {#  document.body.innerHTML = oldstr;#}
+            {#  return false;#}
+
+
+            $("#print_div").jqprint()
+        })
+        $(document).ready(function () {
+
+            console.log($(".PRINT_DATE"))
+
+            $(".ACT_PRINTORDER").hide()
+            {% if not perms.oms.ACT_PRINT_DATE %}
+                $(".PRINT_DATE").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_FRAME_OUTBOUND %}
+                $(".FRAME_OUTBOUND").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_TINT %}
+                $(".TINT").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_RX_LAB %}
+                $(".RX_LAB").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_ADD_HARDENED %}
+                $(".ADD_HARDENED").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_COATING %}
+                $(".COATING").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_LENS_RECEIVE %}
+                $(".LENS_RECEIVE").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_INITIAL_INSPECTION %}
+                $(".INITIAL_INSPECTION").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_ASSEMBLING %}
+                $(".ASSEMBLING").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_SHAPING %}
+                $(".SHAPING").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_FINAL_INSPECTION %}
+                $(".FINAL_INSPECTION").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_PURGING %}
+                $(".PURGING").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_ORDER_MATCH %}
+                $(".ORDER_MATCH").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_PACKAGE %}
+                $(".PACKAGE").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_SHIPPING %}
+                $(".SHIPPING").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_COMPLETE %}
+                $(".ACT_COMPLETE").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_ESTIMATED_DATE %}
+                $(".ESTIMATED_DATE").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_CANCEL_HOLD %}
+                $(".CANCEL_HOLD").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_ONHOLD %}
+                $(".ONHOLD").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_CANCELLED %}
+                $(".CANCELLED").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_REDO %}
+                $(".REDO").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_COMMENT %}
+                $(".COMMENT").hide()
+            {% endif %}
+
+            {% if not perms.oms.ACT_PRINTORDER %}
+                $(".PRINTORDER").hide()
+            {% endif %}
+
+
+        });
+
+        function select_all() {
+            var txt = document.getElementById("labnumber");
+            txt.select();//选中框中的所有文本;
+        }
+
+        // 暂停/取消暂停 按钮
+        $("[name='btn_hold']").each(function () {
+            $(this).bind("click", function () {
+                _self = $(this);
+                var lab_num = _self.attr("lab_number");
+                var self_textarea = _self.parent().parent().next();
+                var _html = [];
+                var index = layer.open({
+                    type: 1,
+                    shadeClose: true,
+                    title: '填写原因',
+                    content: self_textarea,
+                    btn:['保存','取消'],
+                    area: '30%',
+                    cancel: function () {
+                        layer.msg('已取消', {time: 5000});
+                    },
+                    yes: function () {
+                        var reason = self_textarea.find("textarea").val();
+                        layer.close(index);
+                        $.ajax({
+                            url: "/oms/lab_order_hold_v2/",
+                            type: "POST",
+                            data: {
+                                'lab_num': lab_num,
+                                'reason': reason
+                            },
+                            success: function(arg){
+                                _html.push(arg);
+
+                                _self.parents().filter("div[name='details']").html(_html);
+                                var status_str = _self.parents(".detail_head").next().find("td[name='detail_status']").text();
+                                _self.parents("tr.lab_order_details").prev().find("td.status_td").html(status_str);
+                            }
+                        });
+                    }
+
+                });
+
+
+            });
+        });
+
+    </script>
+{% endblock %}

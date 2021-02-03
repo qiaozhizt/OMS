@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}API{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}修改工厂订单状态{% endblock %}
+{% block content %}
+    <!-- Content Wrapper. Contains page content -->
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div id="div_tip" class="callout callout-default" style="display: none;">
+            <h4>Tips!</h4>
+
+            <p>This is only beta version.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">Actions</h3>
+                    </div>
+                    <div class="box-body">
+                        <div style="float: left;">{% include 'search.html' %}</div>
+                        <div class="cl">
+                            <div style="float: left;margin-left: 20px;">
+                                变更状态到:
+                                <select id="status_selects" class="btn btn-default">
+                                    {% for item in form_data.status_list %}
+                                        <option value="{{ item.key }}" >
+                                            {{ item.value }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="cl">
+                            <div style="float: left;margin-left: 20px;">
+                                变更原因:
+                                <input type="text" style="height: 35px" id="status_reason">
+                            </div>
+                        </div>
+                        <div class="cl">
+                            <div style="float: left;margin-left: 15px;">
+                                <div style="float: left;margin-left: 5px;">
+                                    <button id="btn_delivery"
+                                            lab_number="{{ form_data.laborder.lab_number }}"
+                                            type="button"
+                                            class="btn btn-default">确认
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+
+        {% include 'laborder_detail_mini.pspf.html' %}
+
+    </section>
+    <!-- /.content -->
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+        //搜索跳转
+        $("#btnSearch").on("click", function () {
+            var entity = $("#number").val();
+            if (entity === '' || entity == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = "{% url 'change_status' %}?entity_id=" + entity;
+            }
+        });
+        //确认按钮
+        $("#btn_delivery").on("click", function () {
+            var url = "{% url 'change_status' %}";
+            var status_new = $("#status_selects").val();
+            var lab_number = $(this).attr("lab_number");
+            var status_reason = $("#status_reason").val();
+            // 定单号为空
+            if(lab_number === ''){
+                layer.msg('请先获取订单', {time: 5000})
+            }else if(status_reason === '' ){
+                layer.msg('请填写原因', {time: 5000})
+            }else{
+                var index = layer.load();
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        'lab_nubmer': lab_number,
+                        'status_new':status_new,
+                        'status_reason':status_reason
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        var obj = JSON.parse(arg);
+                        if (obj.code === 0){
+                            layer.msg(obj.message,{
+                                icon: 1,
+                                time: 0,
+                                shadeClose: 1,
+                                shade : [0.5 , '#000' , true]},
+                                function(){
+                                    //点击遮罩层关闭提示信息，刷新页面
+                                    location.href = url + '?entity_id=' + lab_number;
+                                }
+                            );
+                        } else {
+                            layer.msg(obj.message,{
+                                icon: 2,
+                                time: 0,
+                                shadeClose: 1,
+                                shade : [0.5 , '#000' , true]},
+                                function(){
+                                    //点击遮罩层关闭提示信息，刷新页面
+                                    location.href = url + '?entity_id=' + lab_number;
+                                }
+                            );
+                        }
+
+                    }
+                });
+            }
+        });
+
+
+    </script>
+{% endblock %}

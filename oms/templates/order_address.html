@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block h1 %}Shipment{% endblock %}
+{% block small %}Order Address{% endblock %}
+{% block content %}
+    <div class="input-group input-group-sm" style="width: 400px;">
+        <input type="text" class="form-control" id="number" placeholder="请输入单号">
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-default btn-flat" id="btnSearch">Ship Address</button>
+            </span>
+    </div>
+    <div id="tableContent">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Increment Id</th>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
+                    <th>Postcode</th>
+                    <th>Street</th>
+{#                    <th>Street2</th>#}
+                    <th>City</th>
+                    <th>Region</th>
+                    <th>Country id</th>
+                    <th>Telephone</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+    $.ajaxSetup({
+                 data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+                });
+
+    $("#btnSearch").click(function(){
+        var number = $('#number').val();
+        if(number == null || number == ''){
+            $("#number").attr("placeholder","请输入有效的单号");
+        }else{
+            $.ajax({
+           url:"/oms/address/",
+           type:"POST",
+           data:{
+               'id':number
+           },
+           success:function(arg){
+                if(arg == 'False'){
+                     var contentdiv = $('#tableContent tbody');
+                    contentdiv.empty();
+                    layer.msg('地址不存在，请确认单号', {time:3000,icon: 7});
+                }else{
+                    var data = JSON.parse(arg);
+                    var html = []
+               if(data.length>0 && data!=null){
+                for(var i =0;i<data.length;i++){
+                    html.push("<tr><td>"+data[i].increment_id+"</td><td>"+data[i].firstname+"</td><td>"+data[i].lastname+"</td><td>"+data[i].postcode+"</td><td>"+data[i].street+"</td><td>"+data[i].city+"</td><td>"+data[i].region+"</td><td>"+data[i].country_id+"</td><td>"+data[i].telephone+"</td></tr>");
+                }
+
+
+               var contentdiv = $('#tableContent tbody');
+               contentdiv.empty();
+               contentdiv.html(html.join(''));
+               }else{
+                 layer.msg('地址不存在，请确认单号', {time:3000,icon: 7});
+{#               html.push("<tr><td colspan = '9' style='text-align:center'>No address</td></tr>");#}
+{##}
+{#               var contentdiv = $('#tableContent tbody');#}
+{#               contentdiv.empty();#}
+{#               contentdiv.html(html.join(''));#}
+
+
+           }
+                }
+
+               }
+
+           })
+            }
+    })
+
+    </script>
+{% endblock %}

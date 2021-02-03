@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}QC{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}质检报告{% endblock %}
+{% block content %}
+    <!-- Content Wrapper. Contains page content -->
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div id="div_tip" class="callout callout-default" style="display: none;">
+            <h4>Tips!</h4>
+
+            <p>This is only beta version.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">Actions</h3>
+                    </div>
+                    <div class="box-body">
+                        <div style="float: left;">{% include 'search.html' %}</div>
+
+                        <div class="cl">
+                            <div style="float: left;margin-right: 0px;display:none">
+                                <button id="backPrev" type="button" class="btn btn-default btn active" role="button"
+                                        onClick="javascript :history.back(-1);">Back
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+        <div class="message" style="background: #d73925;color: #ffffff;">
+            {% if message != 'success' %}
+                {{ message }}
+            {% endif %}
+        </div>
+        <div id="content">
+            {% if gfit != '' and message == 'success' %}
+                {% include 'quality_inspection_report_print.html' %}
+            {% endif %}
+        </div>
+    </section>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function(){
+            var load_mark = layer.load();
+            let order_number = $("#number").val();
+            let url = "{% url 'quality_inspection_report' %}"
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter the order number -- 请输入订单号', {time: 3000, icon: 7});
+            }else{
+                $(".message").hide();
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        'order_number': order_number
+                    },
+                    success: function (arg) {
+                        layer.close(load_mark);
+                        if(arg.code == '-1'){
+                            layer.alert(arg.message);
+                        }
+                        console.log(arg);
+                        $("#content").html(arg);
+                    },
+                    error:function (XMLHttpRequest, textStatus, errorThrown) {
+                        layer.close(load_mark);
+                        alert('status=' + XMLHttpRequest.status + ',' + 'readyState=' + XMLHttpRequest.readyState
+                            + ',' + 'textStatus=' + textStatus + ';'
+                        );
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

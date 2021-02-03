@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load static %}
+<!-- 2018.06.19 updated by guof. -->
+{% block h1 %}MgOrder{% endblock %}
+{% block small %}{{ pgorderitem }}{% endblock %}
+{% if perms.oms.GO_VIEW %}
+    {% block btn %}
+        {% if pgorderitem == 'New Mg Order List' %}
+            <p style="margin-top: 10px;">
+                <button type="button" class="btn btn-default" style="margin-left: 20px" id="gp">Generate All PgOrder
+                </button>
+                <button type="button" class="btn btn-default" id="gsp">Generate Specified PgOrder</button>
+            </p>
+        {% endif %}
+    {% endblock %}
+{% endif %}
+{% block content %}
+    {% include 'search.html' %}
+
+    <div id="tableContent">
+        <table id="tables" class="table table-striped">
+            <tr>
+                <th class="hid">ENTITY ID</th>
+                <th>INCREMENT ID</th>
+                <th class="hid">VIP</th>
+                <th>STATUS</th>
+                <th>CREATED AT</th>
+                <th class="hid">PAYMENT METHOD</th>
+                <th class="hid">QUANTITY</th>
+                <th>GRAND TOTAL</th>
+                <th class="hid">CUSTOMER NAME</th>
+                <th class="hid">SHIPPING METHOD</th>
+            </tr>
+
+            {% if list %}
+                {% for foo in list %}
+                    <tr>
+                        <td class="hid">{{ foo.entity_id }}</td>
+                        <td>{{ foo.increment_id }}</td>
+                        {% if foo.is_vip == 1 %}
+                            <td class="hid"><img src="{% static "image/icon-yes.svg" %}"></td>
+                        {% else %}
+                            <td class="hid"></td>
+                        {% endif %}
+                        <td>{{ foo.status }}</td>
+                        <td>{{ foo.created_at }}</td>
+                        <td class="hid">{{ foo.payment_method }}</td>
+                        <td class="hid">{{ foo.quantity }}</td>
+                        <td>{{ foo.grand_total }}</td>
+                        <td class="hid">{{ foo.customer_name }}</td>
+                        <td class="hid">{{ foo.shipping_method }}</td>
+                    </tr>
+                {% endfor %}
+                </table>
+
+            {% else %}
+                <tr>
+                    <td colspan="12" style="font-size:20px;font-weight: bold;text-align: center; ">Temporarily no data
+                    </td>
+                </tr>
+                </table>
+            {% endif %}
+                <div style="width: 100%;text-align: center;">
+                    {% include 'page_number.html' %}
+                </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $(function () {
+            var content = $('.smallText').html();
+            if (content == 'Order List') {
+                $('#gp').css('display', 'none');
+            }
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            });
+
+            var width = $(document).width();
+            if (width < 800) {
+                poup = ['85%', '35%'];
+            } else {
+                poup = ['25%', '20%'];
+            }
+
+            //生成指定的pgorder
+            function layertip(data, url) {
+                var index = layer.open({
+                    title: 'Generate PgOrder',
+                    type: 1,
+                    area: poup, //宽高
+                    content: 'Are you sure to generate pgorder?',
+                    btn: ['CONFIRM', 'CANCEL'],
+                    yes: function () {
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            data: {
+                                'increment_id': data
+                            },
+                            success: function (arg) {
+                                layer.close(index);
+                                layer.msg(arg, {time: 5000, icon: 6}, function () {
+                                    window.location.href = "/oms/order_list_new"
+                                })
+                            }
+                        })
+                    }
+                });
+            }
+
+            //批量生成pgorder
+            $("#gp").click(function () {
+                data = 0;
+                url = '/oms/generate_pg_orders/'
+                layertip(data, url);
+            });
+
+            $("#gsp").click(function () {
+                var increment_id = $("#number").val();
+                var url = '/oms/generate_spe_pg_order/'
+                layertip(increment_id, url);
+            })
+        });
+
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        //单号查询
+        $("#btnSearch").on("click", function () {
+            var increment_id = $("#number").val();
+            var url = "/oms/serarchMgOrderByNumber/"
+            searchByNumber(increment_id, url, 0);
+            var arg = responseValue;
+
+            if (arg.length == 0) {
+                layer.msg('No order, please check the number.', {time: 3000, icon: 7});
+            } else {
+                html = [];
+                html.push("<table class='table table-striped'>");
+                html.push('<tr>' +
+                    '<th class="hid">ENTITY ID</th>' +
+                    '<th>INCREMENT ID</th>' +
+                    '<th class="hid">VIP</th>' +
+                    '<th>STATUS</th>' +
+                    '<th>CREATED AT</th>' +
+                    '<th class="hid">PAYMENT METHOD</th>' +
+                    '<th class="hid">QUANTITY</th>' +
+                    '<th>GRAND TOTAL</th>' +
+                    '<th class="hid">CUSTOMER NAME</th>' +
+                    '<th class="hid">SHIPPING METHOD</th>' +
+                    '</tr>');
+
+                for (var i = 0; i < arg.length; i++) {
+
+                    html.push("<tr>");
+                    html.push("<td class='hid'>" + arg[i].entity_id + "</td>");
+                    html.push("<td>" + arg[i].increment_id + "</td>");
+                    if (arg[i].is_vip == 0) {
+                        html.push("<td class='hid'> </td>");
+                    } else {
+                        html.push("<td class='hid'><img src='{% static "image/icon-yes.svg"%}'></td>");
+                    }
+
+                    html.push("<td>" + arg[i].status + "</td>");
+                    html.push("<td>" + arg[i].create_at + "</td>");
+                    html.push("<td class='hid'>" + arg[i].payment_method + "</td>");
+                    html.push("<td class='hid'>" + arg[i].quantity + "</td>");
+                    html.push("<td>" + arg[i].grand_total + "</td>");
+                    html.push("<td class='hid'>" + arg[i].customer_name + "</td>");
+                    html.push("<td class='hid'>" + arg[i].shipping_method + "</td>");
+                    html.push("</tr>");
+
+                }
+                html.push("</table>");
+
+                var tables = $("#tableContent");
+                tables.empty();
+                tables.html(html.join(''));
+            }
+        });
+    </script>
+{% endblock %}

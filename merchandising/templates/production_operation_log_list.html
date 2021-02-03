@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Merchandising {% if form_data.total %}
+    <span class="label label-default" xmlns="http://www.w3.org/1999/html">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}产品操作清单{% endblock %}
+{% block content %}
+    <div style="float: left;">
+        <div class="input-group input-group" style="width: 250px;">
+            <input type="text" class="form-control" id="sku" placeholder="Please enter the sku" value="{{ sku }}">
+        </div>
+    </div>
+        <div style="float: left;">
+        <div class="input-group input-group" style="width: 40px;height:40px;margin-left: 20px">
+           <select style="height: 32px" id="operation_type" name="operation_type"><option value="IN_STOCK">上架</option>
+               <option value="OUT_OF_STOCK">下架</option>
+               <option value="retired">停售</option>
+           </select>
+        </div>
+    </div>
+    <span class="input-group-btn" style="padding-left:20px">
+                    <button type="button" class="btn btn-default btn-flat" id="btnSearch">Search</button>
+    </span>
+
+    <br/>
+
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover table-striped">
+            <thead>
+            <tr>
+                <th>操作ID</th>
+                <th>操作类型</th>
+                <th>SKU</th>
+                <th>原因</th>
+                <th>操作人</th>
+                <th>操作日期</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td class="hid">{{ item.id }}</td>
+                    <td class="hid">{{ item.operation_type }}</td>
+                    <td class="hid">{{ item.sku }}</td>
+                    <td class="hid">{{ item.reason }}</td>
+                    <td class="hid">{{ item.user_name }}</td>
+                    <td class="hid">{{ item.created_at }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#sku").val();
+            operation_type =$("#operation_type").val();
+            location.href = '/merchandising/production_operation_log_list/?sku=' + sku+"&operation_type="+operation_type
+        });
+    </script>
+{% endblock %}

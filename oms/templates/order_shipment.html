@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+{% block h1 %}Shipment{% endblock %}
+{% block small %}发货-旧版{% endblock %}
+{% block content %}
+    <form class="form-horizontal" autocomplete="on">
+        <div class="form-group">
+            <label style="padding-left: 5%">发货方式</label>
+
+            <select id="post_shipMethod">
+                <option value="0">--请选择--</option>
+                <option value="1">加急</option>
+                <option value="2">普通</option>
+            </select>
+
+            <label style="padding-left: 5%">承运商</label>
+
+            <select id="post_carrier">
+                <option value="UPS">UPS</option>
+                <option value="EMS">EMS(邮政)</option>
+                <option value="SF">顺丰</option>
+            </select>
+
+            <label style="padding-left: 5%">订单号:</label>
+            <input id="post_goodsNum" type="text">
+            <label style="padding-left: 5%">备注:</label>
+            <input id="post_remark" type="text">
+        </div>
+
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title">发货</h3>
+                        <div class="input-group input-group-lg pull-right" style="width:300px;">
+
+                            <input id="selectOrder" type="text" class="form-control pull-right" placeholder="查询订单"
+                                   autocomplete="on">
+
+                            <div class="input-group-btn">
+                                <button id="searchOrder" type="button" class="btn btn-default"><i
+                                        class="fa fa-search"></i></button>
+                            </div>
+                        </div>
+                        <button id="showAll" type="button" class="btn btn-default  btn-lg pull-right">显示全部</button>
+                        <button id="showMatch" type="button" class="btn btn-default  btn-lg pull-right">显示配对</button>
+
+                        {#              <div class="box-tools">#}
+                        {##}
+                        {##}
+                        {#              </div>#}
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body table-responsive no-padding" style="width: 45%;float:left;position:relative;">
+                        <table class="table table-hover">
+                            <thead>
+                            <th>Region</th>
+                            <th>State</th>
+                            <th>PgOrder</th>
+                            <th>LabOrder</th>
+                            <th>Sku</th>
+                            <th>Comments Ship</th>
+                            <th>
+                                <button id="deleteAll" type="button" class="btn btn-block btn-default btn-xs"
+                                        style="width: 80px">删除全部
+                                </button>
+                            </th>
+                            </thead>
+                            <tbody id="mainTbody">
+
+                            </tbody>
+
+                        </table>
+
+
+                    </div>
+                    <div class="box-body table-responsive no-padding" style="width: 45%;float:right;">
+                        <table class="table table-hover">
+                            <thead>
+                            <th>Region</th>
+                            <th>State</th>
+                            <th>LabNumber</th>
+                            <th>Status</th>
+                            <th>Sku</th>
+                            <th>Comments Ship</th>
+
+                            <th>
+                                <button id="addAll" type="button" class="btn btn-block btn-default btn-xs"
+                                        style="width: 80px">添加全部
+                                </button>
+                            </th>
+
+                            </thead>
+                            <tbody id="rightTbody">
+                            {% for labOrder in lab %}
+                                <tr id="r{{ labOrder.lab_number }}">
+                                    <td>
+                                        {{ labOrder.order_ship_region }}
+                                    </td>
+                                    <td>
+                                        {{ labOrder.order_state }}
+                                    </td>
+                                    <td class="orderNum">{{ labOrder.lab_number }}</td>
+                                    <td>{{ labOrder.status }}</td>
+                                    <td>{{ labOrder.frame }}</td>
+                                    <td>{{ labOrder.comments_ship }}</td>
+
+                                    <td>
+                                        <button type="button" class="btn btn-block btn-default btn-xs addTr"
+                                                style="width: 80px">添加
+                                        </button>
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+                            </tbody>
+                        </table>
+
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+        <button id="submitData" type="button" class="btn btn-default btn-lg">发货</button>
+    </form>
+{% endblock %}
+{% block jquery %}
+    <script>
+
+
+        $("#addAll").on('click', function () {
+            $(".orderNum").each(function () {
+                var order = $(this).closest("tr").find(".orderNum").html();
+                getOrderInfo(order);
+                $(this).closest('tr').hide()
+            })
+        })
+        $("#deleteAll").on("click", function () {
+            $("#mainTbody").empty();
+            $(".orderNum").each(function () {
+                $(this).closest('tr').show()
+            })
+        })
+
+        $("#is_check").on('click', function () {
+            if ($(this).prop("checked")) {
+                $(".inputCheck").prop("checked", true);
+                $(".orderNum").each(function () {
+                    var order = $(this).closest("tr").find(".orderNum").html();
+                    getOrderInfo(order)
+                })
+            } else {
+                $(".inputCheck").prop("checked", false);
+                $("#mainTbody").empty()
+            }
+        })
+
+        $(document).ready(function () {
+
+
+            {#$(".addTr").on('click',function () {#}
+            {#    alert(6666)#}
+            {#     var order = $(this).closest("tr").find(".orderNum").html()#}
+            {#       var x = '#r'+order#}
+            {##}
+            {#        getOrderInfo(order)#}
+            {#        $(x).hide()#}
+
+
+            $("#rightTbody").on('click', '.addTr', function () {
+
+                var order = $(this).closest("tr").find(".orderNum").html();
+
+                var x = '#r' + order;
+
+                getOrderInfo(order);
+                $(x).hide()
+            });
+
+
+            $("#mainTbody").on('click', '.deleteTr', function () {
+                var or = $(this).attr("order");
+                var x = "#r" + or;
+                $(x).show();
+                $(this).closest('tr').remove()
+            });
+
+
+            $("#showAll").on('click', function () {
+                $.ajax({
+                    url: '/oms/searchOrderInfo/',
+                    type: 'get',
+
+                    success: function (arg) {
+
+                        if (arg != 'None') {
+                            var orders = JSON.parse(arg);
+                            $("#rightTbody").empty();
+
+                            for (var x = 0; x < orders.length; x++) {
+                                var order = orders[x];
+                                pushRightHtml(order)
+                            }
+
+                        } else {
+                            alert(arg)
+                        }
+                    }
+                })
+            })
+            $("#showMatch").on('click', function () {
+                $.ajax({
+                    url: '/oms/searchMatchOrderInfo/',
+                    type: 'get',
+
+                    success: function (arg) {
+
+                        if (arg != 'None') {
+                            var orders = JSON.parse(arg);
+                            $("#rightTbody").empty();
+
+                            for (var x = 0; x < orders.length; x++) {
+                                var order = orders[x];
+                                pushRightHtml(order)
+                            }
+
+                        } else {
+                            alert(arg)
+                        }
+                    }
+                })
+            });
+
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            });
+
+
+            $("#submitData").on('click', function () {
+                var lalist = [];
+                var pglist = [];
+                var shipMethod = $("#post_shipMethod").find("option:selected").val();
+                var carrier = $("#post_carrier").find("option:selected").val();
+                var post_orderNum = $("#post_goodsNum").val();
+                var remark = $("#post_remark").val();
+                if (shipMethod == 0) {
+                    alert("请选择发货方式！")
+                } else {
+
+                    $("#mainTbody tr").each(function () {
+
+                        lalist.push($(this).find(".labNum").html());
+                        pglist.push($(this).find(".pgNum").html());
+                    });
+
+                    var lalist = JSON.stringify(lalist);
+                    var pglist = JSON.stringify(pglist);
+
+                    var index = layer.load();
+                    $.ajax({
+                        url: '/oms/shipmentController/',
+                        type: 'post',
+                        data: {
+                            shipMethod: shipMethod,
+                            carrier: carrier,
+                            post_orderNum: post_orderNum,
+                            remark: remark,
+                            lalist: lalist,
+                            pglist: pglist
+                        },
+                        success: function (arg) {
+                            layer.close(index);
+                            if (arg == 'success') {
+                                layer.msg('Success', {time: 1000, icon: 6}, function () {
+                                    window.location.href = "/oms/redirectShipment/"
+                                });
+                            } else {
+                                layer.msg('error', {time: 1000, icon: 6});
+                            }
+                        }
+                    })
+
+                }
+
+
+            });
+
+            $("#searchOrder").on('click', function () {
+                var order = $("#selectOrder").val();
+                {#$("#selectOrder").val('')#}
+
+                $.ajax({
+                    url: '/oms/searchOrderInfo/',
+                    type: 'post',
+                    data: {
+                        order: order
+                    },
+                    success: function (arg) {
+                        if (arg != 'None') {
+
+                            $("#rightTbody").empty();
+                            var order = JSON.parse(arg);
+                            pushRightHtml(order)
+                        } else {
+                            alert("无此订单")
+                        }
+                    }
+                })
+                form.submit()
+            })
+
+
+        });
+
+
+        function getOrderInfo(arg) {
+            var orderNum = arg
+
+
+            $.ajax({
+                url: '/oms/getShipmentInfo/',
+                type: 'post',
+                data: {
+                    orderNum: orderNum
+                },
+                success: function (x) {
+                    pushHtml(x)
+                }
+            })
+        }
+
+
+        function pushHtml(arg) {
+
+            var order = JSON.parse(arg)
+
+            var html = []
+            html.push('<tr id="' + order.labNum + '">')
+            html.push('<td class="Region">' + order.ship_region + '</td>')
+            html.push('<td class="Region">' + order.region + '</td>')
+            html.push('<td class="pgNum">' + order.pgNum + '</td>')
+            html.push('<td class="labNum">' + order.labNum + '</td>')
+            html.push('<td>' + order.sku + '</td>')
+            html.push('<td>'+ order.comments_ship + '</td>')
+            html.push('<td>  <button  type="button" class="deleteTr btn btn-block btn-default btn-xs" order="' + order.labNum + '"  style="width:80px;">删除</button></td>')
+
+            html.push('</tr>')
+            var x = "#" + order.labNum
+
+            if ($(x).length <= 0) {
+                $("#mainTbody").append(html.join(''))
+            }
+
+
+        }
+
+        function pushRightHtml(arg) {
+
+            {#var order = JSON.parse(arg)#}
+            var order = arg
+
+            {#<tr id="r{{ labOrder.lab_number }}">#}
+            {##}
+            {#         <td class="orderNum" order="158">{{ labOrder.lab_number }}</td>#}
+            {#         <td>{{ labOrder.status}}</td>#}
+            {#           <td>{{ labOrder.frame}}</td>#}
+            {#         <td><button type="button" class="btn btn-block btn-default btn-xs addTr" style="width: 80px">添加</button></td>#}
+            {##}
+            {#       </tr>#}
+
+
+            var html = []
+            html.push('<tr id="r' + order.labNum + '">')
+
+              html.push('<td>' + order.order_ship_region + '</td>')
+              html.push('<td>' + order.order_state + '</td>')
+
+            html.push(' <td class="orderNum">' + order.labNum + '</td>')
+            html.push('<td>' + order.status + '</td>')
+            html.push('<td>' + order.sku + '</td>')
+            html.push(' <td><button type="button" class="btn btn-block btn-default btn-xs addTr" style="width: 80px">添加</button></td>')
+            html.push('</tr>')
+
+
+            $("#rightTbody").append(html.join(''))
+
+
+        }
+
+
+    </script>
+{% endblock %}

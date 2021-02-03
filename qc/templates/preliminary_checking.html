@@ -1,0 +1,817 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}QC - 初检 {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}镜片初检{% endblock %}
+{% block content %}
+
+    <!-- Content Wrapper. Contains page content -->
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div id="div_tip" class="callout callout-default" style="display: none;">
+            <h4>Tips!</h4>
+
+            <p>This is only beta version.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">Actions</h3>
+                    </div>
+                    <div class="box-body">
+                        <div style="float: left;">{% include 'search.html' %}</div>
+
+                        <div class="cl">
+                            <div style="float: left;margin-right: 0px;display:none">
+                                <button id="backPrev" type="button" class="btn btn-default btn active" role="button"
+                                        onClick="javascript :history.back(-1);">Back
+                                </button>
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.qc.PRELIMINARY_CHECKING %}
+
+                                    <div style="float: left;margin-left: 5px;">
+                                        <button id="btn_qualified"
+                                                order_number="{{ form_data.laborder.lab_number }}"
+                                                lab_number="{{ form_data.laborder.lab_number }}"
+                                                qualified='1'
+                                                type="button"
+                                                class="btn btn-default btn-flat active">初检合格
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.qc.PRELIMINARY_CHECKING %}
+
+                                    <div style="float: left;margin-left: 5px;">
+                                        <button id="btn_not_qualified"
+                                                order_number="{{ form_data.laborder.lab_number }}"
+                                                qualified='0'
+                                                type="button"
+                                                class="btn btn-default btn-flat active">检验不合格
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.qc.PRELIMINARY_CHECKING %}
+
+                                    <div style="float: left;margin-left: 5px;">
+                                        <button id="btn_print"
+                                                order_number="{{ form_data.laborder.lab_number }}"
+                                                qualified='0'
+                                                type="button"
+                                                class="btn btn-default btn-flat active">打印 镜片返工单
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <i class="fa fa-hourglass-half"></i>
+                        <h3 class="box-title">订单详情</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="row clearfix">
+                            <div class="col-md-12 column">
+                                <table class="table table-hover table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <th>订单号</th>
+                                        <th>状态</th>
+                                        <th>镜架</th>
+                                    </tr>
+                                    <tr>
+                                        <td id="lbo_num_td" lab_num_td="{{ form_data.laborder.lab_number }}" >{{ form_data.laborder.lab_number }}</td>
+                                        <td>{{ form_data.laborder.get_status_display }}</td>
+                                        <td>{{ form_data.laborder.frame }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>实际发货</th>
+                                        <th>计划镜片</th>
+                                        <th>实际镜片</th>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ form_data.laborder.get_act_ship_direction_display }} </td>
+                                        <td>{{ form_data.laborder.lens_name }}</td>
+                                        <td>{{ form_data.laborder.act_lens_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>染色</th>
+                                        <th>涂层</th>
+                                        <th>设计</th>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ form_data.laborder.tint_name }}</td>
+                                        <td>{{ form_data.laborder.coating_name }}</td>
+                                        <td>{{ form_data.laborder.pal_design_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>VD</th>
+                                        <th>WS</th>
+                                        <th>数量</th>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ form_data.laborder.get_vendor_display }}</td>
+                                        <td>{{ form_data.laborder.get_workshop_display }}</td>
+                                        <td>{{ form_data.laborder.quantity }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="3">备注</th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">{{ form_data.laborder.comments }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+            {% include 'frame_image.html' %}
+<!--            <div class="col-md-6">-->
+<!--                <div class="box box-default">-->
+<!--                    <div class="box-header with-border">-->
+<!--                        <i class="fa fa-hourglass-half"></i>-->
+<!--                        <h3 class="box-title">SKU规格:新款</h3>-->
+<!--                    </div>-->
+<!--                    <div class="box-header with-border">-->
+<!--                        <i class="fa fa-hourglass-half"></i>-->
+<!--                        <h3 class="box-title">镜架图片</h3>-->
+<!--                    </div>-->
+<!--                    &lt;!&ndash; /.box-header &ndash;&gt;-->
+<!--                    <div class="box-body">-->
+<!--                        <div class="row clearfix">-->
+<!--                            <div class="col-md-12 column">-->
+<!--                                <div class="form-group">-->
+<!--                                    <div class="col-sm-12 order-images-each">-->
+<!--                                        <img src="https://static.payneglasses.com/media/catalog/product{{ item.image }}"-->
+<!--                                             class="img-responsive center-block"/>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    &lt;!&ndash; /.box-body &ndash;&gt;-->
+<!--                </div>-->
+<!--                &lt;!&ndash; /.box &ndash;&gt;-->
+<!--            </div>-->
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Bar chart -->
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <i class="fa fa-eye"></i>
+                        <h3 class="box-title">验光单-订单</h3>
+                        <input type="hidden" value="{{ item.lab_number }}" id="edit_lab_number"/>
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool"><i
+                                    class="fa fa-edit" id="edit_frame"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="box-body">
+                        <div class="col-xs-12">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>Profile ID</th>
+                                    <th>Profile Name</th>
+                                    <th>Prescription ID</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Used For</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ item.profile_id }}</td>
+                                    <td>{{ item.profile_name }}</td>
+                                    <td>{{ item.prescription_id }}</td>
+                                    <td>{{ item.prescription_name }}</td>
+                                    <td>{{ item.prescription_type }}</td>
+                                    <td><span class="label label-default">{{ item.used_for }}</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-xs-12">
+
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>#</th>
+                                    <th>SPH</th>
+                                    <th>CYL</th>
+                                    <th>AXIS</th>
+                                    <th>ADD</th>
+                                    <th>PD</th>
+                                </tr>
+                                <tr>
+                                    <td>OD</td>
+                                    <td>{{ item.od_sph }}</td>
+                                    <td>{{ item.od_cyl }}</td>
+                                    <td>{{ item.od_axis }}</td>
+                                    <td>{{ item.od_add }}</td>
+                                    <td>
+                                        {% ifequal item.is_singgle_pd 1 %}{{ item.pd }}{% endifequal %}
+                                        {% ifequal item.is_singgle_pd 0 %}{{ item.od_pd }}{% endifequal %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>OS</td>
+                                    <td>{{ item.os_sph }}</td>
+                                    <td>{{ item.os_cyl }}</td>
+                                    <td>{{ item.os_axis }}</td>
+                                    <td>{{ item.os_add }}</td>
+                                    <td>
+                                        {% ifequal item.is_singgle_pd 0 %}{{ item.os_pd }}{% endifequal %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-xs-12">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Prism-H</th>
+                                    <th>Base-H</th>
+                                    <th>Prism-V</th>
+                                    <th>Base-V</th>
+                                </tr>
+                                <tr>
+                                    <td>OD</td>
+                                    <td>{{ item.od_prism }}</td>
+                                    <td>{{ item.od_base }}</td>
+                                    <td>{{ item.od_prism1 }}</td>
+                                    <td>{{ item.od_base1 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>OS</td>
+                                    <td>{{ item.os_prism }}</td>
+                                    <td>{{ item.os_base }}</td>
+                                    <td>{{ item.os_prism1 }}</td>
+                                    <td>{{ item.os_base1 }}</td>
+                                </tr>
+
+                            </table>
+                        </div>
+                        <div class="col-xs-12">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>Dia_1</th>
+                                    <th>Dia_2</th>
+                                    <th>MONO PD OFF CTR MM</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ item.dia_1 }}</td>
+                                    <td>{{ item.dia_2 }}</td>
+                                    <td>{{ item.get_mono_pd_off_ctr_mm }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- /.box-body-->
+                </div>
+                <!-- /.box -->
+            </div>
+            <div class="col-md-6">
+                <!-- Bar chart -->
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <i class="fa fa-eye"></i>
+                        <h3 class="box-title">验光单-实际</h3>
+                        <input type="hidden" value="{{ item.lab_number }}" id="edit_lab_number"/>
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool"><i
+                                    class="fa fa-edit" id="edit_frame"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="box-body">
+                        <div class="col-xs-12">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>Profile ID</th>
+                                    <th>Profile Name</th>
+                                    <th>Prescription ID</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Used For</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ form_data.pre_pa.profile_id }}</td>
+                                    <td>{{ form_data.pre_pa.profile_name }}</td>
+                                    <td>{{ form_data.pre_pa.prescription_id }}</td>
+                                    <td>{{ form_data.pre_pa.prescription_name }}</td>
+                                    <td>{{ form_data.pre_pa.prescription_type }}</td>
+                                    <td><span class="label label-default">{{ form_data.pre_pa.used_for }}</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-xs-12">
+
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>#</th>
+                                    <th>SPH</th>
+                                    <th>CYL</th>
+                                    <th>AXIS</th>
+                                    <th>ADD</th>
+                                    <th>PD</th>
+                                </tr>
+                                <tr>
+                                    <td>OD</td>
+                                    <td>{{ form_data.pre_pa.od_sph }}</td>
+                                    <td>{{ form_data.pre_pa.od_cyl }}</td>
+                                    <td>{{ form_data.pre_pa.od_axis }}</td>
+                                    <td>{{ form_data.pre_pa.od_add }}</td>
+                                    <td>
+                                        {% ifequal form_data.pre_pa.is_singgle_pd 1 %}{{ form_data.pre_pa.pd }}{% endifequal %}
+                                        {% ifequal form_data.pre_pa.is_singgle_pd 0 %}{{ form_data.pre_pa.od_pd }}{% endifequal %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>OS</td>
+                                    <td>{{ form_data.pre_pa.os_sph }}</td>
+                                    <td>{{ form_data.pre_pa.os_cyl }}</td>
+                                    <td>{{ form_data.pre_pa.os_axis }}</td>
+                                    <td>{{ form_data.pre_pa.os_add }}</td>
+                                    <td>
+                                        {% ifequal form_data.pre_pa.is_singgle_pd 0 %}{{ form_data.pre_pa.os_pd }}{% endifequal %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-xs-12">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Prism-H</th>
+                                    <th>Base-H</th>
+                                    <th>Prism-V</th>
+                                    <th>Base-V</th>
+                                </tr>
+                                <tr>
+                                    <td>OD</td>
+                                    <td>{{ form_data.pre_pa.od_prism }}</td>
+                                    <td>{{ form_data.pre_pa.od_base }}</td>
+                                    <td>{{ form_data.pre_pa.od_prism1 }}</td>
+                                    <td>{{ form_data.pre_pa.od_base1 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>OS</td>
+                                    <td>{{ form_data.pre_pa.os_prism }}</td>
+                                    <td>{{ form_data.pre_pa.os_base }}</td>
+                                    <td>{{ form_data.pre_pa.os_prism1 }}</td>
+                                    <td>{{ form_data.pre_pa.os_base1 }}</td>
+                                </tr>
+
+                            </table>
+                        </div>
+                        <div class="col-xs-12">
+                            <table class="table table-hover">
+                                <tr>
+                                    <th>User Name</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ form_data.pre_pa.user_name }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- /.box-body-->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+{#        {% include 'laborder_detail_mini.pspf.html' %}#}
+
+    </section>
+    <!-- /.content -->
+
+    <div id="perliminary_checking_collection" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            订单 VD:<input class="form-control" name="txt_vendor" id="txt_vendor" readonly="true"
+                         value="{{ form_data.laborder.vendor }}"></input>
+            订单 SKU:<input class="form-control" name="txt_lens_sku" id="txt_lens_sku" readonly="true"
+                          value="{{ form_data.laborder.act_lens_sku }}"></input>
+            订单镜片:<input class="form-control" name="txt_lens_name" id="txt_lens_name" readonly="true"
+                        value="{{ form_data.laborder.act_lens_name }}"></input>
+            请选择 Index:<select class="form-control" name="sel_index" id="sel_index"></select>
+            <div class="hidden">请选择 VD:<select class="form-control" name="sel_vendors" id="sel_vendors"></select></div>
+            请选择镜片:<select class="form-control" name="sel_lens_sku" id="sel_lens_sku"></select>
+        </div>
+    </div>
+    <div id="special_handling_window" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            <p style="text-align:center;font-size: 18px">
+                {{ form_data.laborder.special_handling }}
+            </p>
+        </div>
+    </div>
+    <div id="perliminary_checking_part" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            <input class="form-control" type="text" value="" name="reason" id="reason" placeholder="不合格原因">
+        </div>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        url = "{% url 'preliminary_checking' %}";
+
+        $("#btnSearch").on("click", function () {
+            entity = $("#number").val();
+            if (entity == '' || entity == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                //location.href = url + '?entity_id=' + entity;
+                url = "{% url 'preliminary_checking' %}";
+                var order_number = $("#number").val();
+                var index = layer.load(2); //换了种风格
+                window.location.href = url + '?entity_id=' + order_number;
+            }
+        });
+
+        /*
+        // dilivery
+        $("#btn_qualified").on('click', function () {
+            url = "{% url 'preliminary_checking' %}";
+            obj = $("#btn_qualified");
+            var order_number = obj.attr("order_number");
+            var qualified = obj.attr('qualified');
+            //var order_number = $("#number").val();
+            obj.attr("disabled", 'disabled');
+            // var index = layer.load(2); //换了种风格
+
+            var index = layer.open({
+                type: 1,
+                shade: 0.8,
+                shadeClose: true,
+                title: '确认实际镜片', //不显示标题
+                content: $('#perliminary_checking_collection'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                btn: ['保存', '取消'],
+
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                },
+                yes: function () {
+                    var act_lens_sku = $('#act_lens_sku').val();
+                    // alert(act_lens_sku);
+                    var act_lens_name = $('#act_lens_name').val();
+                    if (act_lens_sku == '' || act_lens_sku == null) {
+                        layer.msg('必须填写实际镜片信息', {icon: 5});
+                        return false;
+                    } else {
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            data: {
+                                'lab_nubmer': order_number,
+                                'qualified': qualified,
+                                'act_lens_sku': act_lens_sku,
+                                'act_lens_name': act_lens_name
+                            },
+                            error: function () {
+                                layer.msg('添加失败，请稍后重试', {icon: 5});
+                            },
+                            success: function (arg) {
+                                //rm = JSON.stringify(arg);
+                                rm = JSON.parse(arg);
+                                layer.close(index);
+                                if (rm.code == 0) {
+                                    layer.msg('此操作已成功!');
+                                    setTimeout(function () {
+                                        layer.closeAll();
+                                        //add your code
+                                        window.location.href = url + '?entity_id=' + order_number;
+                                    }, 2 * 1000);//延迟5000毫米
+                                }
+                                else {
+                                    layer.msg(rm.code + '-' + rm.message);
+                                }
+                            }
+                        })
+
+                    }
+
+                }
+
+            });
+
+        });
+*/
+
+        $("#btn_not_qualified").on('click', function () {
+            url = "{% url 'preliminary_checking' %}";
+            obj = $("#btn_not_qualified");
+            var order_number = obj.attr("order_number");
+            var qualified = obj.attr('qualified');
+            //var order_number = $("#number").val();
+            obj.attr("disabled", 'disabled');
+
+            var index = layer.open({
+                type: 1,
+                shade: false,
+                title: '填写不合格原因', //不显示标题
+                content: $('#perliminary_checking_part'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                btn: ['保存', '取消'],
+
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                },
+                yes: function () {
+                    var reason = $('#reason').val();
+                    if (reason == '' || reason == null) {
+                        layer.msg('必须填写不合格原因', {icon: 5});
+                        return false;
+                    } else {
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            data: {
+                                'lab_nubmer': order_number,
+                                'qualified': qualified,
+                                'reason_code': '-1',
+                                'reason': reason
+                            },
+                            error: function () {
+                                layer.msg('添加失败，请稍后重试', {icon: 5});
+                            },
+                            success: function (arg) {
+                                //rm = JSON.stringify(arg);
+                                rm = JSON.parse(arg);
+                                layer.close(index);
+                                if (rm.code == 0) {
+                                    layer.msg('此操作已成功!');
+                                    setTimeout(function () {
+                                        //add your code
+                                        window.location.href = url + '?entity_id=' + order_number;
+                                    }, 2 * 1000);//延迟5000毫米
+                                } else {
+                                    layer.msg(rm.code + '-' + rm.message);
+                                }
+                            }
+                        })
+
+                    }
+
+                }
+
+            });
+        });
+
+
+        // dilivery
+        $("#btn_print").on('click', function () {
+            url = "{% url 'preliminary_checking' %}";
+            obj = $("#btn_qualified");
+            var order_number = obj.attr("order_number");
+            var qualified = obj.attr('qualified');
+            //var order_number = $("#number").val();
+            //obj.attr("disabled", 'disabled');
+            //var index = layer.load(2); //换了种风格
+
+            layer.msg('此功能尚未实现');
+        });
+        //初检合格按钮
+        $("#btn_qualified").on('click', function () {
+            var obj = $(this);
+            var special_handling = "{{ form_data.special_handling }}";
+            special_handling = special_handling.replace(/[\s\n\t]+$/g, "");
+            if(special_handling != null&&special_handling != 'None'&&special_handling != '0'&&special_handling != ''){
+                var index = layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '600px',
+                        height: '400px'
+                    },
+                    title: '确认特殊要求是否符合', //不显示标题
+                    content: $('#special_handling_window'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['下一步',  '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    btn1: function () {
+                        layer.close(index);
+                        show_VD_window(obj);
+                    }
+                });
+            }else{
+                //不显示特殊要求确认直接显示分配VD
+                show_VD_window(obj);
+            }
+        });
+        //显示手动分配VD窗口
+        function show_VD_window(obj) {
+            var entity = obj.attr('lab_entity');
+            var type = obj.attr('obj_type');
+            var lab_number = obj.attr('lab_number');
+            var action_value = obj.attr('tag');
+            var base_sku = obj.attr('base_sku');
+            var vendor = obj.attr('vendor');
+
+            var lens_name = obj.attr('lens_name');
+
+            //$("#txt_vendor").val(vendor);
+            //$("#txt_lens_sku").val(base_sku);
+            //$("#txt_lens_name").val(lens_name);
+
+            var s_vendors = $("#sel_vendors");
+            s_vendors.empty();
+            s_vendors.append("<option value='" + '0' + "'>" + '0' + "</option>");
+            s_vendors.append("<option value='" + '2' + "'>" + '2' + "</option>");
+            s_vendors.append("<option value='" + '3' + "'>" + '3' + "</option>");
+            s_vendors.append("<option value='" + '4' + "'>" + '4' + "</option>");
+            s_vendors.append("<option value='" + '5' + "'>" + '5' + "</option>");
+            s_vendors.append("<option value='" + '6' + "'>" + '6' + "</option>");
+            s_vendors.append("<option value='" + '7' + "'>" + '7' + "</option>");
+            s_vendors.append("<option value='" + '8' + "'>" + '8' + "</option>");
+            s_vendors.append("<option value='" + '9' + "'>" + '9' + "</option>");
+            s_vendors.append("<option value='" + '10' + "'>" + '10' + "</option>");
+            s_vendors.append("<option value='" + '11' + "'>" + '11' + "</option>");
+            s_vendors.append("<option value='" + '12' + "'>" + '12' + "</option>");
+            s_vendors.append("<option value='" + '13' + "'>" + '13' + "</option>");
+            s_vendors.append("<option value='" + '14' + "'>" + '14' + "</option>");
+            s_vendors.append("<option value='" + '15' + "'>" + '15' + "</option>");
+
+            var s_index = $("#sel_index");
+            s_index.empty();
+            s_index.append("<option value='" + '1.50' + "'>" + '1.50' + "</option>");
+            s_index.append("<option value='" + '1.56' + "'>" + '1.56' + "</option>");
+            s_index.append("<option value='" + '1.59' + "'>" + '1.59' + "</option>");
+            s_index.append("<option value='" + '1.61' + "'>" + '1.61' + "</option>");
+            s_index.append("<option value='" + '1.67' + "'>" + '1.67' + "</option>");
+            s_index.append("<option value='" + '1.74' + "'>" + '1.74' + "</option>");
+
+            var index = top.layer.open({
+                type: 1,
+                shade: 0.8,
+                anim: 4,
+                style: {
+                    width: '600px',
+                    height: '400px'
+                },
+                title: '确认镜片', //不显示标题
+                content: $('#perliminary_checking_collection'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                btn: ['确定', '变更', '取消'],
+
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                },
+                btn1: function () {
+                    distribute_orders(obj, "CONFIRMED");
+                },
+                btn2: function () {
+                    distribute_orders(obj);
+                }
+            });
+        }
+        //初检合格函数
+        function distribute_orders(obj, signed) {
+
+            var lab_number = obj.attr('lab_number');
+            var qualified = obj.attr('qualified');
+
+            // alert(qualified);
+
+            var sel_lens_sku = $("#sel_lens_sku");
+            var lens_sku = sel_lens_sku.val();
+            var lens_name = $("#sel_lens_sku option:selected").text();
+            var s_vendors = $("#sel_vendors");
+            var vendor = s_vendors.val();
+            var vendor = $('#txt_vendor').val();
+            //alert(vendor);
+
+            console.log('vendor:' + vendor);
+
+            // 通过signed标识，修改lens_sku&lens_name；
+            // 如果lens_sku为空，则不更新len order和lab order。
+            if (signed == "CONFIRMED") {
+                lens_sku = "";
+                lens_name = "";
+            }
+
+            var url_lens = "{% url 'distribute_lab_orders_manual' %}";
+            var lens_index = layer.load();
+            $.ajax({
+                url: url_lens,
+                type: 'POST',
+                data: {
+                    'lab_number': lab_number,
+                    'qualified': qualified,
+                    'vendor': vendor,
+                    'lens_sku': lens_sku,
+                    'lens_name': lens_name,
+                },
+                success: function (arg) {
+                    resp = $.parseJSON(arg);
+                    layer.closeAll();
+                    if (resp.code == 0) {
+                        $("#btn_cur_vd").text(vendor);
+                        $("#txt_lens_sku").text(lens_sku);
+                        $("#txt_lens_name").text(lens_name);
+                        obj.closest("tr").prev("tr").find(".vendor").html(vendor);
+                        layer.alert("此操作已成功.");
+                        window.location.reload();
+                    } else {
+                        layer.alert("操作失败: " + resp.message);
+                    }
+                },
+                error: function (arg) {
+                    layer.msg('未知错误，操作失败: ' + arg.status);
+                    layer.close(lens_index);
+                }
+            })
+        }
+
+
+
+        /*
+          当vd变化时，AJAX刷新向后台请求指定Vendor和Index的订单清单数据
+         */
+        $("#sel_index").change(function () {
+
+            var obj = $(this);
+            var vendor = $("#txt_vendor").val();
+            var sel_index = $("#sel_index");
+            var lens_index = sel_index.val();
+
+            url = "{% url 'lens_by_vd' %}";
+            var window_loading = layer.load();
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    'vendor': vendor,
+                    'index': lens_index,
+                },
+                success: function (arg) {
+                    obj = $.parseJSON(arg);
+                    var s_lens_sku = $("#sel_lens_sku");
+                    s_lens_sku.empty();
+
+                    for (let lens of obj.obj) {
+                        s_lens_sku.append("<option value='" + lens.sku + "'>" + lens.name + "</option>");
+                    }
+                    layer.close(window_loading);
+                },
+                error: function (arg) {
+                    layer.close(window_loading);
+                }
+            });
+        });
+
+
+    </script>
+{% endblock %}

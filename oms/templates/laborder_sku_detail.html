@@ -1,0 +1,117 @@
+<form style="padding-left:20px;" class="edit_sku_form">
+    <table class="table table-hover">
+        <tr>
+            <th>染色-SKU</th>
+            <th>染色</th>
+            <th>设计-SKU</th>
+            <th>设计</th>
+        </tr>
+        <tr>
+            <td>
+            {% if item.tint_sku == "" or item.tint_sku is None %}
+                       <input type="text" name="tint_sku" class="id_tint_sku"
+                       value=""/>
+                        {% else %}
+                       <input type="text" name="tint_sku" class="id_tint_sku"
+                       value="{{ item.tint_sku }}"/>
+                {% endif %}
+            </td>
+            <td>
+            {% if item.tint_name == "" or item.tint_name is None %}
+                       <input type="text" name="tint_name" class="id_tint_name"
+                       value=""/>
+                        {% else %}
+                       <input type="text" name="tint_name" class="id_tint_name"
+                       value="{{ item.tint_name }}"/>
+                {% endif %}
+            </td>
+            <td>
+                {% if item.pal_design_sku == "" or item.pal_design_sku is None %}
+                       <input type="text" name="pal_design_sku" class="id_pal_design_sku"
+                       value=""/>
+                        {% else %}
+                       <input type="text" name="pal_design_sku" class="id_pal_design_sku"
+                       value="{{ item.pal_design_sku }}"/>
+                {% endif %}
+            </td>
+            <td>
+                {% if item.pal_design_name == "" or item.pal_design_name is None %}
+                       <input type="text" name="pal_design_name" class="id_pal_design_name"
+                       value=""/>
+                        {% else %}
+                       <input type="text" name="pal_design_name" class="id_pal_design_name"
+                       value="{{ item.pal_design_name }}"/>
+                {% endif %}
+                </td>
+        </tr>
+        <tr>
+            <th>涂层-SKU</th>
+            <th>涂层</th>
+            <th>加工瞳高</th>
+            <th>装配瞳高</th>
+        </tr>
+        <tr>
+            <td>   {% if item.coating_sku == "" or item.coating_sku is None %}
+                       <input type="text" name="coating_sku" class="id_coating_sku"
+                       value=""/>
+                        {% else %}
+                       <input type="text" name="coating_sku" class="id_coating_sku"
+                       value="{{ item.coating_sku }}"/>
+                       {% endif %}
+
+            </td>
+            <td>
+                 {% if item.coating_name == "" or item.coating_name is None %}
+                       <input type="text" name="coating_name" class="id_coating_name"
+                       value=""/>
+                        {% else %}
+                       <input type="text" name="coating_name" class="id_coating_name"
+                       value="{{ item.coating_name }}"/>
+                       {% endif %}
+            </td>
+            <td>
+                {% if item.lab_seg_height == "" or item.lab_seg_height is None %}
+                       <input type="text" name="lab_seg_height" class="id_lab_seg_height"
+                       value=""/>
+                        {% else %}
+                         <input type="text" name="lab_seg_height" class="id_lab_seg_height"
+                       value="{{ item.lab_seg_height }}"/>
+                {% endif %}
+            </td>
+            <td>
+                 {% if item.assemble_height == "" or item.assemble_height is None %}
+                       <input type="text" name="assemble_height" class="id_assemble_height"
+                       value=""/>
+                        {% else %}
+                         <input type="text" name="assemble_height" class="id_assemble_height"
+                       value="{{ item.assemble_height }}"/>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>子镜高度</th>
+            <th>加工要求</th>
+        </tr>
+        <tr>
+            <td>
+                {% if item.sub_mirrors_height == "" or item.sub_mirrors_height is None %}
+                       <input type="text" name="sub_mirrors_height" class="id_sub_mirrors_height"
+                       value=""/>
+                        {% else %}
+                         <input type="text" name="sub_mirrors_height" class="id_sub_mirrors_height"
+                       value="{{ item.sub_mirrors_height }}"/>
+                {% endif %}
+
+            </td>
+            <td>
+              {% if item.special_handling == "" or item.special_handling is None %}
+                       <input type="text" name="special_handling" class="id_special_handling"
+                       value=""/>
+                        {% else %}
+                         <input type="text" name="special_handling" class="id_special_handling"
+                       value="{{ item.special_handling }}"/>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</form>

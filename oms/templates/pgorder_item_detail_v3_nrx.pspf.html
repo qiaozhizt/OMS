@@ -1,0 +1,191 @@
+<div class="col-md-12 self_pspf" id="item_{{ item.item_id.value }}">
+
+    <!-- /.box-body -->
+    <!-- /.box-footer -->
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <div class="col-sm-12 order-images-each">
+                    <img src="{{ prd_img_pre }}{{ item.thumbnail.value }}"
+                         class="img-responsive center-block"/>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <div class="col-sm-2"><b>SKU</b></div>
+                <div class="col-sm-4">
+                    {{ item.frame.value }}
+                </div>
+                <div class="col-sm-2"><b>{{ item.name.label }}</b></div>
+                <div class="col-sm-4">
+                    {{ item.name.value }}
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2"><b>{{ item.size.label }}</b></div>
+                <div class="col-sm-4">
+                    {{ item.size.value }}
+                </div>
+                <div class="col-sm-2"><b>Attribute</b></div>
+                <div class="col-sm-4">
+                    {{ item.pal_design_name.value }}
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2"><b>Instruction</b></div>
+                <div class="col-sm-10">
+                    {{ instance.special_handling }}
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2"><b>{{ item.comments.label }}</b></div>
+                {% if item.comments.value == '加工瞳高4.0mm;' %}
+                    <div class="col-sm-10">
+                    </div>
+                {% else %}
+                    <div class="col-sm-10">
+                        {{ item.comments.value }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% if lab_orders %}
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Lab Number</th>
+                        <th>Status</th>
+                        <th>Origin Status</th>
+                        <th>Estimated Date</th>
+                        <th>Create Date</th>
+                        <th>Update Date</th>
+                        <th>ACT Shipmethod</th>
+                        <th>User</th>
+                        <th>Shipping</th>
+                        <th>Comments Inner</th>
+                        <th>Comments</th>
+                    </tr>
+                    {% for lbo in lab_orders %}
+                        <tr>
+                            <td><a href="{% url 'laborder_list_v2' %}?order_number={{ lbo.lab_number }}" target="_blank">{{ lbo.lab_number }}</a></td>
+                            <td>{% ifequal "" lbo.status %}NEW_ORDER{% else %}{{ lbo.status }}{% endifequal %}</td>
+                            <td>{{ lbo.current_status }}</td>
+                            <td>{{ lbo.estimated_date }}</td>
+                            <td>{{ lbo.create_at }}</td>
+                            <td>{{ lbo.update_at }}</td>
+                            <td>{{ lbo.act_ship_direction }}</td>
+                            <td>{{ lbo.user_name }}</td>
+                            <td class="p_chg_{{ lbo.id }}">{{ lbo.comments_ship }}</td>
+                            <td>{{ lbo.comments_inner }}</td>
+                            <td class="chg_{{ lbo.id }}">{{ lbo.comments }}</td>
+                        </tr>
+                        <tr>
+                        {% include 'laborder_detail_tracking_log_en.pspf.html' %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Accs Order Number</th>
+                        <th>Status</th>
+                        <th>Assign Date</th>
+                        <th>Pick Date</th>
+                        <th>QC Date</th>
+                        <th>Pack Date</th>
+                        <th>Ship Date</th>
+                        <th>Warehouse</th>
+                        <th>Location</th>
+                        <th>Comments</th>
+                    </tr>
+                    {% for accs in accs_orders %}
+                        <tr>
+                            <td>{{ accs.accs_order_number }}</td>
+                            <td>{{ accs.status }}</td>
+                            <td>{{ accs.assign_date }}</td>
+                            <td>{{ accs.pick_date }}</td>
+                            <td>{{ accs.qc_date }}</td>
+                            <td>{{ accs.pack_date }}</td>
+                            <td>{{ accs.ship_date }}</td>
+                            <td>{{ accs.warehouse }}</td>
+                            <td>{{ accs.location }}</td>
+                            <td>{{ accs.comments }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endif %}
+    <!-- /.box-body -->
+    <div class="row">
+        <div class="col-md-12">
+            <!--4、左边渐变透明：-->
+            <hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="#987cb9" size=3>
+        </div>
+{#        <button type="button" name="edit_lab_comments" style="margin-right:10px"#}
+{#                class="btn btn-default btn pull-right item-each-labcomments"#}
+{#                data-order_number="{{ item.order_number.value }}"#}
+{#                data-item_id="{{ item.item_id.value }}"#}
+{#                data-action_value="EDIT COMMENTS"#}
+{#        >Lab Comments</button>#}
+         <div class="modal fade" id="HoldItemModal" tabindex="-1" role="dialog"
+                 aria-labelledby="HoldModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title" id="HoldModalLabel"></h3>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" style="padding: 15px">
+                            <form>
+                                <input type="hidden" id="item_id_item"/>
+                                <input type="hidden" id="entity_id_item"/>
+                                <span style="font-size:20px;">{{ item.item_id.value  }} R2HOLD</span>
+                                <br/>
+                               <label for="message-text" class="col-form-label">Ticket Number:</label>
+                               <textarea class="form-control" id="ticket_numbers" rows="2"
+                                                          style="min-width: 90%"></textarea>
+                                <label for="message-text" class="col-form-label">Reason:</label>
+                                <textarea class="form-control" id="reason_item" rows="10"
+                                          style="min-width: 90%;"></textarea>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close
+                            </button>
+                            <button type="button" class="btn btn-primary" id="hold_item_btn">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="display:none;padding-left:20px;" class="edit_form">
+
+        </div>
+    </div>
+    <!-- /.box-footer -->
+</div>
+    <script>
+        $('#HoldItemModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var recipient = button.data('whatever') // Extract info from data-* attributes
+            var entity_id = button.data('entity')
+            var item_id = button.data('item')
+            var modal = $(this)
+            var entity_id=$("#base_entity").val()
+            //此处即为修改modal的标题
+            modal.find('.modal-title').text(recipient)
+            modal.find('#entity_id_item').val(entity_id)
+            modal.find('#item_id_item').val(item_id)
+        });
+    </script>

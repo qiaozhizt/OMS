@@ -1,0 +1,579 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        #origin_number li {
+            list-style: none;
+            float: left;
+            width: 25%;
+        }
+
+    </style>
+{% endblock %}
+{% block h1 %}{% ifequal alias 'TRANSFER' %} 转单{% else %} LabOrder Redo{% endifequal %}{% endblock %}
+{% block small %}All LAB Orders V2{% endblock %}
+{% block content %}
+    {#<div>#}
+    {#{{ formset }}#}
+    {#</div>#}
+
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Box Comment -->
+            <div class="box box-widget">
+
+                <div class="box-header with-border">
+                    <div class="user-block">
+                        <span class="username"><a href="#">{% ifequal alias 'TRANSFER' %} 转单{% else %} LabOrder
+                            Redo{% endifequal %}</a></span>
+                    </div>
+                    <!-- /.user-block -->
+                    <div class="box-tools">
+                        <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                            <i class="fa fa-circle-o"></i></button>
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                class="fa fa-times"></i>
+                        </button>
+                    </div>
+                    <!-- /.box-tools -->
+                </div>
+                <!-- /.box-header -->
+                <div id="origin_number" class="col-md-12">
+                    <div {% ifequal alias 'TRANSFER' %} class="panel panel-default"{% else %}
+                                                        class="panel panel-default"{% endifequal %}>
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Origin Lab_number</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            {% for laborder in origin %}
+                                <li><b>{{ laborder.lab_number }}</b></li>
+                            {% endfor %}
+                        </div>
+
+
+                    </div>
+
+                </div>
+                <form class="form-horizontal" METHOD="post" action="/oms/labOrderRedo/">
+                    {% csrf_token %}
+                    <input type="hidden" value="{{ formset.lab_number.value }}" name="lab_num">
+                    <input type="hidden" value="{{ alias }}" name="alias">
+                    <input type="hidden" value="{{ content }}" name="content">
+                    <input type="hidden" value="False" name="to_new" id="to_new">
+                    <input type="hidden" value="False" name="del_old" id="del_old">
+                    <input type="hidden" value="{{ formset.category_id.value }}" name="category_id" id="category_id">
+                    <div style="display:none">
+                        {{ formset.estimated_date }}{{ formset.targeted_date }}
+                        {{ formset.profile_id }}
+                        {{ formset.profile_name }}{{ formset.prescription_id }}
+                        {{ formset.prescription_name }}{{ formset.prescription_type }}
+                        {{ formset.used_for }}{{ formset.estimated_time }}
+                        {{ formset.promised_date }}{{ formset.change_reason }}
+                        {{ formset.estimated_date }}{{ formset.estimated_ship_date }}
+                        {{ formset.order_datetime }}{{ formset.production_days_1 }}
+                        {{ formset.set_time_1 }}{{ formset.dia_1 }}
+                        {{ formset.dia_2 }}{{ formset.pupils_position }}
+                        {{ formset.pupils_position_name }}{{ formset.profile_prescription_id }}
+                        {{ formset.asmbl_seght }}{{ formset.lens_seght }}
+                        {{ formset.comments_ship }}{{ formset.pal_design_sku }}
+                        {{ formset.progressive_type }}{{ formset.color }}{{ formset.frame_type }}
+                        {{ formset.temple_length }}{{ formset.bridge }}{{ formset.channel }}
+                        {{ formset.special_handling_sku }}{{ formset.special_handling_name }}
+                    </div>
+                    <div class="box-body">
+                        <div class="col-md-6">
+                            <div class="box-body">
+                                <div class="col-md-6">
+                                    <div class="box-body">
+                                        <div class="form-group">
+
+                                            <div class="form-group">
+                                                <label for="inputEmail3"
+                                                       class="col-sm-4 control-label">{{ formset.lab_number.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.lab_number }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.base_entity.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.base_entity }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.order_number.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.order_number }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.order_date.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.order_date }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.size.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.size }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.quantity.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.quantity }}
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.vendor.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.vendor }}
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-4 control-label">{{ formset.pal_design_name.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.pal_design_name }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-4 control-label">{{ formset.pal_design_sku.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.pal_design_sku }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.tint_sku.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.tint_sku }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.tint_name.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.tint_name }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-4 control-label">{{ formset.act_ship_direction.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.act_ship_direction }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div style="position: relative;width: 100%;height: 100%;">
+                                                    <label class="col-sm-4 control-label">{{ formset.image.label }}</label>
+                                                    <div class="col-sm-8">
+                                                        {{ formset.image }}
+                                                    </div>
+                                                    <div class="search" data-toggle="modal" data-target="#myModal" style="float: right;position: absolute;bottom: -20px;right: -5px;cursor: pointer;"><img src="{% static 'image/search.png' %}"/></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="box-body">
+                                        <div class="form-group">
+                                            <div class="form-group">
+                                                <label for="inputEmail3"
+                                                       class="col-sm-4 control-label">{{ formset.frame.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.frame }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputEmail3"
+                                                       class="col-sm-4 control-label">{{ formset.name.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.name }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputEmail3"
+                                                       class="col-sm-4 control-label">{{ formset.frame_type.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.frame_type }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputEmail3"
+                                                       class="col-sm-4 control-label">{{ formset.lens_height.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.lens_height }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputEmail3"
+                                                       class="col-sm-4 control-label">{{ formset.lens_width.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.lens_width }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.lens_sku.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.lens_sku }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.lens_name.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.lens_name }}
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.act_lens_sku.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.act_lens_sku }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.act_lens_name.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.act_lens_name }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.coating_sku.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.coating_sku }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.coating_name.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.coating_name }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-4 control-label">{{ formset.thumbnail.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.thumbnail }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="box-body">
+                                <div class="col-md-6">
+                                    <div class="box-body">
+                                        <div class="form-group">
+
+                                            <div class="form-group">
+                                                <label for="inputEmail3"
+                                                       class="col-sm-4 control-label">{{ formset.od_sph.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.od_sph }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.od_cyl.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.od_cyl }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.od_axis.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.od_axis }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">双眼瞳距(单瞳距)</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.is_singgle_pd }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.od_pd.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.od_pd }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.od_add.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.od_add }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.od_prism.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.od_prism }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.od_base.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.od_base }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.od_prism1.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.od_prism1 }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.od_base1.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.od_base1 }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="box-body">
+                                        <div class="form-group">
+
+                                            <div class="form-group">
+                                                <label for="inputEmail3"
+                                                       class="col-sm-4 control-label">{{ formset.os_sph.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.os_sph }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.os_cyl.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.os_cyl }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.os_axis.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.os_axis }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.pd.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.pd }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.os_pd.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.os_pd }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.os_add.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.os_add }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.os_prism.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.os_prism }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.os_base.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.os_base }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.os_prism1.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.os_prism1 }}
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputPassword3"
+                                                       class="col-sm-4 control-label">{{ formset.os_base1.label }}</label>
+                                                <div class="col-sm-8">
+                                                    {{ formset.os_base1 }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="box-body col-md-12">
+                            <div class="col-md-3">
+                                <label class="col-sm-4 control-label">{{ formset.lab_seg_height.label }}</label>
+                                <div class="col-sm-8">{{ formset.lab_seg_height }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-sm-4 control-label">{{ formset.assemble_height.label }}</label>
+                                <div class="col-sm-8">{{ formset.assemble_height }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-sm-4 control-label">{{ formset.sub_mirrors_height.label }}</label>
+                                <div class="col-sm-8">{{ formset.sub_mirrors_height }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="col-sm-4 control-label">{{ formset.special_handling.label }}</label>
+                                <div class="col-sm-8">{{ formset.special_handling }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="box-body col-md-12" style="padding-top:40px">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">{{ formset.comments.label }}</label>
+                                <div class="col-sm-8">{{ formset.comments }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">{{ formset.comments_inner.label }}</label>
+                                <div class="col-sm-8">{{ formset.comments_inner }}</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- /.box-body -->
+                    <div class="box-footer">
+                        {#                            <button type="submit" class="btn btn-default pull-right">保存</button>#}
+                        <button type="submit" class="btn btn-default btn-lg pull-right">保存</button>
+                    </div>
+                    <!-- /.box-footer -->
+
+                    {#                                    </div>#}
+
+
+                </form>
+            </div>
+            <!-- /.box-body -->
+            <!-- /.box-footer -->
+        </div>
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">通过镜架SUK查找图片</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                             <input type="text" class="form-control" placeholder="请输入镜架SKU" id="frame_sku" style="width: 300px;float: left;">
+                             <button type="button" class="btn btn-primary search_frame_img" style="float: left;" >查找</button>
+                        </div>
+                        <div style="margin-top: 40px;width: 300px;">
+                            <label>库存数量:</label>
+                            <span class="stock"></span>
+                        </div>
+                        <div>
+                            <img src="" class="frame_img" width="100%"/>
+                            <input type="hidden" class="form_img" value=""/>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-default sure_submit">确认</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+        <!-- /.box -->
+    </div>
+
+    <script type="application/javascript">
+
+        (function ($) {
+            $(".search_frame_img").click(function () {
+                var sku = $("#frame_sku").val();
+                if(sku == ""){
+                    alert("请输入sku!");
+                    return
+                }
+                $(".form_img").val('');
+                $(".frame_img").attr("src", '');
+                $(".stock").html('');
+                url = "{% url 'get_frame_img' %}"
+                $.get(url, params={sku:sku}, function (res) {
+                    if(res.code == '0'){
+                        img_url = res.img_url +"media/catalog/product"+ res.list[0].image;
+                        $(".form_img").val(res.list[0].image);
+                        $(".frame_img").attr("src", img_url);
+                        $(".stock").html(res.list[0].quantity);
+                        $(".sure_submit").attr("disabled", false);
+                    }else{
+                        layer.msg('操作失败: ' + res.message);
+                        $(".sure_submit").attr("disabled", true);
+                    }
+                })
+            });
+
+            $(".sure_submit").click(function () {
+                var sku = $("#frame_sku").val();
+                if(sku == ''){
+                    layer.msg('请输入sku进行查询');
+                    return
+                }
+                var img_url = $(".form_img").val();
+                $("#id_thumbnail").val(img_url);
+                $("#id_image").val(img_url);
+                $("#myModal").modal('hide');
+            });
+            $.getUrlParam = function (name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]);
+                return null;
+            }
+        })(jQuery);
+
+        // 禁用 基础单据 和 Order Number
+        // $("#id_base_entity").attr("disabled","disabled");
+        // $("#id_order_number").attr("disabled","disabled");
+
+        $(document).ready(function () {
+            $("#to_new").val($.getUrlParam("new"));
+            $("#del_old").val($.getUrlParam("del_old"));
+        });
+
+    </script>
+{% endblock %}

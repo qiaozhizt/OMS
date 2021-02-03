@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .fixedHead {
+            position: relative;
+            top: expression(this.offsetParent.scrollTop-2);
+        }
+
+        .cl:after {
+            display: block;
+            clear: both;
+            content: "";
+        }
+
+        .cl {
+            zoom: 1
+        }
+
+        .trDetail div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .trDetail span {
+            margin-right: 10px;
+        }
+
+        .divDetail {
+            display: inline-block;
+            text-align: center !important;
+            width: 100%;
+            background: #fff;
+            margin-bottom: -1px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .positionBox {
+            display: inline-block;
+        }
+
+        .divDetail hr {
+            width: 100%;
+            border: 1px dashed #000;
+        }
+
+        tbody .ondetail {
+            cursor: pointer;
+        }
+
+        .pgorderdetail span {
+            margin-left: 20px;
+        }
+
+        div.order-imags > div {
+            padding: 15px
+        }
+
+        div.item-each-addcomments > div {
+            padding: 15px
+        }
+    </style>
+{% endblock %}
+{% block h1 %}WMS{% endblock %}
+{% block small %}镜片库存结构表-校准{% endblock %}
+{% block content %}
+    <div class="blockContent" id="blockContent">
+
+        <!--Actions-->
+        <div class="cl">
+            <div style="float: left;margin-right: 3px">
+                <button id="backPrev" type="button" class="btn btn-default btn " role="button"
+                        onClick="javascript :location.href='{% url 'wms_inventory_struct_lens_detail' %}?sku={{ form_data.sku }}';">
+                    返回
+                </button>
+            </div>
+            <div class="btn-group" style="float: left;margin-left: 10px;">
+                <button class="btn btn-default btn  btn-flat" type="button" id="change_inventory_btn">
+                    确认无误写入库存
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            {% include 'error_message.html' %}
+        </div>
+        <!--PgOrder Form-->
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget" id="i_s_table">
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username">镜片库存结构表（校准） — [{{ form_data.list_one.name }}]</span>
+                        </div>
+                    </div>
+                    <!-- body -->
+                    <div class="box-body with-border">
+                        <div class="user-block" id="container">
+                            <table class="table table-hover box box-default" id="" style="width: 210mm">
+                                <tr class="label-default fixedHead">
+                                    <th>光度</th>
+                                    {% for i in form_data.cyl_list %}
+                                        <th>{{ i }}</th>
+                                    {% endfor %}
+                                </tr>
+                                {% for i in form_data.quantity_list %}
+                                    <tr>
+                                        {% for q in i %}
+                                            {% if q < 0 %}
+                                                <th>{{ q }}</th>
+                                            {% else %}
+                                                {% if q > 0 %}
+                                                    <td class="label-default">{{ q }}</td>
+                                                {% else %}
+                                                    <td>{{ q }}</td>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $("#change_inventory_btn").click(function () {
+           // JSON.stringify({{ excel_diff_list|safe }})
+            $.ajax({
+                url: "{% url 'wms_inventory_struct_lens_calibration_do' %}",
+                type: "POST",
+                data: {
+                    "sku":"{{ form_data.sku }}",
+                    "batch_number":"{{ form_data.batch_number }}",
+                    "wh_code":"{{ form_data.wh_code }}",
+                    "excel_list": "{{ excel_diff_list|safe}}"
+                },
+                success: function (res) {
+                    if(res.code == 0){
+                        layer.msg('调整成功', {time: 5000});
+                    }else{
+                        layer.msg(res.message, {time:false});
+                    }
+                },
+                error: function () {
+                    layer.msg('调整库存出错', {time: 5000});
+                }
+            });
+        });
+    </script>
+{% endblock %}

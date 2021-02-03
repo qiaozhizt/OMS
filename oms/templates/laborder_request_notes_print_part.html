@@ -1,0 +1,43 @@
+<div id="print-content">
+    {% for item in list %}
+        <div class="header clear">
+            <div class="titleArea">
+                <h1>
+                    出库申请单 [{{ item.created_at }}][{{ item.index }}/{{ item.count }}]</h1>
+            </div>
+        </div>
+        <table class="tableTopBorder_3">
+            <thead>
+            <tr class="height30">
+                <th>#</th>
+                <th>镜架</th>
+                <th>单号</th>
+                <!--<th>条码</th>-->
+                <th>货位</th>
+                <th>数量</th>
+                <th>CK</th>
+
+            </tr>
+            </thead>
+            <tbody>
+            {% for itm in item.items %}
+                <tr class="height30">
+                    <td>{{ itm.left.index }}</td>
+                    <td>{{ itm.left.obj.frame }}</td>
+                    <td>{{ itm.left.obj.lab_number }}</td>
+
+                    <td>{{ itm.left.obj.location }}</td>
+                    <td>{{ itm.left.obj.quantity }}</td>
+                    <td>
+                        {{ itm.left.obj.lens_type }}
+                        {% ifnotequal itm.left.obj.vendor '1' %}| {{ itm.left.obj.vendor }}{% endifnotequal %}
+                    </td>
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="pageBreak"><!--如果需要强制换页就在上一页的未尾出加上此代码--></div>
+    {% endfor %}
+</div>
+<button style="display:none" id="print_1">打印</button>

@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Report{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}生产日报表{% endblock %}
+{% block content %}
+    <style>
+    .row{
+        margin-left: 1px;
+        margin-right: 1px;
+    }
+   .table th, .table td {
+   text-align: center;
+   vertical-align: middle!important;
+}
+
+    </style>
+
+<div class="row">
+   <div class="col-md-4">
+       <div>
+        <label class="form-inline" />选择日期：
+                <input type="date" class="form-control" id="day" value="{{ day }}"/>
+        </label>
+        <button id="btnSearch"  class="btn btn-default">确认查询</button>
+       </div>
+   </div>
+ <div class="col-md-8">
+{#     {% if perms.purchase.SLOD_EXPORT %}#}
+{#         <div style="margin-right: 5px;float: right" id="onssk" >#}
+{#            <a class="btn btn-block btn-default" id="g_submit" target='view_window'>导出 CSV</a>#}
+{#         </div>#}
+{#     {% endif %}#}
+ </div>
+</div>
+<br/>
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+
+    <div class="row">
+        <div id="content" class="box">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                                <th>订单总量（副）</th>
+                                <th>有效订单</th>
+                                <th>取消/关闭单</th>
+                                <th>客服重做单</th>
+                                <th>工厂重做单</th>
+                                <th>转单</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list %}
+                        <tr>
+                            <td>{{ item.all_order }}</td>
+                            <td>{{ item.true_order }}</td>
+                            <td>{{ item.unable_order }}</td>
+                            <td>{{ item.reset_order }}</td>
+                            <td>{{ item.customer_order }}</td>
+                            <td>{{ item.to_order }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+     <div style="border-bottom: #b7b8bb solid 1px;margin-left: 20px">工厂明细：</div>
+ <div class="c1" style="margin-left:10px;margin-top: 10px">
+    <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                                <th>工厂</th>
+                                <th>订单总量（副）</th>
+                                <th>有效订单</th>
+                                <th>取消/关闭单</th>
+                                <th>客服重做单</th>
+                                <th>工厂重做单</th>
+                                <th>转单</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for factory_item in factory_list %}
+                        <tr>
+                            <td>DY</td>
+                            <td>{{ factory_item.dy_all_order }}</td>
+                            <td>{{ factory_item.dy_true_order }}</td>
+                            <td>{{ factory_item.dy_unable_order }}</td>
+                            <td>{{ factory_item.dy_reset_order }}</td>
+                            <td>{{ factory_item.dy_customer_order }}</td>
+                            <td>{{ factory_item.dy_to_order }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tbody>
+                    {% for sh_item in factory_list %}
+                        <tr>
+                            <td>SH</td>
+                            <td>{{ sh_item.sh_all_order }}</td>
+                            <td>{{ sh_item.sh_true_order }}</td>
+                            <td>{{ sh_item.sh_unable_order }}</td>
+                            <td>{{ sh_item.sh_reset_order }}</td>
+                            <td>{{ sh_item.sh_customer_order }}</td>
+                            <td>{{ sh_item.sh_to_order }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+ </div>
+
+    <div style="border-bottom: #b7b8bb solid 1px;margin-left: 20px">VD明细：</div>
+ <div class="c1" style="margin-left:10px;margin-top: 10px">
+    <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                                <th>VD</th>
+                                <th>订单总量（副）</th>
+                                <th>有效订单</th>
+                                <th>取消/关闭单</th>
+                                <th>客服重做单</th>
+                                <th>工厂重做单</th>
+                                <th>转单</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail_item in detail_list %}
+                        <tr>
+                            <td>{{ detail_item.vendor }}</td>
+                            <td>{{ detail_item.all_order }}</td>
+                            <td>{{ detail_item.true_order }}</td>
+                            <td>{{ detail_item.unable_order }}</td>
+                            <td>{{ detail_item.reset_order }}</td>
+                            <td>{{ detail_item.customer_order }}</td>
+                            <td>{{ detail_item.to_order }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+ </div>
+
+
+    <!-- /.row -->
+
+{#    <!--paginator-->#}
+{#    <div style="width: 100%;text-align: center;">#}
+{#        {% include 'page_number.html' %}#}
+{#    </div>#}
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $("#btnSearch").on("click", function () {
+            day = $("#day").val();
+            location.href = "/report/daliy_production_report/" + '?day=' + day;
+        });
+        // 生成csv
+        $("#g_submit").click(function () {
+            location.href = "{% url 'report_save_shipping_speed_report_csv' %}";
+        });
+        var date_now = new Date();
+	    var year = date_now.getFullYear();
+	    var month = date_now.getMonth() < 10 ? "0"+(date_now.getMonth()) : (date_now.getMonth());
+	    var date = date_now.getDate() < 10 ? "0"+date_now.getDate() : date_now.getDate();
+        $("#day").attr("min",year+"-"+month+"-"+date);
+
+    </script>
+{% endblock %}

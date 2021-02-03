@@ -1,0 +1,817 @@
+<!-- Sidebar Menu -->
+<div style="height:1000px; overflow-y: auto;overflow-x: hidden;">
+<ul class="sidebar-menu">
+    <li class="header">HEADER</li>
+    <!-- Optionally, you can add icons to the links -->
+    {% if perms.oms.DASHBOARD_NAV %}
+        {% block dashboard %}
+            <li class="treeview">
+        {% endblock %}
+    <a href="/oms/dashboard">
+        <i class="fa fa-dashboard"></i> <span>Dashboard</span>
+        <span class="pull-right-container">
+              <i class="fa fa-angle-left pull-right"></i>
+            </span>
+    </a>
+    </li>
+    {% endif %}
+
+    {% if perms.comment.COMMENTS_VIEW %}
+        {% block comments %}
+            <li class="treeview">
+                <a href="#"><i class="fa fa-file-text-o"></i>
+                    <span>Pg Comments</span>
+                    <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+                </a>
+                <ul class="treeview-menu">
+                    {% if perms.comment.COMMENTS_VIEW %}
+                        <li class="sonview"><a href={% url 'comments' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>All Comments</a></li>
+                    {% endif %}
+                </ul>
+            </li>
+
+        {% endblock %}
+    {% endif %}
+
+    {% if perms.oms.CUSTOMER_NAV %}
+            {% block customer %}
+                <li class="treeview">
+                    <a href="#"><i class="fa fa-user"></i> <span>Customer</span>
+                        <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                  </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        {% if perms.oms.UPDATE_CUSTOMER_INFO_VIEW %}
+                            <li class="sonview"><a href={% url 'update_customer_email' %} class="commonText"><i
+                                    class="fa fa-circle-o"></i>Account</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+            {% endblock %}
+        {% endif %}
+
+
+    {% if perms.oms.PGORDER_NAV %}
+        {% block pgorder %}
+            <li class="treeview">
+                <a href="#"><i class="fa fa-list-alt"></i> <span>Pg Orders</span>
+                    <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+              </span>
+                </a>
+                <ul class="treeview-menu">
+                    {% if perms.oms.NMOL_VIEW %}
+                        <li class="sonview"><a href="/oms/order_list_new" class="commonText"><i
+                                class="fa fa-circle-o"></i>New Mg Order List</a></li>
+                    {% endif %}
+                    {% if perms.oms.MOL_VIEW %}
+                        <li class="sonview"><a href="/oms/order_list" class="commonText"><i
+                                class="fa fa-circle-o"></i>Mg Order List</a></li>
+                    {% endif %}
+
+                    <li class="sonview">-</li>
+                    {% if perms.oms.POL_VIEW %}
+                        <li class="sonview"><a href={% url 'pgorder_list_v3' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>ALL PG Orders</a></li>
+                    {% endif %}
+
+{#                    {% if perms.oms.POL_VIEW %}#}
+{#                        <li class="sonview"><a href="/oms/redirectPgOrderList" class="commonText"><i#}
+{#                                class="fa fa-circle-o"></i>ALL PG Orders(Old)</a></li>#}
+{#                    {% endif %}#}
+
+                    <li class="sonview"><a href="#" class="commonText"><i class=""></i></a></li>
+                    {% if perms.oms.OTRC_VIEW %}
+                        <li class="sonview"><a href="/oms/redirectReportCSList" class="commonText"><i
+                                class="fa fa-circle-o"></i>Order Tracking Report CS</a></li>
+                    {% endif %}
+                    {% if perms.oms.OTRC_VIEW %}
+                        <li class="sonview"><a href="/oms/send_message" class="commonText"><i
+                                class="fa fa-circle-o"></i>Send Comment</a></li>
+                    {% endif %}
+                    {% if perms.oms.BLACK_LIST %}
+                        <li class="sonview"><a href="{% url 'oms_black_list_edit' %}" class="commonText"><i
+                                class="fa fa-circle-o"></i>Black List</a></li>
+                    {% endif %}
+                </ul>
+            </li>
+        {% endblock %}
+    {% endif %}
+    {% if perms.oms.LABORDER_NAV %}
+        {% block laborder %}
+            <li class="treeview"><a href="#"><i class="fa fa-wrench"></i> <span>Lab Orders</span>
+                <i class="fa fa-angle-left pull-right"></i>
+            </a>
+                <ul class="treeview-menu">
+                    <li class="sonview"><a href="/oms/overdue_orders" class="commonText"><i class="fa fa-circle-o"></i>超期订单[旧版]</a>
+                    </li>
+                    <li class="sonview"><a href="/oms/overdue_orders_v2" class="commonText"><i
+                            class="fa fa-circle-o"></i>超期订单</a></li>
+                    <li class="sonview"><a href="/shipment/shipping/orders/" class="commonText"><i
+                            class="fa fa-circle-o"></i>发货跟踪&管理</a></li>
+                    <li class="sonview"><a href="/shipment/delivered/orders/" class="commonText"><i
+                            class="fa fa-circle-o"></i>发货跟踪(已妥投)</a></li>
+                    {#                    <!--<li class="sonview"><a href="/oms/redirectLabOrderList?type=expired" class="commonText"><i#}
+                    {#                            class="fa fa-circle-o"></i>超期订单</a></li>#}
+                    {#                    <li class="sonview"><a href="/oms/redirectLabOrderList?type=imminent_expiry"#}
+                    {#                                           class="commonText"><i class="fa fa-circle-o"></i>即将超期</a></li>#}
+                    {#                    {% if perms.oms.OLOR_VIEW %}#}
+                    {#                        <li class="sonview"><a href="/oms/redirectLabOrderList?type=all" class="commonText"><i#}
+                    {#                                class="fa fa-circle-o"></i>工厂订单V1</a></li>#}
+                    {#                    {% endif %}-->#}
+
+                    {% if perms.oms.OLBO_ALL_VIEW %}
+                        <li class="sonview">-</li>
+                        <li class="sonview"><a href="/report/redirect_laborder_statistical_analysis/"
+                                               class="commonText"><i class="fa fa-circle-o"></i>订单状态</a></li>
+                        <li class="sonview"><a href="/oms/redirect_laborder_list_v2"
+                                               class="commonText"><i class="fa fa-circle-o"></i>工厂订单</a></li>
+                    {% endif %}
+
+                    {% if perms.oms.RN_VIEW %}
+                        <li class="sonview">
+                            <a href="/oms/laborder_request_notes"
+                               class="commonText">
+                                <i class="fa fa-circle-o"></i>出库申请</a>
+                        </li>
+                        <li class="sonview">
+                            <a href="/oms/laborder_request_notes_archives"
+                               class="commonText">
+                                <i class="fa fa-circle-o"></i>出库申请清单</a>
+                        </li>
+                        <li class="sonview">
+                            <a href="/oms/frame_delivery_list"
+                               class="commonText">
+                                <i class="fa fa-circle-o"></i>镜架出库清单</a>
+                        </li>
+                        <li class="sonview">
+                            <a href="/oms/laborder_purchase_orders"
+                               class="commonText">
+                                <i class="fa fa-circle-o"></i>采购订单</a>
+                        </li>
+                    {% endif %}
+
+
+                    {% if perms.oms.OCVT_VIEW %}
+                        <li class="sonview"><a href="/oms/redirect_construction_voucher"
+                                               class="commonText"><i class="fa fa-circle-o"></i>作业单</a></li>
+                    {% endif %}
+
+
+                    {% if perms.oms.HOLD_CANCEL_REQUEST %}
+                        <li class="sonview">-</li>
+                        <li class="sonview"><a href="/oms/hold_cancel_request"
+                                               class="commonText"><i class="fa fa-circle-o"></i>暂停&取消申请清单</a></li>
+
+                        <li class="sonview"><a href="/oms/apply_hold_cancel_request"
+                                               class="commonText"><i class="fa fa-circle-o"></i>申请暂停&取消订单清单</a></li>
+                    {% endif %}
+
+                    {% if perms.oms.OTRE_VIEW %}
+                        <li class="sonview">-</li>
+                        <li class="sonview"><a href="/oms/redirect_order_tracking_report"
+                                               class="commonText"><i class="fa fa-circle-o"></i>订单跟踪报告</a></li>
+                    {% endif %}
+
+                    {% if perms.oms.OLBO_ALL_VIEW %}
+                        <li class="sonview">-</li>
+                        <li class="sonview"><a href="/oms/abnormal_list"
+                                               class="commonText"><i class="fa fa-circle-o"></i>异常镜架查询</a></li>
+                    {% endif %}
+
+                    {% if perms.oms.EDIT_LENS_SPECMAP %}
+                        <li class="sonview">-</li>
+                        <li class="sonview"><a href="{% url 'oms_lens_specmap_add_edit' %}"
+                                               class="commonText"><i class="fa fa-circle-o"></i>AR设计对照维护</a></li>
+                    {% endif %}
+                </ul>
+            </li>
+        {% endblock %}
+    {% endif %}
+
+    {% if perms.purchase.PURCHASE_NAV %}
+        <li class="treeview"><a href="#"><i class="fa fa-cny"></i> <span>Purchase</span>
+            <i class="fa fa-angle-left pull-right"></i>
+        </a>
+            <ul class="treeview-menu">
+                {% if perms.purchase.SLOD_VIEW %}
+                    <li class="sonview"><a href="{% url 'statement_lab_order_daily' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>日对账单</a></li>
+                    <li class="sonview"><a href="{% url 'statement_lab_order_month' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>月对账单</a></li>
+                    <li class="sonview"><a href="{% url 'purchase_request_notes_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>采购申请</a></li>
+                    <li class="sonview"><a href="{% url 'purchase_plan_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>采购计划</a></li>
+                    <li class="sonview"><a href="{% url 'purchase_order_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>采购订单(新)</a></li>
+                    <li class="sonview"><a href="{% url 'purchase_receipt_order_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>采购收货</a></li>
+                    <li class="sonview"><a href="{% url 'purchase_return_order_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>采购退货</a></li>
+                {% endif %}
+            </ul>
+        </li>
+    {% endif %}
+
+
+    {% if perms.vendor.VENDOR_NAV %}
+        <li class="treeview"><a href="#"><i class="fa fa-user-secret"></i> <span>Vendors</span>
+            <i class="fa fa-angle-left pull-right"></i>
+        </a>
+            <ul class="treeview-menu">
+                {% if perms.vendor.LENS %}
+                    <li class="sonview"><a href="{% url 'lens' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>镜片清单</a></li>
+                {% endif %}
+            </ul>
+
+            <ul class="treeview-menu">
+                {% if perms.vendor.LENS_ORDER %}
+                    <li class="sonview"><a href="{% url 'lens_orders' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>镜片订单</a></li>
+                {% endif %}
+            </ul>
+        </li>
+    {% endif %}
+
+    {% if perms.wms.INVENTORY_NAV %}
+        {% block wms %}
+            <li class="treeview">
+                <a href="#"><i class="fa fa-th-large"></i>
+                    <span>Inventory</span>
+                    <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+                </a>
+                <ul class="treeview-menu">
+                    {% if perms.wms.DELIVERY_FRAME %}
+                        <li class="sonview"><a href={% url 'wms_delivery_frame' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>镜架出库</a></li>
+                    {% endif %}
+
+                    {% if perms.wms.INVENTORY_STRUCT %}
+                        <li class="sonview"><a href={% url 'wms_inventory_struct' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>库存结构表</a></li>
+                    {% endif %}
+
+                    {% if perms.wms.INVENTORY_STRUCT %}
+                        <li class="sonview"><a href={% url 'wms_inventory_struct_warehouse' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>库存结构表-仓库</a></li>
+                    {% endif %}
+
+                    {% if perms.wms.INVENTORY_STRUCT %}
+                        <li class="sonview"><a href={% url 'wms_inventory_struct_warehouse_location' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>货位管理</a></li>
+                    {% endif %}
+
+                    {% if perms.wms.INVENTORY_RECEIPT %}
+                        <li class="sonview"><a href={% url 'wms_inventory_receipt' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>入库</a></li>
+                    {% endif %}
+
+                    {% if perms.wms.INVENTORY_DELIVERY %}
+                        <li class="sonview"><a href={% url 'wms_inventory_delivery' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>出库</a></li>
+                    {% endif %}
+                    {% if perms.wms.INVENTORY_FRAME_REPORT %}
+                        <li class="sonview"><a href={% url 'wms_inventory_frame_receipt_report' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>镜架入库记录</a></li>
+                    {% endif %}
+                    {% if perms.wms.INVENTORY_FRAME_REPORT %}
+                        <li class="sonview"><a href={% url 'wms_inventory_frame_delivery_report' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>镜架出库记录</a></li>
+                    {% endif %}
+
+                    {% if perms.wms.LOCKERS_LIST %}
+                        <li class="sonview"><a href={% url 'wms_lockers_list' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>仓位管理</a></li>
+                    {% endif %}
+
+                    <li class="sonview">-</li>
+
+                    {% if perms.wms.DELIVERY_FRAME_LENS %}
+                        <li class="sonview"><a href={% url 'wms_delivery_frame_lens' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>镜片出库</a></li>
+                    {% endif %}
+                    {% if perms.wms.INVENTORY_RECEIPT_LENS %}
+                    <li class="sonview">
+                        <a href={% url 'wms_inventory_receipt_lens' %} class="commonText"><i class="fa fa-circle-o"></i>入库-镜片</a>
+                    </li>
+                    {% endif %}
+                    {% if perms.wms.INVENTORY_DELIVERY_LENS %}
+                    <li class="sonview">
+                        <a href={% url 'wms_inventory_delivery_lens' %} class="commonText"><i class="fa fa-circle-o"></i>出库-镜片</a>
+                    </li>
+                    {% endif %}
+                    {% if perms.wms.INVENTORY_STRUCT_LENS %}
+                        <li class="sonview"><a href={% url 'wms_inventory_struct_lens' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>镜片库存结构表</a></li>
+                    {% endif %}
+                    {% if perms.wms.INVENTORY_LENS_REPORT %}
+                        <li class="sonview"><a href={% url 'wms_inventory_lens_receipt_report' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>镜片入库记录</a></li>
+                    {% endif %}
+                    {% if perms.wms.INVENTORY_LENS_REPORT %}
+                        <li class="sonview"><a href={% url 'wms_inventory_lens_delivery_report' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>镜片出库记录</a></li>
+                    {% endif %}
+                    <li class="sonview">-</li>
+                    {% if perms.wms.INVENTORY_FRAME_EDIT %}
+                    <li class="sonview"><a href={% url 'wms_add_edit_product_frame' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>SKU新建&维护</a></li>
+                    {% endif %}
+                    {% if perms.wms.INVENTORY_WAREHOUSE_EDIT %}
+                    <li class="sonview"><a href={% url 'wms_add_edit_warehouse' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>仓库新建&维护</a></li>
+                    {% endif %}
+                </ul>
+            </li>
+
+        {% endblock %}
+    {% endif %}
+
+    {% if perms.workshop.WORKSHOP_NAV %}
+        {% block workshop %}
+            <li class="treeview">
+                <a href="#"><i class="fa fa-hourglass-half"></i>
+                    <span>Workshop</span>
+                    <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+                </a>
+            <ul class="treeview-menu">
+               {% if perms.oms.CVFG_VIEW %}
+                        <li class="sonview"><a href="/oms/redirect_construction_voucher_finished_glasses"
+                                               class="commonText"><i class="fa fa-circle-o"></i>装配</a></li>
+                    {% endif %}
+               {% if perms.oms.CVFG_QUICK_VIEW %}
+                        <li class="sonview"><a href="/workshop/redirect_construction_voucher_finished_glasses_quick"
+                                               class="commonText"><i class="fa fa-circle-o"></i>快捷装配</a></li>
+               {% endif %}
+            </ul>
+                <ul class="treeview-menu">
+                    <li class="sonview"><a href={% url 'workshop_assembled' %} class="commonText"><i
+                            class="fa fa-circle-o"></i>装配完成</a></li>
+                </ul>
+
+                <ul class="treeview-menu">
+                    <li class="sonview"><a href={% url 'workshop_assembling' %} class="commonText"><i
+                            class="fa fa-circle-o"></i>装配中的订单</a></li>
+                </ul>
+
+                <ul class="treeview-menu">
+                    <li class="sonview"><a href={% url 'workshop_glasses_return' %} class="commonText"><i
+                            class="fa fa-circle-o"></i>成镜返工单</a></li>
+                </ul>
+            </li>
+        {% endblock %}
+    {% endif %}
+
+
+    {% if perms.qc.QC_NAV %}
+        {% block qc %}
+            <li class="treeview">
+                <a href="#"><i class="fa fa-tripadvisor"></i>
+                    <span>QC</span>
+                    <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+                </a>
+
+                <ul class="treeview-menu">
+
+                    {% if perms.qc.LENS_REGISTRATION %}
+                        <li class="sonview"><a
+                                href={% url 'lens_registration' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>来片登记</a></li>
+                    {% endif %}
+                    {% if perms.qc.PRELIMINARY_CHECKING %}
+                        <li class="sonview"><a
+                                href={% url 'preliminary_checking' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>镜片初检</a></li>
+                    {% endif %}
+
+                    <li class="sonview">-</li>
+
+                    <li class="sonview"><a href="{% url 'received_glasses' %}"
+                                           class="commonText"><i class="fa fa-circle-o"></i>成镜收货</a></li>
+                    <li class="sonview"><a href="{% url 'received_glasses_list' %}"
+                                           class="commonText"><i class="fa fa-circle-o"></i>成镜收货清单</a></li>
+
+                    {% if perms.qc.FINAL_INSPECTION %}
+                        <li class="sonview"><a
+                                href={% url 'qc_glasses_final_inspection_technique_create' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>技术指标</a></li>
+                    {% endif %}
+
+                    {% if perms.qc.FINAL_INSPECTION %}
+                        <li class="sonview"><a
+                                href={% url 'qc_glasses_final_inspection_technique_list' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>终检合格清单</a></li>
+                    {% endif %}
+
+                    {% if perms.qc.FINAL_INSPECTION %}
+                        <li class="sonview"><a
+                                href={% url 'qc_glasses_final_inspection_visual_create' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>外观检查</a></li>
+                    {% endif %}
+                    {% if perms.qc.GLASSES_RETURN %}
+                        <li class="sonview"><a
+                                href={% url 'glasses_return' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>成镜退货</a></li>
+                    {% endif %}
+                    {% if perms.qc.GLASSES_RETURN %}
+                        <li class="sonview"><a
+                                href={% url 'glasses_return_list' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>成镜退货清单</a></li>
+                    {% endif %}
+                    {% if perms.qc.LENS_RETURN %}
+                        <li class="sonview"><a
+                                href={% url 'lens_return_list' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>镜片退货清单</a></li>
+                    {% endif %}
+                    <li class="sonview">-</li>
+
+                    {% if perms.qc.QUALITY_INSPECTION_REPORT %}
+                        <li class="sonview"><a
+                                href={% url 'quality_inspection_report' %} class="commonText"><i
+                                class="fa fa-circle-o"></i>质检报告</a></li>
+                    {% endif %}
+
+                </ul>
+            </li>
+        {% endblock %}
+    {% endif %}
+
+    {% if perms.oms.SHIP_NAV %}
+        <li class="treeview"><a href="#"><i class="fa fa-plane"></i> <span>Shipments</span>
+            <i class="fa fa-angle-left pull-right"></i>
+        </a>
+            <ul class="treeview-menu">
+                {% if perms.oms.OA_VERIFY %}
+                    <li class="sonview"><a href="{% url 'shipment_address_verify' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>地址校验</a></li>
+                {% endif %}
+
+                {% if perms.oms.OA_VIEW %}
+                    <li class="sonview"><a href="{% url 'shipment_address' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>Address</a></li>
+                    <li class="sonview"><a href="/oms/redirectOrderAddress" class="commonText"><i
+                            class="fa fa-circle-o"></i>Order Address</a></li>
+                {% endif %}
+
+                {% if perms.oms.ACT_SHIPMENT %}
+                    <li class="sonview"><a href="{% url 'collection_glasses' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>归集</a></li>
+                {% endif %}
+
+                {% if perms.oms.ACT_SHIPMENT %}
+                    <li class="sonview"><a href="{% url 'shipments_received_glasses' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>预发货</a></li>
+                {% endif %}
+
+                {% if perms.oms.ACT_SHIPMENT %}
+                    <li class="sonview"><a href="{% url 'pre_delivery' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>拣配</a></li>
+                {% endif %}
+
+                {% if perms.oms.ACT_SHIPMENT %}
+                    <li class="sonview"><a href="{% url 'delivery' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>已拣配</a></li>
+                {% endif %}
+
+                {% if perms.oms.ACT_SHIPMENT %}
+                    <li class="sonview"><a href="{% url 'glasses_boxing' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>装箱扫描</a></li>
+                {% endif %}
+
+                {% if perms.oms.ACT_SHIPMENT %}
+                    <li class="sonview hidden"><a href="/oms/redirectShipment" class="commonText"><i
+                            class="fa fa-circle-o"></i>发货-旧版</a></li>
+                {% endif %}
+            </ul>
+        </li>
+    {% endif %}
+
+    <!-- 2019.11.21 by guof RA -->
+{% if perms.ra.RA_NAV %}
+        <li class="treeview"><a href="#"><i class="fa fa-check"></i> <span>RA</span>
+            <i class="fa fa-angle-left pull-right"></i>
+        </a>
+            <ul class="treeview-menu">
+                {% if perms.ra.RA_NEW %}
+                    <li class="sonview"><a href="{% url 'ra_new' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>New RA</a></li>
+                {% endif %}
+
+                {% if perms.ra.RA_APPROVE %}
+                    <li class="sonview"><a href="{% url 'ra_approve' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>RA Approve</a></li>
+                {% endif %}
+
+                {% if perms.ra.RA_LIST %}
+                    <li class="sonview"><a href="{% url 'ra_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>RA List</a></li>
+                {% endif %}
+
+                {% if perms.ra.RA_BUY_LABEL %}
+                    <li class="sonview"><a href="{% url 'ra_buy_label' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>Buy RA Label</a></li>
+                {% endif %}
+
+                {% if perms.ra.RA_STOCK_IN %}
+                    <li class="sonview"><a href="{% url 'ra_stock_in' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>RA Stock In</a></li>
+                {% endif %}
+
+                {% if perms.ra.RA_INVENTORY_STATUS %}
+                    <li class="sonview"><a href="{% url 'ra_inventory_status' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>Inventory Status</a></li>
+                {% endif %}
+
+                {% if perms.ra.RA_REFUND %}
+                    <li class="sonview"><a href="{% url 'ra_refund' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>RA Refund</a></li>
+                {% endif %}
+
+                {% if perms.ra.RA_COUPON %}
+                    <li class="sonview"><a href="{% url 'ra_coupon' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>RA Coupon</a></li>
+                {% endif %}
+
+                {% if perms.ra.RA_CLOSE %}
+                    <li class="sonview"><a href="{% url 'ra_close' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>RA Close</a></li>
+                {% endif %}
+
+                {% if perms.ra.RA_CANCEL %}
+                    <li class="sonview"><a href="{% url 'ra_cancel' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>RA Cancel</a></li>
+                {% endif %}
+            </ul>
+        </li>
+    {% endif %}
+    <!-- 2019.11.21 by wj AccsOrder -->
+    {% if perms.accsorder.ACCSORDER_NAV %}
+        <li class="treeview"><a href="#"><i class="fa fa-paperclip"></i> <span>nRX订单管理</span>
+            <i class="fa fa-angle-left pull-right"></i>
+        </a>
+            <ul class="treeview-menu">
+                {% if perms.accsorder.LIST %}
+                    <li class="sonview"><a href="{% url 'accs_order_list' %}?flag=list" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单列表</a></li>
+                {% endif %}
+
+                {% if perms.accsorder.ASSIGN %}
+                    <li class="sonview"><a href="{% url 'accs_order_list' %}?flag=assign" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单分配</a></li>
+                {% endif %}
+
+                {% if perms.accsorder.PRINT %}
+                    <li class="sonview"><a href="{% url 'accs_order_list' %}?flag=print" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单出库请求</a></li>
+                {% endif %}
+
+                {% if perms.accsorder.PRINT %}
+                    <li class="sonview"><a href="{% url 'accs_order_request_list' %}?flag=print_list" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单出库请求列表</a></li>
+                {% endif %}
+
+                {% if perms.accsorder.PICK %}
+                    <li class="sonview"><a href="{% url 'accs_order_list' %}?flag=pick" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单出库</a></li>
+                {% endif %}
+                {% if perms.accsorder.PICK %}
+                    <li class="sonview"><a href="{% url 'accs_order_pick_list' %}?flag=pick_list" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单出库列表</a></li>
+                {% endif %}
+
+                {% if perms.accsorder.QC %}
+                    <li class="sonview"><a href="{% url 'accs_order_list' %}?flag=qc" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单质检</a></li>
+                {% endif %}
+
+                {% if perms.accsorder.PACK %}
+                    <li class="sonview"><a href="{% url 'accs_order_list' %}?flag=pack" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单包装</a></li>
+                {% endif %}
+                {% if perms.accsorder.SHIP %}
+                    <li class="sonview"><a href="{% url 'accs_order_list' %}?flag=ship" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单发货</a></li>
+                {% endif %}
+                {% if perms.accsorder.CANCEL %}
+                    <li class="sonview"><a href="{% url 'accs_order_list' %}?flag=cancel" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单取消</a></li>
+                {% endif %}
+                {% if perms.accsorder.CLOSE %}
+                    <li class="sonview"><a href="{% url 'accs_order_list' %}?flag=close" class="commonText"><i
+                            class="fa fa-circle-o"></i>nRX订单关闭</a></li>
+                {% endif %}
+            </ul>
+        </li>
+    {% endif %}
+    {% if perms.stockorder.STOCKORDER_NAV %}
+        <li class="treeview"><a href="#"><i class="fa fa-check"></i> <span>成镜订单管理</span>
+            <i class="fa fa-angle-left pull-right"></i>
+        </a>
+            <ul class="treeview-menu">
+                {% if perms.stockorder.STOCKORDER_BOM_NEW %}
+                    <li class="sonview"><a href="{% url 'stock_bom_order_new' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>成镜BOM维护</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_NEW %}
+                    <li class="sonview"><a href="{% url 'stock_order_new' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>新建成镜订单</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_LIST %}
+                    <li class="sonview"><a href="{% url 'stock_order_list' %}?flag=list" class="commonText"><i
+                            class="fa fa-circle-o"></i>成镜订单列表</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_CONFIRM %}
+                    <li class="sonview"><a href="{% url 'stock_order_list' %}?flag=confirm" class="commonText"><i
+                            class="fa fa-circle-o"></i>成镜订单确认</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_CANCEL %}
+                    <li class="sonview"><a href="{% url 'stock_order_list' %}?flag=cancel" class="commonText"><i
+                            class="fa fa-circle-o"></i>成镜订单取消</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_CLOSE %}
+                    <li class="sonview"><a href="{% url 'stock_order_list' %}?flag=close" class="commonText"><i
+                            class="fa fa-circle-o"></i>成镜订单关闭</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_CREATE %}
+                    <li class="sonview"><a href="{% url 'stock_order_list' %}?flag=create" class="commonText"><i
+                            class="fa fa-circle-o"></i>从成镜订单生成Lab Order</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_STOCK %}
+                    <li class="sonview"><a href="{% url 'create_stock_in_request_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>从Lab Order生成入库请求</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_STOCK %}
+                    <li class="sonview"><a href="{% url 'stock_in_request_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>成镜入库</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_STOCK %}
+                    <li class="sonview"><a href="{% url 'stock_in_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>成镜入库列表清单</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_INTERBRANCH_NEW %}
+                    <li class="sonview"><a href="{% url 'interbranch_transfer_new' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>新建内部调拨单</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_INTERBRANCH_LIST %}
+                    <li class="sonview"><a href="{% url 'interbranch_order_list' %}?flag=list" class="commonText"><i
+                            class="fa fa-circle-o"></i>内部调拨单列表</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_INTERBRANCH_PRINT %}
+                    <li class="sonview"><a href="{% url 'interbranch_order_list' %}?flag=print" class="commonText"><i
+                            class="fa fa-circle-o"></i>内部调拨单打印</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_INTERBRANCH_CANCEL %}
+                    <li class="sonview"><a href="{% url 'interbranch_order_list' %}?flag=cancel" class="commonText"><i
+                            class="fa fa-circle-o"></i>内部调拨单取消</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_INTERBRANCH_CANCEL %}
+                    <li class="sonview"><a href="{% url 'interbranch_order_list' %}?flag=fulfill" class="commonText"><i
+                            class="fa fa-circle-o"></i>内部调拨调出</a></li>
+                {% endif %}
+                {% if perms.stockorder.STOCKORDER_INTERBRANCH_RECEIVE %}
+                    <li class="sonview"><a href="{% url 'interbranch_order_list' %}?flag=receive" class="commonText"><i
+                            class="fa fa-circle-o"></i>内部调拨接收</a></li>
+                {% endif %}
+{#                {% if perms.stockorder.STOCKORDER_STOCK %}#}
+{#                    <li class="sonview"><a href="{% url 'stock_struct_list' %}" class="commonText"><i#}
+{#                            class="fa fa-circle-o"></i>成镜库存状态查询</a></li>#}
+{#                {% endif %}#}
+            </ul>
+        </li>
+    {% endif %}
+    {% if perms.merchandising.MERCHANDISING_NAV %}
+        <li class="treeview"><a href="#"><i class="fa fa-line-chart"></i> <span>Merchandising</span>
+            <i class="fa fa-angle-left pull-right"></i>
+        </a>
+            <ul class="treeview-menu">
+                {% if perms.merchandising.CATEGORY_PRODUCT_INDEX %}
+                          <li class="sonview"><a href="{% url 'products_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>Web 产品清单</a></li>
+                    <li class="sonview"><a href="{% url 'products_list_v1' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>Web 产品清单V1</a></li>
+                    <li class="sonview"><a href="{% url 'category_products_index' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>分类中商品排序</a></li>
+                    <li class="sonview"><a href="{% url 'shipments_index' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>产品出货量查询</a></li>
+                {% endif %}
+                {% if perms.merchandising.PRODUCT_MANAGEMENT %}
+                <li class="sonview"><a href="{% url 'wms_product_management' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>产品管理</a></li>
+                {% endif %}
+                {% if perms.merchandising.DISTRIBUTION_WITHDRAWAL_LIST %}
+                <li class="sonview"><a href="{% url 'wms_distribution_withdrawal_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>分配&撤回操作清单</a></li>
+                {% endif %}
+                {% if perms.merchandising.PRODUCTION_OPERATION_LOG %}
+                <li class="sonview"><a href="{% url 'production_operation_log_list' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>产品操作清单</a></li>
+                {% endif %}
+            </ul>
+        </li>
+    {% endif %}
+
+    {% if perms.report.REPORT_NAV %}
+        <li class="treeview"><a href="#"><i class="fa fa-bar-chart"></i> <span>Report</span>
+            <i class="fa fa-angle-left pull-right"></i>
+        </a>
+            <ul class="treeview-menu">
+                {% if perms.report.LENS_REPORT %}
+                    <li class="sonview"><a href="{% url 'laborder_lens_registration_analysis' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>镜片生产报告</a></li>
+                {% endif %}
+
+                {% if perms.report.LENS_REPORT %}
+                    <li class="sonview"><a href="{% url 'web_order_report' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>网单状态统计表</a></li>
+                {% endif %}
+                {% if perms.report.LENS_REPORT %}
+                    <li class="sonview"><a href="{% url 'web_order_report_v3' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>网单状态统计表(新)</a></li>
+                {% endif %}
+                {% if perms.report.LENS_REPORT %}
+                    <li class="sonview"><a href="{% url 'shipping_speed_report' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>出货速度统计表</a></li>
+                {% endif %}
+
+                {% if perms.report.LENS_REPORT %}
+                    <li class="sonview"><a href="{% url 'report_shipping_speed_report_new' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>出货速度统计报表</a></li>
+                {% endif %}
+
+                {% if perms.report.CUSTOMIZE_REPORT %}
+                    <li class="sonview"><a href="{% url 'customize_report' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>自定义查询</a></li>
+                {% endif %}
+
+                {% if perms.report.CUSTOMIZE_REPORT %}
+                    <li class="sonview"><a href="{% url 'customize_report_advanced' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>高级自定义查询</a></li>
+                {% endif %}
+
+                {% if perms.report.DALIY_REPORT %}
+                    <li class="sonview"><a href="{% url 'daliy_production_report' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>生产日报表</a></li>
+                {% endif %}
+                {% if perms.report.PGORDER_REPORT %}
+                    <li class="sonview"><a href="{% url 'pg_order_report' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>PgOrder统计情况</a></li>
+                {% endif %}
+                {% if perms.report.DALIY_RETURN_REPORT %}
+                    <li class="sonview"><a href="{% url 'daliy_production_return_report' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>生产报损统计</a></li>
+                {% endif %}
+              {% if perms.report.PGORDER_APPROVE_PROCESSING_REPORT %}
+                    <li class="sonview"><a href="{% url 'pgorder_approve_processing_report' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>审单消耗统计报表</a></li>
+                {% endif %}
+                {% if perms.report.LABORDER_PRODUCTION_REPORT %}
+                    <li class="sonview"><a href="{% url 'laborder_production_report' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>生产消耗统计</a></li>
+                {% endif %}
+                {% if perms.report.LABORDER_FLOW_REPORT %}
+                    <li class="sonview"><a href="{% url 'report_laborder_flow_report' %}" class="commonText"><i
+                                class="fa fa-circle-o"></i>生产速度统计报表</a></li>
+                {% endif %}
+                <li class="sonview"><a href="{% url 'report_shipment_pc_lens_lab_report' %}" class="commonText"><i
+                            class="fa fa-circle-o"></i>日发货PC片统计报表</a></li>
+                <li class="sonview"><a href="{% url 'report_pgorder_coupon_report' %}" class="commonText"><i
+                                class="fa fa-circle-o"></i>替换单统计报表</a></li>
+                <li class="sonview"><a href="{% url 'report_purchase_order_time_report' %}" class="commonText"><i
+                    class="fa fa-circle-o"></i>供应商采购时长统计报表</a></li>
+                <li class="sonview"><a href="{% url 'report_arrival_time_diff_report' %}" class="commonText"><i
+                                class="fa fa-circle-o"></i>VD4到货时间差统计报表</a></li>
+                <li class="sonview"><a href="{% url 'report_laborder_doctor_report' %}" class="commonText"><i
+                                class="fa fa-circle-o"></i>医生订单统计报表</a></li>
+            </ul>
+        </li>
+    {% endif %}
+
+    <li class="treeview">
+        <a href="#"><i class="fa fa-gears"></i> <span>Settings</span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+              </span>
+        </a>
+        <ul class="treeview-menu">
+            <li class="sonview"><a href="#" class="commonText"><i class="fa fa-circle-o"></i>System Dict</a>
+            </li>
+            <li class="sonview"><a href="#" class="commonText"><i class="fa fa-circle-o"></i>Group</a></li>
+            <li class="sonview"><a href="/oms/redirectChangePassword" class="commonText"><i
+                    class="fa fa-circle-o"></i>Users</a></li>
+            {% if user.is_superuser %}
+                <li class="sonview"><a href="/oms/rolesHtml" class="commonText"><i
+                        class="fa fa-circle-o"></i>Roles</a></li>
+            {% endif %}
+
+            {% if perms.oms.CHANGE_LAB_STATUS %}
+                <li class="sonview"><a href="{% url 'change_status' %}" class="commonText"><i
+                        class="fa fa-circle-o"></i>修改工厂订单状态</a></li>
+            {% endif %}
+        </ul>
+    </li>
+</ul>
+</div>

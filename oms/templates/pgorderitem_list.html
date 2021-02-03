@@ -1,0 +1,1393 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .cl:after {
+            display: block;
+            clear: both;
+            content: "";
+        }
+
+        .cl {
+            zoom: 1
+        }
+
+        .trDetail div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .trDetail span {
+            margin-right: 10px;
+        }
+
+        .divDetail {
+            display: inline-block;
+            text-align: center !important;
+            width: 100%;
+            background: #fff;
+            margin-bottom: -1px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .positionBox {
+            display: inline-block;
+        }
+
+        .divDetail hr {
+            width: 100%;
+            border: 1px dashed #000;
+        }
+
+        tbody .ondetail {
+            cursor: pointer;
+        }
+
+        .pgorderdetail span {
+            margin-left: 20px;
+        }
+    </style>
+
+{% endblock %}
+{% block h1 %}PgOrder{% endblock %}
+{% block small %}ALL PG Orders{% endblock %}
+
+{% block content %}
+
+    <div class="blockContent" id="blockContent">
+
+        <div class="cl">
+            <div style="float: left;margin-right: 10px">
+                <button id="backPrev" type="button" class="btn btn-default btn-lg active" role="button"
+                        onClick="javascript :history.back(-1);">Back
+                </button>
+            </div>
+
+            <div style="float: left">
+                {% if form.status.value == 'holded' or form.status.value == 'canceled' or form.is_inlab.value == True or form.status_control.value == 'REVIEWED' or form.status_control.value == 'APPROVED' %}
+                    {% if perms.oms.ACT_REVIEW %}
+                        <button id="btnReview" type="button" class="btn btn-default btn-lg active" disabled="disabled"
+                                style="margin-left: 10px;"
+                                order_number="{{ order_number }}">Review
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if perms.oms.ACT_REVIEW %}
+                        <button id="btnReview" type="button" class="btn btn-default btn-lg active"
+                                style="margin-left: 10px;"
+                                order_number="{{ order_number }}">Review
+                        </button>
+                    {% endif %}
+                {% endif %}
+
+                {% if form.status.value == 'holded' or form.status.value == 'canceled' or form.is_inlab.value == True or form.status_control.value == 'APPROVED' %}
+                    {% if perms.oms.ACT_APPROVE %}
+                        <button id="btnApprove" type="button" class="btn btn-default btn-lg active" disabled="disabled"
+                                style="margin-left: 10px;"
+                                order_number="{{ order_number }}">Approve
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if perms.oms.ACT_APPROVE %}
+                        <button id="btnApprove" type="button" class="btn btn-default btn-lg active"
+                                style="margin-left: 10px;"
+                                order_number="{{ order_number }}">Approve
+                        </button>
+                    {% endif %}
+                {% endif %}
+
+                {% if form.status.value == 'holded' or form.status.value == 'canceled' or form.is_inlab.value == True %}
+                    {% if perms.oms.ACT_GLO %}
+                        <button id="btnLab" type="button" class="btn btn-default btn-lg active" disabled="disabled"
+                                style="margin-left: 10px;"
+                                order_number="{{ order_number }}">Generate Lab Orders
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if perms.oms.ACT_GLO %}
+                        <button id="btnLab" type="button" class="btn btn-default btn-lg active"
+                                style="margin-left: 10px;"
+                                order_number="{{ order_number }}">Generate Lab Orders
+                        </button>
+                    {% endif %}
+                {% endif %}
+
+            </div>
+            <div style="float: left;margin-left: 10px;">
+                {% if form.status.value == 'canceled' %}
+                    <button tag='holded' content="Hold" type="button" class="btn btn-default btn-lg active status"
+                            disabled="disabled" order_number="{{ order_number }}">Hold
+                    </button>
+                {% else %}
+                    {% if form.status.value == 'holded' %}
+                        <button tag='unhold' content="Unhold" type="button" class="btn btn-default btn-lg active status"
+                                order_number="{{ order_number }}">Unhold
+                        </button>
+                    {% else %}
+                        <button tag='holded' content="Hold" type="button" class="btn btn-default btn-lg active status"
+                                order_number="{{ order_number }}">Hold
+                        </button>
+                    {% endif %}
+                {% endif %}
+
+            </div>
+            <div style="float: left;margin-left: 10px;">
+                {% if form.status.value == 'canceled' %}
+                    <button tag="canceled" content="Cancel" type="button" class="btn btn-default btn-lg active status"
+                            disabled="disabled" order_number="{{ order_number }}">Cancel
+                    </button>
+                {% else %}
+                    <button tag="canceled" content="Cancel" type="button" class="btn btn-default btn-lg active status"
+                            order_number="{{ order_number }}">Cancel
+                    </button>
+                {% endif %}
+            </div>
+            {#        push date button #}
+            {% if perms.oms.ACT_PUSH_DATE %}
+                <div style="float: left;margin-left: 10px;">
+                    <button id="pushDate" estimated_date="{{ form.estimated_ship_date.value|date:"Y-m-d" }}"
+                            targeted_date="{{ form.targeted_ship_date.value|date:"Y-m-d" }}"
+                            promised_date="{{ form.promised_ship_date.value |date:"Y-m-d" }}" type="button"
+                            class="btn btn-default btn-lg active">Push Date
+                    </button>
+                </div>
+            {% endif %}
+            {#        shipping#}
+            <div style="float: left;margin-left: 10px;">
+                <button id="shipping" order_number="{{ order_number }}" type="button"
+                        class="btn btn-default btn-lg active" {% if form.is_shiped_api.value %}disabled{% endif %}>Push
+                    Address
+                </button>
+            </div>
+            {#     add comments   #}
+            <div style="float: left;margin-left: 10px;">
+                <button id="add_comment" order_number="{{ form.order_number.value }}" type="button"
+                        class="btn btn-default btn-lg active">Add Comment
+                </button>
+            </div>
+            {#     send comment  #}
+            {% if perms.oms.OTRC_VIEW %}
+                <div style="float: left;margin-left: 10px;">
+                    <a id="send_comment" type="button" class="btn btn-default btn-lg active"
+                       href="/oms/send_message?p={{ form.order_number.value }}">Send Comment</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">PgOrderDetail</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+
+                    <form class="form-horizontal" METHOD="post" action="/oms/pgOrderUpdate/">
+                        {% csrf_token %}
+                        <input type="hidden" value="{{ order_number }}" name="order_number"/>
+                        <div class="box-body">
+                            <div style="display: none;">
+                                {{ form.order_number }}
+                                {{ form.order_datetime }}
+                                {{ form.status }}
+                                {{ form.status_control }}
+                                {{ form.is_inst }}
+                                {{ form.instruction }}
+                                {{ form.estimated_ship_date }}
+                                {{ form.final_date }}
+                                {{ form.targeted_ship_date }}
+                                {{ form.promised_ship_date }}
+                                {{ form.shipping_method }}
+                                {{ form.is_inlab }}
+
+                            </div>
+                            <div class="col-md-3">
+                                <!-- /.box-header -->
+                                <!-- form start -->
+                                <div class="box-body">
+                                    <div class="form-group">
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.order_number.label }}</b></div>
+                                            <div class="col-sm-8">
+
+                                                {{ form.order_number.value }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="col-sm-4"><b>{{ form.order_datetime.label }}</b></div>
+
+                                            <div class="col-sm-8">
+
+                                                {{ form.order_datetime.value }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.status.label }}</b></div>
+
+                                            <div class="col-sm-8">
+
+                                                {{ form.status.value }}
+                                            </div>
+                                        </div>
+
+                                        {% if form.is_inst.value == True %}
+                                            <div class="form-group">
+
+                                                <div class="col-sm-4"><b>{{ form.is_inst.label }}</b></div>
+                                                <div class="col-sm-8">
+
+                                                    {{ form.is_inst }}
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+
+                                                <div class="col-sm-4"><b>{{ form.instruction.label }}</b></div>
+                                                <div class="col-sm-8">
+
+                                                    {{ form.instruction }}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <div class="col-md-3">
+
+                                <!-- /.box-header -->
+                                <!-- form start -->
+
+                                <div class="box-body">
+
+
+                                    <div class="form-group">
+
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.estimated_ship_date.label }}</b></div>
+                                            <div class="col-sm-8">
+                                                {{ form.estimated_ship_date.value }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.final_date.label }}</b></div>
+
+                                            <div class="col-sm-8">
+                                                {{ form.final_date.value }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.targeted_ship_date.label }}</b></div>
+
+                                            <div class="col-sm-8">
+                                                {{ form.targeted_ship_date.value }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.promised_ship_date.label }}</b></div>
+
+                                            <div class="col-sm-8">
+                                                {{ form.promised_ship_date.value }}
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <div class="col-md-3">
+
+                                <!-- /.box-header -->
+                                <!-- form start -->
+
+                                <div class="box-body">
+
+
+                                    <div class="form-group">
+
+                                        <div class="form-group">
+
+                                            <div class="col-sm-4"><b>{{ form.shipping_method.label }}</b></div>
+                                            <div class="col-sm-8">
+
+                                                {{ form.ship_direction }}
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="form-group">
+
+                                                <div class="col-sm-4"><b>{{ form.relation_email.label }}</b></div>
+                                                <div class="col-sm-8">
+                                                    {{ form.relation_email.value }}
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <div class="col-sm-4"><b>{{ form.relation_phone.label }}</b></div>
+                                                <div class="col-sm-8">
+                                                    {{ form.relation_phone.value }}
+                                                </div>
+                                            </div>
+                                         </div>
+
+
+                                        {#                                        <div class="form-group">#}
+                                        {#                                            <label for="inputPassword3"#}
+                                        {#                                                   class="col-sm-4 control-label">{{ form.ship_direction.label }}</label>#}
+                                        {#                                            <div class="col-sm-8">#}
+                                        {##}
+                                        {#                                                {{ form.ship_direction }}#}
+                                        {#                                            </div>#}
+                                        {#                                        </div>#}
+                                        <div class="form-group">
+                                            <label for="inputPassword3" style="display:none"
+                                                   class="col-sm-4 control-label">{{ form.comments.label }}</label>
+
+                                            <div class="col-sm-4"><b>{{ form.comments.label }}</b></div>
+                                            <div class="col-sm-8">
+                                                {{ form.comments }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {#                            <div class="col-md-3">#}
+                            {##}
+                            {#                                <!-- /.box-header -->#}
+                            {#                                <!-- form start -->#}
+                            {##}
+                            {#                                <div class="box-body">#}
+                            {##}
+                            {##}
+                            {#                                    <div class="form-group">#}
+                            {##}
+                            {#                                                <div class="form-group">#}
+                            {#                                                    <label for="inputPassword3"#}
+                            {#                                                           class="col-sm-4 control-label">{{ form.comments.label }}</label>#}
+                            {#                                                    <div class="col-sm-8">#}
+                            {#                                                        {{ form.comments }}#}
+                            {#                                                    </div>#}
+                            {#                                                </div>#}
+                            {#                                    </div>#}
+                            {#                                </div>#}
+                            {#                            </div>#}
+                        </div>
+                        {#                        <div class="box-body">#}
+                        {#                                            <div class="col-md-3">#}
+                        {#                                                <div class="form-group">#}
+                        {#                                                    <label for="inputPassword3"#}
+                        {#                                                           class="col-sm-4 control-label">{{ form.comments.label }}</label>#}
+                        {#                                                    <div class="col-sm-8">#}
+                        {#                                                        {{ form.comments }}#}
+                        {#                                                    </div>#}
+                        {#                                                </div>#}
+                        {#                                            </div>#}
+                        {#                                        </div>#}
+
+                        <!-- /.box-body -->
+                        <div class="box-footer">
+                            {#                            <button type="submit" class="btn btn-default">Cancel</button>#}
+                            {#                            <button type="submit" class="btn btn-default pull-right">SAVE</button>#}
+                            <button type="submit" class="btn btn-default btn-lg pull-right">SAVE</button>
+                        </div>
+                        <!-- /.box-footer -->
+                    </form>
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget collapsed-box" id="activity_toggle">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">OrderActivities</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-plus" id="scan_toggle"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+
+                    <div class="box-body" id="tableActivity">
+
+
+                    </div>
+                    <!-- /.box-body -->
+
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget collapsed-box">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">PgOrderItems</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+                    <form class="form-horizontal" METHOD="post" action="/oms/pgOrderItemUpdate/">
+                        {% csrf_token %}
+                        {{ formsets.management_form }}
+                        <input type="hidden" value="{{ order_number }}" name="order_number">
+                        <table class='table table-striped'>
+                            <thead>
+                            <tr>
+                                <th class='hid'>VIP</th>
+                                <th>WEBSITE ITEM ID</th>
+                                <th>ORDER DATE</th>
+                                <th>SHIPPING METHOD</th>
+                                <th class='hid'>FRAME</th>
+                                <th class='hid'>LENS SKU</th>
+                                <th class='hid'>LENS NAME</th>
+                                <th class='hid'>INSTRUCTION</th>
+                                <th class='hid'>COMMENTS</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for formset in formsets.forms %}
+                                <tr>
+                                    <td>{{ formset.vip.value }}</td>
+                                    <td class="btn btn-box-tool"
+                                        data-widget="collapse">{{ formset.item_id.value }}</td>
+                                    <td>{{ formset.order_date.value }}</td>
+                                    <td>{{ formset.shipping_method.value }}</td>
+                                    <td>{{ formset.frame.value }}</td>
+                                    <td>{{ formset.lens_sku.value }}</td>
+                                    <td>{{ formset.lens_name.value }}</td>
+                                    <td>{{ formset.instruction.value }}</td>
+                                    <td>{{ formset.comments.value }}</td>
+                                </tr>
+                                <td colspan="8">
+                                    <div class="col-md-12">
+
+
+                                        {{ formset.id }}
+                                        <div style="display:none">
+                                            {{ formset.order_number }}
+                                            {{ formset.item_id }}
+                                            {{ formset.order_date }}
+                                            {{ formset.instruction }}
+                                            {{ formset.shipping_method }}
+                                            {{ formset.pg_order_entity }}
+                                            {{ formset.lab_order_entity }}
+                                            {{ formset.lab_order_number }}
+                                            {{ formset.size }}
+                                            {{ formset.lens_width }}
+                                            {{ formset.lens_height }}
+                                            {{ formset.thumbnail }}
+                                            {{ formset.quantity }}
+                                            {{ formset.frame }}
+                                            {{ formset.lens_sku }}
+                                            {{ formset.lens_name }}
+                                            {{ formset.coating_sku }}
+                                            {{ formset.coating_name }}
+                                            {{ formset.tint_sku }}
+                                            {{ formset.tint_name }}
+                                            <!-- add by ranhy 2018-09-03 -->
+                                            {{ formset.pal_design_sku }}
+                                            {{ formset.pal_design_name }}
+                                        </div>
+
+
+                                        <div class="box-body">
+                                            <div class="col-md-6">
+                                                <div class="box-body">
+                                                    <div class="col-md-6">
+                                                        <div class="box-body">
+                                                            <div class="form-group">
+
+                                                                <div class="form-group">
+                                                                    <div class="col-sm-12">
+                                                                        <img src="
+
+                                                                                {{ prd_img_pre }}{{ formset.thumbnail.value }}"
+                                                                             class="img-responsive center-block"></img>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.size.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.size.value }}
+                                                                    </div>
+                                                                </div>
+
+
+                                                                <div class="form-group">
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.lens_height.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.lens_height.value }}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="form-group">
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.lens_width.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.lens_width.value }}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="form-group">
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.quantity.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.quantity.value }}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="form-group">
+                                                                    {#                                                                    <label for="inputEmail3"#}
+                                                                    {#                                                                           class="col-sm-4 control-label">{{ formset.pg_order_entity.label }}</label>#}
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.pg_order_entity.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.pg_order_entity.value }}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="form-group">
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.lab_order_entity.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.lab_order_entity.value }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.lab_order_number.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.lab_order_number.value }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="box-body">
+                                                            <div class="form-group">
+
+
+                                                                <div class="form-group">
+                                                                    {#                                                                    <label for="inputEmail3"#}
+                                                                    {#                                                                           class="col-sm-4 control-label">{{ formset.frame.label }}</label>#}
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.frame.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.frame.value }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    {#                                                                    <label for="inputPassword3"#}
+                                                                    {#                                                                           class="col-sm-4 control-label">{{ formset.lens_sku.label }}</label>#}
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.lens_sku.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.lens_sku.value }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    {#                                                                    <label for="inputPassword3"#}
+                                                                    {#                                                                           class="col-sm-4 control-label">{{ formset.lens_name.label }}</label>#}
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.lens_name.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.lens_name.value }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    {#                                                                    <label for="inputPassword3"#}
+                                                                    {#                                                                           class="col-sm-4 control-label">{{ formset.coating_sku.label }}</label>#}
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.coating_sku.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.coating_sku.value }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    {#                                                                    <label for="inputPassword3"#}
+                                                                    {#                                                                           class="col-sm-4 control-label">{{ formset.coating_name.label }}</label>#}
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.coating_name.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.coating_name.value }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    {#                                                                    <label for="inputPassword3"#}
+                                                                    {#                                                                           class="col-sm-4 control-label">{{ formset.tint_sku.label }}</label>#}
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.tint_sku.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.tint_sku.value }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    {#                                                                    <label for="inputPassword3"#}
+                                                                    {#                                                                           class="col-sm-4 control-label">{{ formset.tint_name.label }}</label>#}
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.tint_name.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.tint_name.value }}
+                                                                    </div>
+                                                                </div>
+                                                                <!--  -->
+                                                                <div class="form-group">
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.pal_design_sku.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.pal_design_sku.value }}
+                                                                    </div>
+                                                                </div>
+                                                                   <div class="form-group">
+                                                                    <div class="col-sm-4">
+                                                                        <b>{{ formset.pal_design_name.label }}</b>
+                                                                    </div>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.pal_design_name.value }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="box-body">
+                                                    <div class="col-md-6">
+                                                        <div class="box-body">
+                                                            <div class="form-group">
+
+                                                                <div class="form-group">
+                                                                    <label for="inputEmail3"
+                                                                           class="col-sm-4 control-label">{{ formset.od_sph.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.od_sph }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.od_cyl.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.od_cyl }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.od_axis.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.od_axis }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">Singgle</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.is_singgle_pd }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.od_pd.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.od_pd }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.od_add.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.od_add }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.od_prism.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.od_prism }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.od_base.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.od_base }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.od_prism1.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.od_prism1 }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.od_base1.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.od_base1 }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="box-body">
+                                                            <div class="form-group">
+
+                                                                <div class="form-group">
+                                                                    <label for="inputEmail3"
+                                                                           class="col-sm-4 control-label">{{ formset.os_sph.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.os_sph }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.os_cyl.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.os_cyl }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.os_axis.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.os_axis }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.pd.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.pd }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.os_pd.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.os_pd }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.os_add.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.os_add }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.os_prism.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.os_prism }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.os_base.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.os_base }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.os_prism1.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.os_prism1 }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="inputPassword3"
+                                                                           class="col-sm-4 control-label">{{ formset.os_base1.label }}</label>
+                                                                    <div class="col-sm-8">
+                                                                        {{ formset.os_base1 }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="box-body">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="inputPassword3"
+                                                           class="col-sm-4 control-label">{{ formset.instruction.label }}</label>
+                                                    <div class="col-sm-8">
+                                                        {{ formset.instruction }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="inputPassword3"
+                                                           class="col-sm-4 control-label">{{ formset.comments.label }}</label>
+                                                    <div class="col-sm-8">
+                                                        {{ formset.comments }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                {#                                    <div class="box-body">#}
+                                {#                                    <div class="col-md-8">#}
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+
+                        <!-- /.box-body -->
+                        <div class="box-footer">
+                            {#                            <button type="submit" class="btn btn-default pull-right">SAVE</button>#}
+                            <button type="submit" class="btn btn-default btn-lg pull-right">SAVE</button>
+                        </div>
+                        <!-- /.box-footer -->
+                    </form>
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+
+
+        <div id="callBackPager" style="text-align: center;width: 100%"></div>
+        <div id="comments" style="display: none; margin:10px 10px;">
+            <textarea class="form-control" rows="6" id="remarks"></textarea>
+        </div>
+
+    </div>
+
+
+
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+
+        $(function () {
+
+
+            //定义通用地变量
+
+
+            //1.发货方式
+            var ship_direction = ['Standard', 'Express', 'Employee'];
+
+            //Action 名字
+            var actions = ['SHIPPING', 'ADD COMMENTS'];
+
+
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            });
+
+            var order_number = {{ order_number|safe }}
+
+
+
+                function createTables(data) {
+                    var html = [];
+                    html.push("<table class='table table-striped'>");
+                    html.push("<thead>");
+                    html.push("<tr>");
+                    html.push("<th class='hid'>VIP</th>");
+                    html.push("<th>ORDER NUMBER</th>");
+                    html.push("<th>ORDER DATE</th>");
+                    html.push("<th>SHIPPING METHOD</th>");
+                    html.push("<th class='hid'>FRAME</th>");
+                    html.push("<th class='hid'>LENS SKU</th>");
+                    html.push("<th class='hid'>LENS NAME</th>");
+                    html.push("<th class='hid'>COMMENTS</th>");
+                    {#                        html.push("<th>ACTION</th>");#}
+                    html.push("</tr>");
+                    html.push("</thead>");
+                    html.push("<tbody>");
+
+
+                    for (var i = 0; i < data.length; i++) {
+
+                        field = data[i].fields;
+                        if (i % 2 == 0) {
+                            html.push("<tr class='alltr'  orderNumber=" + field.order_number + " toggle=0 type='even'>");
+                        } else {
+                            html.push("<tr class='alltr'  orderNumber=" + field.order_number + " toggle=0 type='odd'>");
+                        }
+
+
+                        if (field.is_vip == true) {
+                            html.push("<td class='hid'><img src='{% static "image/icon-yes.svg"%}'></td>")
+                        } else {
+                            html.push("<td class='hid'>  </td>")
+                        }
+
+                        html.push("<td id='" + field.order_number + "' class='ondetail' productIndex=" + field.product_index + " orderNumber=" + field.order_number + " toggle=0><a target='_Blank' href='/oms/pgOrderItemDetail?pk=" + data[i].pk + "'>" + field.order_number + "</a></td>");
+                        html.push("<td>" + field.order_date + "</td>");
+
+                        if (field.ship_direction == 'STANDARD') {
+                            html.push("<td>" + ship_direction[0] + "</td>");
+                        } else if (field.ship_direction == 'EXPRESS') {
+                            html.push("<td>" + ship_direction[1] + "</td>");
+                        } else {
+                            html.push("<td>" + ship_direction[2] + "</td>");
+                        }
+
+                        html.push("<td class='hid'>" + field.frame + "</td>");
+                        html.push("<td class='hid'>" + field.lens_sku + "</td>");
+                        html.push("<td class='hid'>" + field.lens_name + "</td>");
+                        if (field.comments == '' || field.comments == null) {
+                            html.push("<td class='hid originValue'> </td>");
+                        } else {
+                            html.push("<td class='hid originValue'>" + field.comments + "</td>");
+                        }
+
+
+                        html.push("</tr>");
+                    }
+
+                    html.push("</tbody>");
+                    html.push("</table>");
+                    var tabcon = $("#tableContent");
+                    tabcon.html(html.join(''));
+                }
+
+            queryActivities(order_number);
+
+            function queryActivities(order_number) {
+                $.ajax({
+                    url: "/oms/queryActivities/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                        'obj_type': 'OPOR'
+                    },
+                    success: function (arg) {
+                        var data = JSON.parse(arg);
+                        var html = [];
+                        html.push("<table class='table table-striped'>");
+                        html.push("<thead><tr><th>Username</th><th>Comments</th><th>Create At</th><th>Modify</th><th>Is_Send</th><th>Send</th></tr></thead><tbody>");
+
+                        if (data.length > 0) {
+                            for (var i = 0; i < data.length; i++) {
+                                activity = data[i].fields;
+                                html.push("<tr>");
+                                html.push("<td>" + activity.user_name + "</td>");
+                                html.push("<td id='text-comments'>" + activity.comments + "</td>");
+                                html.push("<td>" + longTime(activity.create_at) + "</td>");
+                                html.push("<td><span class='fa fa-file-o text-change' pk=" + data[i].pk + "></span></td>");
+                                html.push("<td>" + activity.is_send + "</td>")
+                                if (activity.is_send) {
+                                    html.push("<td><a class='fa fa-send send_comment' href='/oms/redirectComment?num=" + activity.order_number + "&comment=" + activity.comments + "&pk=" + data[i].pk + "'></a></td>")
+                                } else {
+                                    html.push("<td><a class='fa fa-send send_comment' href='/oms/redirectComment?num=" + activity.order_number + "&comment=" + activity.comments + "&pk=" + data[i].pk + "'></a></td>")
+
+                                }
+                                html.push("</tr>")
+                            }
+
+                            $('#activity_toggle').attr('class', 'box box-widget');
+                            $('#scan_toggle').attr('class', 'fa fa-minus');
+                            $('#tableActivity').css('display', 'block')
+
+                        } else {
+                            html.push("<tr>");
+                            html.push("<td colspan='4'style='text-align:center'>There is no data</td>");
+                            html.push("</tr>")
+                        }
+                        html.push("</tbody></table>");
+                        var tableActivity = $("#tableActivity");
+                        tableActivity.empty();
+                        tableActivity.html(html.join(''));
+
+                    }
+                })
+            }
+
+
+//修改comments
+            $("#blockContent").on("click", ".text-change", function () {
+
+                var width = $(document).width();
+                if (width < 800) {
+                    poup = ['85%', '35%'];
+                } else {
+                    poup = ['30%', '35%'];
+                }
+                var pk = $(this).attr('pk');
+                var comments = $(this).parent().siblings("#text-comments").html();
+
+                $('#remarks').val(comments);
+                var $this = $(this);
+                var index = layer.open({
+                    title: 'Change Comments',
+                    type: 1,
+                    area: poup, //宽高
+                    content: $('#comments'),
+                    btn: ['SAVE', 'CANCEL'],
+                    yes: function () {
+                        var comments_value = $('#remarks').val();
+
+                        $.ajax({
+                            url: "/oms/changeComments/",
+                            type: 'POST',
+                            data: {
+                                'pk': pk,
+                                'comments_value': comments_value
+
+                            },
+                            success: function (arg) {
+                                layer.close(index);
+                                if (arg == "Success") {
+                                    $this.parent().siblings("#text-comments").html(comments_value);
+                                    layer.msg('The modification is successful', {time: 3000, icon: 6});
+                                } else {
+                                    layer.open({
+                                        title: 'Error',
+                                        content: arg,
+                                        time: 5000
+                                    });
+                                }
+                            }
+                        })
+                    }
+                })
+            });
+
+
+            var currentpage ={{ currentpage|safe }};
+            var filter = {{ filter|safe }};
+
+            $("#btnReview").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/pg_order_review/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "/oms/redirectPgOrderList?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 10000, icon: 7}, function () {
+                                window.location.href = "/oms/redirectPgOrderList?page=" + currentpage + "&filter=" + filter
+                            });
+
+                        }
+                    }
+                })
+
+            });
+
+            $("#btnApprove").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/pg_order_approve/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "/oms/redirectPgOrderList?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 10000, icon: 7}, function () {
+                                window.location.href = "/oms/redirectPgOrderList?page=" + currentpage + "&filter=" + filter
+                            });
+
+                        }
+                    }
+                })
+
+            });
+
+
+            $("#btnLab").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/generateLabOrders/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                        {#                        'currentpage':currentpage#}
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "/oms/redirectPgOrderList?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 5000, icon: 7}, function () {
+                                window.location.href = "/oms/redirectPgOrderList?page=" + currentpage + "&filter=" + filter
+                            });
+
+                        }
+                    }
+                })
+
+            });
+
+
+            $(".status").on('click', function () {
+                content = $(this).attr('content');
+                tag = $(this).attr('tag');
+                number = $(this).attr('order_number');
+                $.ajax({
+                    url: "/oms/pgorder_status/",
+                    type: 'POST',
+                    data: {
+                        {#                                'order_number':ordernumber,#}
+                        {#                                'ordertype':ordertype,#}
+                        {#                                'id':id,#}
+                        {#                                'action_value':action_value,#}
+                        'content': content,
+                        'tag': tag,
+                        'order_number': number
+
+                    },
+                    success: function (arg) {
+                        if (arg == 'True') {
+                            layer.msg('The order status was modified successfully.', {
+                                icon: 6,
+                                time: 3000
+                            }, function () {
+                                window.location.href = "/oms/redirectPgOrderItemList?number=" + number + "&page=" + currentpage + "&filter=" + filter
+                            });
+
+                        } else if (arg == "False") {
+                            layer.msg("The initial status of the order is holded..", {icon: 5, time: 5000})
+                        } else {
+                            layer.msg("The order has been generated LabOrder, please handle LabOrder first.", {
+                                icon: 5,
+                                time: 5000
+                            })
+                        }
+                    }
+                })
+            })
+
+            {#pushDate ajax#}
+            $("#pushDate").on('click', function () {
+                var promised_date = ($(this).attr("promised_date"));
+                var targeted_date = ($(this).attr("targeted_date"));
+                var estimated_date = ($(this).attr("estimated_date"));
+                var order_number = ('{{ base_entity }}');
+                var index = layer.load();
+                $.ajax({
+                    url: '/oms/pgOrderPushDate/',
+                    type: 'post',
+                    data: {
+                        promised_date: promised_date,
+                        targeted_date: targeted_date,
+                        estimated_date: estimated_date,
+                        order_number: order_number
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == "true") {
+                            layer.msg("success", {time: 3000, icon: 6})
+                        } else if (arg == "false") {
+                            layer.msg("fail", {time: 3000, icon: 5})
+                        } else {
+                            layer.msg("error", {time: 3000, icon: 5})
+                        }
+                    }
+
+                })
+
+            })
+
+            // push address
+            $("#shipping").on('click', function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/shipmentServer/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'success') {
+                            layer.msg('Success', {time: 2000, icon: 6}, function () {
+                                window.location.href = "/oms/redirectPgOrderList?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 5000, icon: 7}, function () {
+                                window.location.href = "/oms/redirectPgOrderList?page=" + currentpage + "&filter=" + filter
+                            });
+                        }
+                    }
+                })
+            });
+
+            {#    add Comment#}
+            $("#add_comment").on('click', function () {
+                var order_number = $(this).attr("order_number")
+                var $this = $(this);
+                $.ajax({
+                    url: '/oms/getOrderItem/',
+                    type: 'post',
+                    data: {
+                        "order_number": order_number
+                    },
+                    success: function (arg) {
+                        var x = JSON.parse(arg)
+
+                        var xx = x[0].fields
+
+                        var ordernum = xx.order_number
+                        var ordertype = xx.type
+                        var id = x[0].pk
+                        var action_value = "ADD COMMENTS"
+
+
+                        {#var ordertype= $(this).attr('ordertype');#}
+                        {#var id = $(this).attr('id');#}
+
+
+                        addCOMMENTS(ordernum, ordertype, id, action_value, $this);
+                    }
+                })
+            })
+        })
+
+        $("#tableActivity").on("click", '.send_comment', function () {
+
+            var order_number = $(this).attr('order_number')
+            var comment = $(this).closest("tr").find("#text-comments").html()
+
+            $.ajax({
+                url: "",
+                type: 'post',
+                data: {},
+                success: function (arg) {
+
+                }
+            })
+        })
+
+
+    </script>
+
+
+
+{% endblock %}

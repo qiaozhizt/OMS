@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}{{ form_data.request_module }}
+    <span id="spn_data_total" class="label label-primary"></span> {% endblock %}
+{% block small %}{{ form_data.request_feature }}{% endblock %}
+{% block message %}<span id="cur_cr_name"></span>{% endblock %}
+{% block content %}
+
+    <div class="row clearfix">
+        <div class="col-md-2 column">
+            <ul>
+                {% for cr in form_data.customize_reports %}
+                    <li>
+                        <a name="customize_query"
+                           index="{{ cr.index }}"
+                           code="{{ cr.code }}"
+                           cur_name="{{ cr.name }}"
+                           parameters_sample="{{ cr.parameters_sample }}"
+                           href="javascript:void(0)">{{ cr.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-10 column">
+            <div class="col-md-12 column">
+                <form role="form" class="form-inline box" id="inventory_form" method="POST" style="padding:20px">
+
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+                        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false">
+                            选择查询报表 <span class="caret"></span>
+                        </button>
+                        <div class="dropdown-menu" style="height: 500px; overflow-y: auto;width: 600px;">
+                            <ul>
+                                {% for cr in form_data.customize_reports %}
+                                    <li>
+                                        <a name="customize_query"
+                                           index="{{ cr.index }}"
+                                           code="{{ cr.code }}"
+                                           cur_name="{{ cr.name }}"
+                                           parameters_sample="{{ cr.parameters_sample }}"
+                                           href="javascript:void(0)">{{ cr.name }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="form-group" style="width: 60%;">
+                        <input type="text" name="parameters" class="form-control" style="width:100%;" id="parameters"
+                               placeholder="输入查询参数"/>
+                    </div>
+                    <div class="form-group hide" style="width: 60%;">
+                        <input type="text" name="customize_report_code" id="customize_report_code"
+                        />
+                        <input type="text" name="customize_report_index" id="customize_report_index" value="-1"
+                        />
+                    </div>
+                    <button id="s_submit" type="submit" class="btn btn-default">确认查询</button>
+                    <div id="g_submit" class="btn btn-default">导出数据</div>
+                </form>
+            </div>
+            <div class="col-md-12 column">
+                <div id="content" class="box" style="padding:30px">
+                    <h4 style="text-align:center">请输入筛选条件......</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $(document).ready(function () {
+            $('body').addClass('sidebar-collapse');
+        });
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 为十月下的的月份加0
+        function ad_0(s) {
+            return s < 10 ? '0' + s : s;
+        }
+
+        // 获取表单数据
+        function getFormData(form) {
+            let data = form.serialize();
+            data = decodeURI(data);
+            let arr = data.split('&');
+            let item, key, value, newData = {};
+            for (let i = 0; i < arr.length; i++) {
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if (key.indexOf('[]') != -1) {
+                    key = key.replace('[]', '');
+                    if (!newData[key]) {
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                } else {
+                    newData[key] = value;
+                }
+            }
+            return newData;
+        }
+
+        $(document).ready(function () {
+            // 日期需要的变量
+
+            var s_form = $('#inventory_form');
+
+
+            $("#s_submit").click(function () {
+                s_form.attr('data-page', 1);
+            });
+
+            // 提交表单
+            s_form.submit(function (e) {
+                e.preventDefault(); // 取消默认操作
+                var _self = $(this);
+                var reg = new RegExp("^[0-9][0-9][0-9][0-9][A-Z][0-9][0-9]$");
+                var form_data = getFormData(_self);
+                form_data["parameters"] = form_data["parameters"].toUpperCase();
+
+                layer.load();
+                $.ajax({
+                    url: "{% url 'customize_report' %}",
+                    type: 'post',
+                    data: {
+                        "info": JSON.stringify(form_data),
+                        "page": _self.attr('data-page')
+                    },
+                    success: function (res) {
+                        var res_doc = $(res);
+                        $("#content").html(res_doc);
+                        $("#spn_data_total").text(res_doc.eq(0).text());
+                        layer.closeAll();
+                    }
+                });
+            });
+            // 生成csv
+            $("#g_submit").click(function () {
+                location.href = "{% url 'customize_report_csv' %}?info=" + JSON.stringify(getFormData(s_form));
+            });
+            // 分页按钮
+            $(document).on("click", "#pagination a.pa", function () {
+                s_form.attr('data-page', $(this).attr("data-page"));
+                s_form.submit();
+            });
+        });
+
+
+        // 点击 头部 Actions Vendor List，更新 Vendor；无确认需求
+        $("a[name='customize_query']").each(function () {
+            $(this).bind("click", function () {
+
+                var index = $(this).attr('index');
+                var code = $(this).attr('code');
+                var cur_name = $(this).attr("cur_name");
+                var parameters_sample = $(this).attr('parameters_sample');
+                $("#customize_report_index").val(index);
+                $("#customize_report_code").val(code);
+                $("#cur_cr_name").html(cur_name);
+
+                $("#parameters").val('');
+                $("#parameters").attr('placeholder', parameters_sample);
+                $("#parameters")[0].focus();
+
+            });
+        });
+    </script>
+{% endblock %}

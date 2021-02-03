@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="/static/layui/css/layui.css" />
+    <style>
+        .span_title{
+            padding-right: 30px;
+        }
+        .stack_a{
+            cursor: pointer;
+            color: #ffffff;
+        }
+        /* 防止下拉框的下拉列表被隐藏---必须设置--- */
+        .layui-table-cell {overflow: visible !important;        }
+        /* 使得下拉框与单元格刚好合适 */
+        td .layui-form-select{
+            margin-top: -10px;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+        .input-top{
+            margin-top: 15px;
+        }
+        .input_stock{
+            width: 300px;
+            height: 30px;
+            line-height: 30px;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}成镜订单管理 {% if form_data.total %}<span class="label label-info">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}成镜入库{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Stock In Request List：</h3>
+                </div>
+                <table class="layui-hide" id="stock_in_table" lay-filter="demo" style="overflow-x: hidden;"></table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title" id="myModalLabel">入库</h3>
+                </div>
+                <div class="modal-body" style="height: 450px;">
+                   <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">成镜订单号码:</label>
+                        <input type="text" class="input_stock" id="stock_order_number" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">Lab Number:</label>
+                        <input type="text" class="input_stock" id="stock_lab_number" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">成镜 SKU:</label>
+                        <input type="text" class="input_stock" id="sku" disabled="disabled">
+                    </div>
+                  </div>
+{#                  <div class="form-group">#}
+{#                    <div class="col-sm-12 input-top">#}
+{#                        <label style="width: 100px;">Lens SKU:</label>#}
+{#                        <input type="text" class="input_stock" id="lens_sku" disabled="disabled">#}
+{#                    </div>#}
+{#                  </div>#}
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">入库类型:</label>
+                        <select style="width: 300px; height: 35px; line-height: 35px;" id="inbound_type">
+                            <option value="">请选择入库类型</option>
+                            {% for itemtype in inbound_type_list %}
+                                <option value="{{ itemtype.code }}">{{ itemtype.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">仓库:</label>
+                        <select style="width: 300px; height: 35px; line-height: 35px;" id="warehouse">
+                            <option value="">请选择仓库</option>
+                            {% for item in whs %}
+                                <option value="{{ item.code }}">{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">库位:</label>
+                        <input type="text" class="input_stock" id="location">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">数量:</label>
+                        <input type="text" class="input_stock" id="quantity">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">Comments:</label>
+                        <textarea  rows="3" cols="50" id="comments"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="close_btn">关闭</button>
+                    <button type="button" class="btn btn-primary" id="create_btn">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <script type="text/html" id="toolbarDemo">
+        <label>Lab Number:</label>
+        <input type="text" id="lab_number" name="search" style="width: 200px;height: 37px;">
+{#        <label>Date:</label>#}
+{#        <input type="text" id="start_date" style="width: 200px;height: 37px;">#}
+        <button type="button" class="btn btn-primary" id="search_btn" style="margin-left: 5px;" lay-event="search">Search</button>
+{#        <button type="button" class="btn btn-primary" id="creat_reciept_request_btn" style="margin-left: 5px;" lay-event="create">Creat Reciept Request</button>#}
+    </script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        laydate.render({
+          elem: '#start_date'
+          ,type: 'datetime' //默认，可不填
+        });
+        layui.use(['table', 'layer', 'element', 'jquery', 'form'], function() {
+            var table = layui.table;
+            var form = layui.form;
+            //第一个实例
+            table.render({
+                elem: '#stock_in_table'
+                ,toolbar: '#toolbarDemo'
+                , height: 'full-10'
+                , url: "{% url 'get_stock_in_request_data' %}"
+                , where: {flag:'list'}
+                ,done: function(res, curr, count){
+                   // 渲染dictName列
+                    laydate.render({
+                      elem: '#start_date'
+                      ,type: 'datetime' //默认，可不填
+                    });
+                    //得到当前页码
+                    console.log(curr);
+                    //得到数据总量
+                    console.log(count);
+                }
+                , cellMinWidth: 100
+                , page: true //开启分页
+                , limit:30
+                , limits:[30,50,70,90,120,10000]
+                , even: true
+                , cols: [[ //表头
+                    {field: 'id', title: 'ID', sort: true, width:80}
+                    , {field: 'stock_order_number', title: '成镜订单号', width:300}
+                    , {field: 'lab_number', title: 'Lab Number', width:300}
+                    , {field: 'status', title: 'Status', width:80}
+                    , {field: 'frame', title: '成镜 SKU', width:180}
+                    //, {field: 'lens_sku', title: 'Lens SKU', width:180}
+                    , {field: 'quantity', title: 'Quantity', sort:true, width:120}
+                    , {field: 'act_quantity', title: 'Act Quantity', sort:true, width:120}
+                    , {title: '操作', templet: function(row){
+                            var barBtnsHTML = '<button type="button" class="btn btn-primary" id="creat_reciept_request_btn" lay-event="create">Stock In</button>';
+                            return barBtnsHTML;
+                    }}
+                ]]
+            });
+
+            table.on('tool(demo)', function (obj) {
+                 var data = obj.data; //获得当前行数据
+                 var layEvent = obj.event;
+                 console.log(data);
+                 console.log(data.lab_number);
+                 if(layEvent == 'create'){
+                     $("#stock_order_number").val(data.stock_order_number);
+                     $("#stock_lab_number").val(data.lab_number);
+                     $("#sku").val(data.frame);
+                     $("#lens_sku").val(data.lens_sku);
+                     $("#quantity").val(data.act_quantity);
+                     $("#myModal").modal("show");
+                 }
+
+            });
+            $("#create_btn").click(function () {
+                var stock_order_number = $("#stock_order_number").val();
+                var stock_lab_number = $("#stock_lab_number").val();
+                var frame = $("#sku").val();
+                //var lens_sku = $("#lens_sku").val();
+                var inbound_type = $("#inbound_type").val();
+                var warehouse = $("#warehouse").val();
+                var location = $("#location").val();
+                var quantity = $("#quantity").val();
+                var comments = $("#comments").val();
+                if (stock_lab_number == ''){
+                    layer.msg('Lab Number 不能为空，请刷新重试', {time:3000,icon:7})
+                    return ''
+                }
+                if(inbound_type == ''){
+                    layer.msg('请选择入库类型', {time:3000,icon:7})
+                    return ''
+                }
+                if(warehouse == ''){
+                    layer.msg('请选择仓库', {time:3000,icon:7})
+                    return ''
+                }
+                if(quantity == '' || quantity == '0' || quantity == 0){
+                    layer.msg('请输入入库数量', {time:3000,icon:7})
+                    return ''
+                }
+                 var url = "{% url 'create_stock_in' %}";
+                 $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        "lab_number":stock_lab_number,
+                        "frame": frame,
+                        "stock_order_number": stock_order_number,
+                        "inbound_type": inbound_type,
+                        "warehouse": warehouse,
+                        "location": location,
+                        "quantity": quantity,
+                        "comments": comments
+                    },
+                    dataType:'json',
+                    success: function (arg) {
+                        if (arg.code == 0){
+                            $("#myModal").modal("hide");
+                            $("#act_quantity").val('');
+                            $("#comments").val('');
+                            layer.msg(arg.msg, {icon:6,time:1000});
+                            window.location.reload()
+                        }else {
+                            layer.msg(arg.msg, {icon:7,time:3000});
+                        }
+                    }
+                 });
+            });
+            $("#close_btn").click(function () {
+                $("#act_quantity").val('');
+                $("#comments").val('');
+            });
+            table.on('toolbar(demo)', function (obj) {
+             var layEvent = obj.event;
+             if (layEvent == 'search'){
+                var lab_number = $("#lab_number").val();
+                var start_date = $("#start_date").val();
+                table.reload('stock_in_table',{
+                    url: "{% url 'get_stock_in_request_data' %}",
+                    where: {
+                        lab_number:lab_number,
+                        start_date:start_date
+                    },
+                    page:{
+                        curr:1
+                    }
+                })
+             }
+            });
+        });
+    </script>
+{% endblock %}

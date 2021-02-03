@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+    .el-collapse-item__header,.el-collapse-item__content{
+        padding-left:30px;
+    }
+    .el-collapse-item__header{
+        font-weight: bold;
+
+    }
+    #sub{
+        float: right;
+    }
+    </style>
+{% endblock %}
+{% block h1 %}QC - 终检{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}外观检查{% endblock %}
+{% block content %}
+<div id="app" v-cloak>
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header">
+
+                    <div style="float: left;">
+                        <div class="input-group input-group" style="width: 200px;">
+                        <input type="text" class="form-control" id="number" placeholder="Please enter the order number"
+                               autofocus="autofocus" {% if form_data.search_entity %}value="{{ form_data.search_entity }}"{% endif %} @keyup.enter="btnSearch">
+                        <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default btn-flat" @click="btnSearch">Search</button>
+                        </span>
+
+                    </div>
+                    </div>
+
+                    <div style="float: left;margin-left: 10px">
+                        <button id="backPrev" type="button" class="btn btn-default btn flat"
+                                role="button"
+                                onClick="javascript :history.back(-1);">Back
+                        </button>
+                    </div>
+                    <button @click="submits" type="submit" class="btn btn-primary btn-flat" style="float:left;margin-left: 5px">
+                        Submit
+                    </button>
+                    <button type="reset" class="btn btn-default btn-flat" style="float:left;margin-left: 5px">
+                        Reset
+                    </button>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">工厂订单</h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    {% if lbo %}
+                        <table class="table">
+                            <tr>
+                                <th>Lab Number</th>
+                                <th>镜架</th>
+                                <th>染色</th>
+                                <th>涂层</th>
+                                <th>设计</th>
+                                <th>美薄</th>
+                                <th>订单日期</th>
+                                <th>备注</th>
+                            </tr>
+                            <tr>
+                                <td><span class="label-info">{{ lbo.lab_number }}</span> </td>
+                                <td><span class="label-danger">{{ lbo.frame }}</span> </td>
+                                <td>{{ lbo.tint_name }}</td>
+                                <td>{{ lbo.coating_name }}</td>
+                                <td>{{ lbo.pal_design_name }}</td>
+                                <td>{{ lbo.special_handling_name }}</td>
+                                <td>{{ lbo.create_at }}</td>
+                                <td>{{ lbo.comments }}</td>
+                            </tr>
+                        </table>
+                    {% else %}
+                        {% ifnotequal error_code 0 %}
+                            {{ error_message }}
+                        {% endifnotequal %}
+                    {% endif %}
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+            {% if form_data.caution_info %}
+            <div class="box-header with-border">
+                <h3 class="box-title">警示信息&nbsp;</h3><h4 style="display:inline;color:red">{{ form_data.caution_info }}</h4>
+            </div>
+            {% endif %}
+                <div class="box-header">
+                    <h3 class="box-title">外观检查</h3>
+                </div>
+                    <el-collapse v-model="activeName" accordion>
+                      <el-collapse-item title="镜架" name="1">
+                         <el-checkbox-group v-model="checkd_list">
+                            <el-checkbox label="1">镜框/镜腿&nbsp&nbsp:&nbsp&nbsp存在划伤、破损、掉漆、凸点、毛刺、钳痕、裂缝、杂质、水痕、金属部分发黄等瑕疵。</el-checkbox>
+                         </el-checkbox-group>
+                      </el-collapse-item>
+                      <el-collapse-item title="配件" name="2">
+                         <el-checkbox-group v-model="checkd_list">
+                             <div><el-checkbox label="2">镜腿、铰链、桩头、弹簧腿连接松动</el-checkbox></div>
+                             <div><el-checkbox label="3">左右螺丝颜色不同</el-checkbox></div>
+                             <div><el-checkbox label="4">脚套与镜腿松动</el-checkbox></div>
+                             <div><el-checkbox label="5">镜架装饰物、托叶、夹片镜吸铁石等易脱落部件丢失</el-checkbox></div>
+                             <div><el-checkbox label="6">夹片颜色、数量、质量存在问题</el-checkbox></div>
+                             <div><el-checkbox label="7">拉丝断裂、有线头漏出</el-checkbox></div>
+                         </el-checkbox-group>
+                      </el-collapse-item>
+                      <el-collapse-item title="镜片" name="3">
+                         <el-checkbox-group v-model="checkd_list">
+                             <div><el-checkbox label="8">光学中心30mm内有瑕疵</el-checkbox></div>
+                             <div><el-checkbox label="9">存在划碰伤、破损、杂质、压痕、吸盘印、片爆、焦损、翻边、涂层脱落、气泡、白点、凸点、水纹、手印痕迹、厚度异常、橘皮或霉斑、镜片变形、抛光开槽倒边不良</el-checkbox></div>
+                         </el-checkbox-group>
+                      </el-collapse-item>
+                      <el-collapse-item title="装配" name="4">
+                         <el-checkbox-group v-model="checkd_list">
+                             <div><el-checkbox label="10">双光子片平顶连线（渐进十字隐形标连线）夹角超过2°</el-checkbox></div>
+                             <div><el-checkbox label="11">高度互差超过1mm</el-checkbox></div>
+                             <div><el-checkbox label="12">子片左右不对称</el-checkbox></div>
+                             <div><el-checkbox label="13">左右镜圈形状不对称</el-checkbox></div>
+                             <div><el-checkbox label="14">合口间隙超过0.5mm</el-checkbox></div>
+                             <div><el-checkbox label="15">扳动镜腿、扭动镜面镜片有掉落趋势</el-checkbox></div>
+                         </el-checkbox-group>
+                      </el-collapse-item>
+                      <el-collapse-item title="整形" name="5">
+                         <el-checkbox-group v-model="checkd_list">
+                             <div><el-checkbox label="16">两侧镜腿打开、闭合所需力度不同</el-checkbox></div>
+                             <div><el-checkbox label="17">镜腿打开水平放置时，左右镜框、左右镜腿非四点着地,高度不一致</el-checkbox></div>
+                             <div><el-checkbox label="18">无框打孔位置不对称、镜面不平整</el-checkbox></div>
+                             <div><el-checkbox label="19">镜腿朝内弯曲、夹角呈非90°、前倾角不合格、镜腿张角不合格</el-checkbox></div>
+                             <div><el-checkbox label="20">镜框左右不对称、镜片与镜框之间有明显缝隙</el-checkbox></div>
+                             <div><el-checkbox label="21">两边鼻托高度不一致、角度不对称、托叶不对称</el-checkbox></div>
+                             <div><el-checkbox label="22">镜片与镜架之间夹杂杂物</el-checkbox></div>
+                         </el-checkbox-group>
+                      </el-collapse-item>
+                    </el-collapse>
+                    <div style="margin-top: 20px;padding-bottom: 20px;">
+                        <label style="margin-left: 5px;">描述：</label>
+                        <el-input
+                      type="textarea"
+                      :autosize="{ minRows: 2, maxRows: 4}"
+                      placeholder="请输入内容"
+                      v-model="comments">
+                        </el-input>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script src={% static "js/vue.js" %}></script>
+    <script src={% static "js/element.js" %}></script>
+    <!--<script src={% static "js/axios.min.js" %}></script>-->
+    <script src={% static "js/qs.min.js" %}></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                activeName: [],
+                checkd_list:[],
+                comments:'',
+                data_list:[],
+                is_frame:'0',
+                is_parts:'0',
+                is_lens:'0',
+                is_assembling:'0',
+                is_plastic:'0'
+            },
+            beforeMount(){
+                this.checkd_list = {{ checkd_list | safe }}
+                this.comments = '{{ comments }}'
+                this.activeName = {{ activeName | safe }}
+                console.log(this.activeName)
+            },
+            methods:{
+                btnSearch:function(){
+                    order_number = $("#number").val();
+                    url = "{% url 'qc_glasses_final_inspection_visual_create' %}";
+                    if (order_number == '' || order_number == null) {
+                        layer.msg('请输入 Lab Order 订单号码!', {time: 3000, icon: 7});
+                    }
+                    else {
+                        location.href = url + '?lab_number=' + order_number;
+                    }
+                },
+                submits:function () {
+                    this.is_frame = '0';
+                    this.is_parts = '0';
+                    this.is_lens = '0';
+                    this.is_assembling = '0';
+                    this.is_plastic = '0';
+                    var data = {
+                        lab_number: '',
+                        is_frame: '',
+                        is_parts: '',
+                        is_lens: '',
+                        is_assembling: '',
+                        is_plastic: '',
+                        checkd_list: [],
+                        comments: this.comments
+                    }
+                    var lab_number = $(".label-info").text();
+                    if(lab_number == ' '){
+                        layer.msg('请输入 Lab Order 订单号码!', {time: 3000, icon: 7});
+                        return;
+                    }
+                    if($.inArray("1", this.checkd_list)== -1){
+                        this.is_frame = '1'
+                    }
+                    if($.inArray("2", this.checkd_list)== -1 && $.inArray("3", this.checkd_list)== -1 && $.inArray("4", this.checkd_list)== -1 && $.inArray("5", this.checkd_list)== -1 && $.inArray("6", this.checkd_list)== -1 && $.inArray("7", this.checkd_list)== -1){
+                        this.is_parts = '1'
+                    }
+                    if($.inArray("8", this.checkd_list)== -1 && $.inArray("9", this.checkd_list)== -1 ){
+                        this.is_lens = '1'
+                    }
+                    if($.inArray("10", this.checkd_list)== -1 && $.inArray("11", this.checkd_list)== -1 && $.inArray("12", this.checkd_list)== -1 && $.inArray("13", this.checkd_list)== -1 && $.inArray("14", this.checkd_list)== -1 && $.inArray("15", this.checkd_list)== -1){
+                        this.is_assembling = '1'
+                    }
+                    if($.inArray("16", this.checkd_list)== -1 && $.inArray("17", this.checkd_list)== -1 && $.inArray("18", this.checkd_list)== -1 && $.inArray("19", this.checkd_list)== -1 && $.inArray("20", this.checkd_list)== -1 && $.inArray("21", this.checkd_list)== -1 && $.inArray("22", this.checkd_list)== -1){
+                        this.is_plastic = '1'
+                    }
+                    data.lab_number = lab_number
+                    data.is_frame = this.is_frame
+                    data.is_parts = this.is_parts
+                    data.is_lens = this.is_lens
+                    data.is_assembling = this.is_assembling
+                    data.is_plastic = this.is_plastic
+                    data.checkd_list = this.checkd_list
+
+                    $.ajax({
+                      async:false,
+                      cache:false,
+                      url:"{% url 'qc_glasses_final_inspection_visual_create' %}",
+                      data:data,
+                      type:"POST",
+                      dataType:"json",
+                      success:function(result) {
+                          if(result.code==0){
+                              layer.msg('操作成功', {time: 3000, icon: 1});
+                          }
+                      }
+                    });
+                }
+            }
+        });
+    </script>
+
+
+{% endblock %}

@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders {% if page_info.total %}<span class="label label-default">{{ page_info.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}出库申请清单{% endblock %}
+{% block content %}
+    <div style="float: left;display:none">{% include 'search.html' %}</div>
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;display:none">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            过滤器 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+
+            <li><a href="{% url 'laborder_request_notes' %}?filter=all">{% ifequal filter 'all' %}*{% endifequal %}
+                全部</a></li>
+            <li style="display:none">&nbsp</li>
+            <li><a href="{% url 'laborder_request_notes' %}?filter=new">{% ifequal filter 'new' %}
+                *{% endifequal %}新订单</a></li>
+        </ul>
+    </div>
+    <!--Search end-->
+
+    <!--Actions-->
+    <div class="cl">
+        <div style="float: left;margin-right: 3px;margin-left:10px;">
+            <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" href={% url 'laborder_request_notes_print' %}?id={{ form_data.id }}
+               target='view_window'>打印镜架出库单</a>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default"
+               href={% url 'redirect_laborder_request_lens_notes_print' %}?id={{ form_data.id }}
+               target='view_window'>打印镜片出库清单</a>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default"
+               href={% url 'redirect_laborder_request_lens_notes_print_count' %}?id={{ form_data.id }}
+               target='view_window'>打印镜片出库申请汇总</a>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default"
+               href={% url 'laborder_request_notes_generate_barcode' %}?id={{ form_data.id }}
+               target='view_window'>生成条码清单</a>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <button id="btn_change_vendor" type="button" class="btn btn-danger">转单</button>
+        </div>
+
+        <div class="hidden" style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default"
+               href={% url 'laborder_request_notes_generate_csv' %}?id={{ form_data.id }}
+               target='view_window'>生成镜片采购订单</a>
+        </div>
+
+        <div class="hidden" style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default"
+               href={% url 'laborder_request_notes_generate_csv_wx' %}?id={{ form_data.id }}
+               target='view_window'>生成镜片采购订单-伟星</a>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <div class="checkbox">
+                <label>
+                    <input id="chk_delivery" type="checkbox" checked disabled> 仅下达[镜架出库]
+                </label>
+            </div>
+        </div>
+
+        <div style="float: left;margin-left: 5px;display:none">
+            <a class="btn btn-block btn-default" href={% url 'laborder_request_notes_delivery' %}?id={{ form_data.id }}
+               target='view_window'>批量镜架出库</a>
+        </div>
+    </div>
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>镜架</th>
+                <th>订单号</th>
+                <th>货位</th>
+                <th>数量</th>
+                <th>车房片</th>
+                <th>订单日期</th>
+                <th>订单下达日期</th>
+                <th>订单状态</th>
+                <th>VD</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td>{{ item.index }}</td>
+                    <td>{{ item.frame }}</td>
+                    <td>{{ item.lab_number }}</td>
+                    <td>{{ item.location }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.lens_type }}</td>
+                    <td>{{ item.order_date }}</td>
+                    <td>{{ item.order_created_date }}</td>
+                    <td>{{ item.status_value }}</td>
+                    <td>{{ item.laborder_entity.vendor }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            {#上一页按钮开始#}
+            {#如果当前页有上一页#}
+            Total: {{ page_info.total }}
+            {% if list.has_previous %}
+                {#当前页的上一页按钮正常使用#}
+                <li class="previous"><a
+                        href="{{ requestUrl }}?page={{ list.previous_page_number }}&filter={{ filter }}&id={{ form_data.id }}">previous</a>
+                </li>
+            {% else %}
+                {#当前页的不存在上一页时,上一页的按钮不可用#}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {#上一页按钮结束#}
+            {#页码开始#}
+            {% for num in paginator.page_range %}
+
+                {% if num == currentPage %}
+                    <li class="item active"><a
+                            href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&id={{ form_data.id }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="item"><a
+                            href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&id={{ form_data.id }}">{{ num }}</a>
+                    </li>
+
+                {% endif %}
+            {% endfor %}
+            {#页码结束#}
+            {#下一页按钮开始#}
+            {% if list.has_next %}
+                <li class="next"><a
+                        href="{{ requestUrl }}?page={{ list.next_page_number }}&filter={{ filter }}&id={{ form_data.id }}">next</a>
+                </li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+            {#下一页按钮结束#}
+        </ul>
+    </div>
+    <!--paginator end-->
+
+
+    <div id="div_change_vendor" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            原 VD:<input class="form-control" name="txt_origin_vendor" id="txt_origin_vendor" readonly="true"
+                        value="{{ form_data.lrn_entity.vendor }}"></input>
+            请输入新的 VD:<input class="form-control" name="txt_new_vendor" id="txt_new_vendor"></input>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block jquery %}
+    <script>
+        $(document).ready(function () {
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            });
+        })
+        $("#btn_change_vendor").click(function () {
+
+                document.getElementById("btn_change_vendor").disabled = true;
+
+                var index = top.layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '800px',
+                        height: '400px'
+                    },
+                    title: '手动分配 Vendor', //不显示标题
+                    content: $('#div_change_vendor'),
+
+                    btn: ['确定', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        change_vendor();
+                    }
+                });
+
+            }
+        );
+
+        function change_vendor() {
+
+            var id = "{{ form_data.id }}";
+            var origin_vendor = document.getElementById('txt_origin_vendor').value;
+            var new_vendor = document.getElementById('txt_new_vendor').value;
+
+            var url = "{% url 'laborder_request_notes_change_vendor' %}";
+
+            var index = layer.load();
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: {
+                    'id': id,
+                    'origin_vendor': origin_vendor,
+                    'new_vendor': new_vendor
+                },
+                success: function (arg) {
+                    layer.close(index);
+                    var obj = JSON.parse(arg);
+                    if (obj.code == 0) {
+                        layer.msg(obj.message, {time: 5000, icon: 6});
+                        setTimeout(function () {
+                        layer.closeAll();
+                    }, 5 * 1000);//延迟5000毫
+                    }
+                    else {
+                        alert(obj.message);
+                    }
+                },
+                error: function (arg) {
+                    alert('程序调用异常!');
+                    layer.closeAll();
+                }
+            });
+        }
+    </script>
+{% endblock %}
+

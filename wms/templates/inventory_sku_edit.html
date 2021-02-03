@@ -1,0 +1,1313 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}WMS
+    {% if form_data.total %}
+        <span class="label label-default">{{ form_data.total }}</span>
+    {% endif %}
+{% endblock %}
+{% block small %}SKU新建&维护{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <div style="float: left;">{% include 'search.html' %}</div>
+
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+                        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                            产品类型 <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href={{ requestUrl }}?product_type=all>
+                                    {% ifequal product_type 'all' %}
+                                        *{% endifequal %}All</a></li>
+                            <li>&nbsp</li>
+
+                            {% for pt in product_type_choices_list %}
+                                <li>
+                                    <a href={{ requestUrl }}?product_type={{ pt.key }}>
+                                        {% ifequal product_type pt.key %}
+                                            *
+                                        {% endifequal %}
+                                        {{ pt.value }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="input-group input-group" >
+
+
+                        <span class="input-group-btn" >
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addmyModal" style="float: right;">新建</button>
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-solid">
+                <div class="box-body">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <th>产品类型</th>
+                        <th>SKU</th>
+                        <th>SKU 名称</th>
+                        <th>SKU 规格</th>
+                        <th>镜架类型</th>
+                        <th>创建更新时间</th>
+
+                        <th>是否已同步</th>
+
+                        <th>备注</th>
+                        <th>操作</th>
+                        </thead>
+                        <tbody>
+                        {% for item in list %}
+                            <tr>
+                                <td>{{ item.get_product_type_display  }}</td>
+                                <td>{{ item.sku }}</td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.sku_specs }}</td>
+                                <td>{{ item.get_frame_type_display  }}</td>
+                                <td>
+                                    创建:{{ item.created_at|date:"Y-m-d H:i:s"}}
+                                    <br>
+                                    更新:{{ item.updated_at|date:"Y-m-d H:i:s"}}
+                                </td>
+
+                                <td>{{ item.get_is_already_synchronous_display }}</td>
+                                <td>{{ item.comments }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-info edit_sku" data="{{ item.sku }}">编辑</button>
+                                    <button type="button" class="btn btn-info download_sku" data="{{ item.product_num }}">下载</button>
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!--日期选择弹窗-->
+    <!--日期选择弹窗-->
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+
+    <!--paginator end-->
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+         <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">编辑SKU</h4>
+                </div>
+                <div class="modal-body">
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_sku" class="col-sm-4 control-label">SKU</label>
+                        <div class="col-sm-8">
+                            <input name="e_sku" type="text" class="form-control" id="e_sku" readonly="readonly"/>
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_sku_name" class="col-sm-4 control-label">名称</label>
+                        <div class="col-sm-8">
+                            <input name="e_sku_name" type="text" class="form-control" id="e_sku_name"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_product_type" class="col-sm-4 control-label">产品类型</label>
+                        <div class="col-sm-8">
+                            <select name="e_product_type" id="e_product_type" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in product_type_choices_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_sku_specs" class="col-sm-4 control-label">材料规格</label>
+                        <div class="col-sm-8">
+                            <input name="e_sku_specs" type="text" class="form-control" id="e_sku_specs"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="channel_box" style="height: 40px;line-height: 40px;">
+                        <label for="e_frame_type" class="col-sm-4 control-label">镜架类型</label>
+                        <div class="col-sm-8">
+                            <select name="e_frame_type" id="e_frame_type" class="form-control">
+                                <option value="">请选择</option>
+                                {% for ft in frame_type_choices_list %}
+                                    <option value="{{ ft.key }}">{{ ft.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_is_variability" class="col-sm-4 control-label">易变形</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_is_variability" type="text" class="form-control" id="e_is_variability" value="0">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="e_is_variability" id="e_is_variability" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_product_num" class="col-sm-4 control-label">PRODUCT NUMBER</label>
+                        <div class="col-sm-8">
+                            <input name="e_product_num" type="text" class="form-control" id="e_product_num"/>
+                        </div>
+                    </div>
+
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="e_base_price" class="col-sm-4 control-label">BASE Price</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_base_price" type="number" class="form-control" id="e_base_price"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="e_width" class="col-sm-4 control-label">LENS WIDTH</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_width" type="number" class="form-control" id="e_width"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="e_height" class="col-sm-4 control-label">LENS HIGHT</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_height" type="number" class="form-control" id="e_height"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="e_bridge" class="col-sm-4 control-label">Frame Bridge</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_bridge" type="number" class="form-control" id="e_bridge"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="e_ed" class="col-sm-4 control-label">ED</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_ed" type="number" class="form-control" id="e_ed"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="e_center" class="col-sm-4 control-label">CENTER THICKNESS</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_center" type="number" class="form-control" id="e_center"/>#}
+{#                        </div>#}
+{#                    </div>#}
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_r_a" class="col-sm-4 control-label">R_A&nbsp;&nbsp;(右框宽)</label>
+                        <div class="col-sm-8">
+                                <input name="e_r_a" type="text" class="form-control" id="e_r_a" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_r_b" class="col-sm-4 control-label">R_B&nbsp;&nbsp;(右框高)</label>
+                        <div class="col-sm-8">
+                            <input name="e_r_b" type="text" class="form-control" id="e_r_b" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_r_ed" class="col-sm-4 control-label">R_ED&nbsp;&nbsp;(右框ED值)</label>
+                        <div class="col-sm-8">
+                            <input name="e_r_ed" type="text" class="form-control" id="e_r_ed" value="">
+                        </div>
+                    </div>
+
+<!--                    <div class="form-group" style="height: 40px;line-height: 40px;">-->
+<!--                        <label for="e_r_ed_axis" class="col-sm-4 control-label">R_ED_AXIS</label>-->
+<!--                        <div class="col-sm-8">-->
+<!--                            <input name="e_r_ed_axis" type="text" class="form-control" id="e_r_ed_axis" value="">-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_r_circ" class="col-sm-4 control-label">R_CIRC&nbsp;&nbsp;(右框周长)</label>
+                        <div class="col-sm-8">
+                            <input name="e_r_circ" type="text" class="form-control" id="e_r_circ" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_r_fcrv" class="col-sm-4 control-label">R_FCRV&nbsp;&nbsp;(右框弯度)</label>
+                        <div class="col-sm-8">
+                            <input name="e_r_fcrv" type="text" class="form-control" id="e_r_fcrv" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_r_ztilt" class="col-sm-4 control-label">R_ZTILT&nbsp;&nbsp;(右框ZTILT)</label>
+                        <div class="col-sm-8">
+                            <input name="e_r_ztilt" type="text" class="form-control" id="e_r_ztilt" value="">
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_l_a" class="col-sm-4 control-label">L_A&nbsp;&nbsp;(左框宽)</label>
+                        <div class="col-sm-8">
+                            <input name="e_l_a" type="text" class="form-control" id="e_l_a" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_l_b" class="col-sm-4 control-label">L_B&nbsp;&nbsp;(左框高)</label>
+                        <div class="col-sm-8">
+                            <input name="e_l_b" type="text" class="form-control" id="e_l_b" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_l_ed" class="col-sm-4 control-label">L_ED&nbsp;&nbsp;(左框ED值)</label>
+                        <div class="col-sm-8">
+                            <input name="e_l_ed" type="text" class="form-control" id="e_l_ed" value="">
+                        </div>
+                    </div>
+
+
+<!--                    <div class="form-group" style="height: 40px;line-height: 40px;">-->
+<!--                        <label for="e_l_ed_axis" class="col-sm-4 control-label">L_ED_AXIS</label>-->
+<!--                        <div class="col-sm-8">-->
+<!--                            <input name="e_l_ed_axis" type="text" class="form-control" id="e_l_ed_axis" value="">-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_l_circ" class="col-sm-4 control-label">L_CIRC&nbsp;&nbsp;(左框周长)</label>
+                        <div class="col-sm-8">
+                            <input name="e_l_circ" type="text" class="form-control" id="e_l_circ" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_l_fcrv" class="col-sm-4 control-label">L_FCRV&nbsp;&nbsp;(左框弯度)</label>
+                        <div class="col-sm-8">
+                            <input name="e_l_fcrv" type="text" class="form-control" id="e_l_fcrv" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_l_ztilt" class="col-sm-4 control-label">L_ZTILT&nbsp;&nbsp;(左框ZTILT)</label>
+                        <div class="col-sm-8">
+                            <input name="e_l_ztilt" type="text" class="form-control" id="e_l_ztilt" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_dbl" class="col-sm-4 control-label">DBL&nbsp;&nbsp;(桥宽)</label>
+                        <div class="col-sm-8">
+                            <input name="e_dbl" type="text" class="form-control" id="e_dbl" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_temple" class="col-sm-4 control-label">TEMPLE&nbsp;&nbsp;(镜腿长度)</label>
+                        <div class="col-sm-8">
+                            <input name="e_temple" type="text" class="form-control" id="e_temple" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_fmat" class="col-sm-4 control-label">FMAT&nbsp;&nbsp;(镜架材质)</label>
+                        <div class="col-sm-8">
+                            <select name="e_fmat" id="e_fmat" class="form-control">
+                                <option value="">请选择</option>
+                                    {% for ft in fmat_type_choices_list %}
+                                    <option value="{{ ft.key }}">{{ ft.value }}</option>
+                                    {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_fsha" class="col-sm-4 control-label">FSHA&nbsp;&nbsp;(镜架形状)</label>
+                        <div class="col-sm-8">
+                            <select name="e_fsha" id="e_fsha" class="form-control">
+                                <option value="">请选择</option>
+                                    {% for ft in fsha_type_choices_list %}
+                                    <option value="{{ ft.key }}">{{ ft.value }}</option>
+                                    {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_etyp" class="col-sm-4 control-label">ETYP&nbsp;&nbsp;(割边类型)</label>
+                        <div class="col-sm-8">
+                            <select name="e_etyp" id="e_etyp" class="form-control">
+                                <option value="">请选择</option>
+                                    {% for et in etyp_type_choices_list %}
+                                    <option value="{{ et.key }}">{{ et.value }}</option>
+                                    {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_attribute_set" class="col-sm-4 control-label">Attribute Set&nbsp;&nbsp;(属性)</label>
+                        <div class="col-sm-8">
+                            <input name="e_attribute_set" type="text" class="form-control" id="e_attribute_set" value="">
+                        </div>
+
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_frame_width" class="col-sm-4 control-label">Frame Width&nbsp;&nbsp;(镜架宽度)</label>
+                        <div class="col-sm-8">
+                            <input name="e_frame_width" type="text" class="form-control" id="e_frame_width" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_is_nose_pad" class="col-sm-4 control-label">Nose Pad&nbsp;&nbsp;(是否有鼻托)</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_is_nose_pad" type="text" class="form-control" id="e_is_nose_pad" value="">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="e_is_nose_pad" id="e_is_nose_pad" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                    <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_is_has_spring_hinges" class="col-sm-4 control-label">是否有弹簧铰链</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_is_has_spring_hinges" type="text" class="form-control" id="e_is_has_spring_hinges" value="">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="e_is_has_spring_hinges" id="e_is_has_spring_hinges" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                    <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_is_color_changing" class="col-sm-4 control-label">是否变色</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_is_color_changing" type="text" class="form-control" id="e_is_color_changing" value="">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="e_is_color_changing" id="e_is_color_changing" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                    <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_is_already_synchronous" class="col-sm-4 control-label">是否已同步</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="e_is_already_synchronous" type="text" class="form-control" id="e_is_already_synchronous" value="">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="e_is_already_synchronous" id="e_is_already_synchronous" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                    <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_comments" class="col-sm-4 control-label">备注</label>
+                        <div class="col-sm-8">
+                            <textarea maxlength="128" class="form-control" id="e_comments" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="save_sku">确认</button>
+                </div>
+            </div><!-- /.modal -->
+
+        </div>
+    </div>
+
+   <div class="modal fade" id="addmyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+         <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新建SKU</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_sku" class="col-sm-4 control-label">SKU</label>
+                        <div class="col-sm-8">
+                            <input name="add_sku" type="text" class="form-control" id="add_sku"/>
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_sku_name" class="col-sm-4 control-label">名称</label>
+                        <div class="col-sm-8">
+                            <input name="add_sku_name" type="text" class="form-control" id="add_sku_name"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_product_type" class="col-sm-4 control-label">产品类型</label>
+                        <div class="col-sm-8">
+                            <select name="add_product_type" id="add_product_type" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in product_type_choices_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_sku_specs" class="col-sm-4 control-label">材料规格</label>
+                        <div class="col-sm-8">
+                            <input name="add_sku_specs" type="text" class="form-control" id="add_sku_specs"/>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" id="channel_box" style="height: 40px;line-height: 40px;">
+                        <label for="add_frame_type" class="col-sm-4 control-label">镜架类型</label>
+                        <div class="col-sm-8">
+                            <select name="add_frame_type" id="add_frame_type" class="form-control">
+                                <option value="">请选择</option>
+                                {% for ft in frame_type_choices_list %}
+                                    <option value="{{ ft.key }}">{{ ft.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_is_variability" class="col-sm-4 control-label">易变形</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_is_variability" type="text" class="form-control" id="add_is_variability" value="0">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="add_is_variability" id="add_is_variability" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                    <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_product_num" class="col-sm-4 control-label">PRODUCT NUMBER</label>
+                        <div class="col-sm-8">
+                            <input name="add_product_num" type="text" class="form-control" id="add_product_num"/>
+                        </div>
+                    </div>
+
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="add_base_price" class="col-sm-4 control-label">BASE Price</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_base_price" type="number" class="form-control" id="add_base_price"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="add_width" class="col-sm-4 control-label">LENS WIDTH</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_width" type="number" class="form-control" id="add_width"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="add_height" class="col-sm-4 control-label">LENS HIGHT</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_height" type="number" class="form-control" id="add_height"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="add_bridge" class="col-sm-4 control-label">Frame Bridge</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_bridge" type="number" class="form-control" id="add_bridge"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="add_ed" class="col-sm-4 control-label">ED</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_ed" type="number" class="form-control" id="add_ed"/>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="form-group" style="height: 40px;line-height: 40px;">#}
+{#                        <label for="add_center" class="col-sm-4 control-label">CENTER THICKNESS</label>#}
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_center" type="number" class="form-control" id="add_center"/>#}
+{#                        </div>#}
+{#                    </div>#}
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_r_a" class="col-sm-4 control-label">R_A&nbsp;&nbsp;(右框宽)</label>
+                        <div class="col-sm-8">
+                                <input name="add_r_a" type="text" class="form-control" id="add_r_a" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_r_b" class="col-sm-4 control-label">R_B&nbsp;&nbsp;(右框高)</label>
+                        <div class="col-sm-8">
+                            <input name="add_r_b" type="text" class="form-control" id="add_r_b" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_r_ed" class="col-sm-4 control-label">R_ED&nbsp;&nbsp;(右框ED值)</label>
+                        <div class="col-sm-8">
+                            <input name="add_r_ed" type="text" class="form-control" id="add_r_ed" value="0">
+                        </div>
+                    </div>
+
+<!--                    <div class="form-group" style="height: 40px;line-height: 40px;">-->
+<!--                        <label for="add_r_ed_axis" class="col-sm-4 control-label">R_ED_AXIS</label>-->
+<!--                        <div class="col-sm-8">-->
+<!--                            <input name="add_r_ed_axis" type="text" class="form-control" id="add_r_ed_axis" value="0">-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_r_circ" class="col-sm-4 control-label">R_CIRC&nbsp;&nbsp;(右框周长)</label>
+                        <div class="col-sm-8">
+                            <input name="add_r_circ" type="text" class="form-control" id="add_r_circ" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_r_fcrv" class="col-sm-4 control-label">R_FCRV&nbsp;&nbsp;(右框弯度)</label>
+                        <div class="col-sm-8">
+                            <input name="add_r_fcrv" type="text" class="form-control" id="add_r_fcrv" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_r_ztilt" class="col-sm-4 control-label">R_ZTILT&nbsp;&nbsp;(右框ZTILT)</label>
+                        <div class="col-sm-8">
+                            <input name="add_r_ztilt" type="text" class="form-control" id="add_r_ztilt" value="0">
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_l_a" class="col-sm-4 control-label">L_A&nbsp;&nbsp;(左框宽)</label>
+                        <div class="col-sm-8">
+                            <input name="add_l_a" type="text" class="form-control" id="add_l_a" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_l_b" class="col-sm-4 control-label">L_B&nbsp;&nbsp;(左框高)</label>
+                        <div class="col-sm-8">
+                            <input name="add_l_b" type="text" class="form-control" id="add_l_b" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_l_ed" class="col-sm-4 control-label">L_ED&nbsp;&nbsp;(左框ED值)</label>
+                        <div class="col-sm-8">
+                            <input name="add_l_ed" type="text" class="form-control" id="add_l_ed" value="0">
+                        </div>
+                    </div>
+
+
+<!--                    <div class="form-group" style="height: 40px;line-height: 40px;">-->
+<!--                        <label for="add_l_ed_axis" class="col-sm-4 control-label">L_ED_AXIS</label>-->
+<!--                        <div class="col-sm-8">-->
+<!--                            <input name="add_l_ed_axis" type="text" class="form-control" id="add_l_ed_axis" value="0">-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_l_circ" class="col-sm-4 control-label">L_CIRC&nbsp;&nbsp;(左框周长)</label>
+                        <div class="col-sm-8">
+                            <input name="add_l_circ" type="text" class="form-control" id="add_l_circ" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_l_fcrv" class="col-sm-4 control-label">L_FCRV&nbsp;&nbsp;(左框弯度)</label>
+                        <div class="col-sm-8">
+                            <input name="add_l_fcrv" type="text" class="form-control" id="add_l_fcrv" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_l_ztilt" class="col-sm-4 control-label">L_ZTILT&nbsp;&nbsp;(左框ZTILT)</label>
+                        <div class="col-sm-8">
+                            <input name="add_l_ztilt" type="text" class="form-control" id="add_l_ztilt" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_dbl" class="col-sm-4 control-label">DBL&nbsp;&nbsp;(桥宽)</label>
+                        <div class="col-sm-8">
+                            <input name="add_dbl" type="text" class="form-control" id="add_dbl" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_temple" class="col-sm-4 control-label">TEMPLE&nbsp;&nbsp;(右腿长度)</label>
+                        <div class="col-sm-8">
+                            <input name="add_temple" type="text" class="form-control" id="add_temple" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_fmat" class="col-sm-4 control-label">FMAT&nbsp;&nbsp;(镜架材质)</label>
+                        <div class="col-sm-8">
+                            <select name="add_fmat" id="add_fmat" class="form-control">
+                                <option value="">请选择</option>
+                                    {% for ft in fmat_type_choices_list %}
+                                    <option value="{{ ft.key }}">{{ ft.value }}</option>
+                                    {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_fsha" class="col-sm-4 control-label">FSHA&nbsp;&nbsp;(镜架形状)</label>
+                        <div class="col-sm-8">
+                            <select name="add_fsha" id="add_fsha" class="form-control">
+                                <option value="">请选择</option>
+                                    {% for ft in fsha_type_choices_list %}
+                                    <option value="{{ ft.key }}">{{ ft.value }}</option>
+                                    {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_etyp" class="col-sm-4 control-label">ETYP&nbsp;&nbsp;(加工类型)</label>
+                        <div class="col-sm-8">
+                            <select name="add_etyp" id="add_etyp" class="form-control">
+                                <option value="">请选择</option>
+                                    {% for et in etyp_type_choices_list %}
+                                    <option value="{{ et.key }}">{{ et.value }}</option>
+                                    {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_attribute_set" class="col-sm-4 control-label">Attribute Set&nbsp;&nbsp;(属性)</label>
+                        <div class="col-sm-8">
+                            <input name="add_attribute_set" type="text" class="form-control" id="add_attribute_set" value="0">
+                        </div>
+
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_frame_width" class="col-sm-4 control-label">Frame Width&nbsp;&nbsp;(镜架宽度)</label>
+                        <div class="col-sm-8">
+                            <input name="add_frame_width" type="text" class="form-control" id="add_frame_width" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_is_nose_pad" class="col-sm-4 control-label">Nose Pad&nbsp;&nbsp;(是否有鼻托)</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_is_nose_pad" type="text" class="form-control" id="add_is_nose_pad" value="0">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="add_is_nose_pad" id="add_is_nose_pad" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_is_has_spring_hinges" class="col-sm-4 control-label">是否有弹簧铰链</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_is_has_spring_hinges" type="text" class="form-control" id="add_is_has_spring_hinges" value="0">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="add_is_has_spring_hinges" id="add_is_has_spring_hinges" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_is_color_changing" class="col-sm-4 control-label">镜架是否变色</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_is_color_changing" type="text" class="form-control" id="add_is_color_changing" value="0">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="add_is_color_changing" id="add_is_color_changing" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_is_already_synchronous" class="col-sm-4 control-label">是否已同步</label>
+{#                        <div class="col-sm-8">#}
+{#                            <input name="add_is_already_synchronous" type="text" class="form-control" id="add_is_already_synchronous" value="0">#}
+{#                        </div>#}
+                        <div class="col-sm-8">
+                            <select name="add_is_already_synchronous" id="add_is_already_synchronous" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in yes_or_no_choices_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_comments" class="col-sm-4 control-label">备注</label>
+                        <div class="col-sm-8">
+                            <textarea maxlength="128" class="form-control" id="add_comments" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="add_sku_btn">确认</button>
+                </div>
+            </div><!-- /.modal -->
+        </div>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+
+            url = "{% url 'wms_add_edit_product_frame' %}";
+
+            if (sku == '' || sku == null) {
+                layer.msg('请输入SKU', {time: 3000, icon: 7});
+            } else {
+                location.href = url + '?sku=' + sku+'&product_type={{ product_type }}';
+            }
+        });
+
+
+        $(".edit_sku").click(function () {
+            var sku = $(this).attr("data");
+            var url = "{% url 'wms_edit_product_frame' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "sku": sku,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#e_sku").val(arg.data.sku);
+                        $("#e_product_num").val(arg.data.product_num);
+                        $("#e_sku_name").val(arg.data.name);
+                        $("#e_product_type option[value='"+arg.data.product_type+"']").attr("selected","selected");
+                        $("#e_frame_type option[value='"+arg.data.frame_type+"']").attr("selected","selected");
+                        $("#e_sku_specs").val(arg.data.sku_specs);
+
+                        {#$("#e_base_price").val(arg.data.base_price);#}
+                        {#$("#e_width").val(arg.data.width);#}
+                        {#$("#e_height").val(arg.data.height);#}
+                        {#$("#e_bridge").val(arg.data.bridge);#}
+                        {#$("#e_ed").val(arg.data.ed);#}
+                        {#$("#e_center").val(arg.data.ct);#}
+
+
+                        $("#e_r_a").val(arg.data.r_a);
+                        $("#e_r_b").val(arg.data.r_b);
+                        $("#e_r_ed").val(arg.data.r_ed);
+                        {#$("#e_r_ed_axis").val(arg.data.r_ed_axis);#}
+                        $("#e_r_circ").val(arg.data.r_circ);
+                        $("#e_r_fcrv").val(arg.data.r_fcrv);
+                        $("#e_r_ztilt").val(arg.data.r_ztilt);
+                        $("#e_l_a").val(arg.data.l_a);
+                        $("#e_l_b").val(arg.data.l_b);
+                        $("#e_l_ed").val(arg.data.l_ed);
+                        {#$("#e_l_ed_axis").val(arg.data.l_ed_axis);#}
+                        $("#e_l_circ").val(arg.data.l_circ);
+                        $("#e_l_fcrv").val(arg.data.l_fcrv);
+                        $("#e_l_ztilt").val(arg.data.l_ztilt);
+                        $("#e_dbl").val(arg.data.dbl);
+                        $("#e_temple").val(arg.data.temple);
+
+                        $("#e_attribute_set").val(arg.data.attribute_set);
+                        $("#e_frame_width").val(arg.data.frame_width);
+                        $("#e_is_nose_pad").val(arg.data.is_nose_pad);
+                        $("#e_is_has_spring_hinges").val(arg.data.is_has_spring_hinges);
+                        $("#e_is_color_changing").val(arg.data.is_color_changing);
+                        $("#e_is_variability").val(arg.data.is_variability);
+                        $("#e_is_already_synchronous").val(arg.data.is_already_synchronous);
+
+                        $("#e_fmat").each(function(){
+                            $(this).find("option").prop("selected",false)
+                        });
+
+                        $("#e_fsha").each(function(){
+                            $(this).find("option").prop("selected",false)}
+                        );
+
+                        $("#e_etyp").each(function(){
+                            $(this).find("option").prop("selected",false)}
+                        );
+
+                        $("#e_fmat option[value='"+arg.data.fmat+"']").prop("selected",true);
+                        $("#e_fsha option[value='"+arg.data.fsha+"']").prop("selected",true);
+                        $("#e_etyp option[value='"+arg.data.etyp+"']").prop("selected",true);
+
+
+                        $("#e_comments").val(arg.data.comments);
+                        $("#myModal").modal('show');
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+
+        $(".download_sku").click(function () {
+
+
+            var product_number = $(this).attr("data");
+
+
+            var url = "{% url 'file_download' %}";
+            $.ajax({
+                url: url,
+                type: 'get',
+                data: {
+                    "product_number": product_number,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '-1'){
+                        location.href=location.href;
+                        layer.msg(arg.msg, {time: 5000, icon: 7});
+
+                    }else{
+                        location.href = url + '?product_number=' + product_number;
+                    }
+                }
+            });
+<!--
+            if (product_number == '' || product_number == null) {
+                layer.msg('文件不存在', {time: 3000, icon: 7});
+            } else {
+                location.href = url + '?product_number=' + product_number;
+            }
+-->
+        });
+
+        $("#save_sku").click(function () {
+            var e_sku = $("#e_sku").val();
+            var e_product_num = $("#e_product_num").val();
+            var e_sku_name = $("#e_sku_name").val();
+            var e_product_type = $("#e_product_type").val();
+            var e_frame_type = $("#e_frame_type").val();
+            var e_sku_specs = $("#e_sku_specs").val();
+            {#var e_base_price = $("#e_base_price").val();#}
+            {#var e_width = $("#e_width").val();#}
+            {#var e_height = $("#e_height").val();#}
+            {#var e_bridge = $("#e_bridge").val();#}
+            {#var e_ed = $("#e_ed").val();#}
+            {#var e_center = $("#e_center").val();#}
+
+
+            var e_r_a = $("#e_r_a").val();
+            var e_r_b = $("#e_r_b").val();
+            var e_r_ed = $("#e_r_ed").val();
+            {#var e_r_ed_axis = $("#e_r_ed_axis").val();#}
+            var e_r_circ = $("#e_r_circ").val();
+            var e_r_fcrv = $("#e_r_fcrv").val();
+            var e_r_ztilt = $("#e_r_ztilt").val();
+            var e_l_a = $("#e_l_a").val();
+            var e_l_b = $("#e_l_b").val();
+            var e_l_ed = $("#e_l_ed").val();
+            {#var e_l_ed_axis = $("#e_l_ed_axis").val();#}
+            var e_l_circ = $("#e_l_circ").val();
+            var e_l_fcrv = $("#e_l_fcrv").val();
+            var e_l_ztilt = $("#e_l_ztilt").val();
+            var e_dbl = $("#e_dbl").val();
+            var e_temple = $("#e_temple").val();
+            var e_fmat = $("#e_fmat").val();
+            var e_fsha = $("#e_fsha").val();
+            var e_etyp = $("#e_etyp").val();
+
+            var e_attribute_set = $("#e_attribute_set").val();
+            var e_frame_width = $("#e_frame_width").val();
+            var e_is_nose_pad = $("#e_is_nose_pad").val();
+            var e_is_has_spring_hinges = $("#e_is_has_spring_hinges").val();
+            var e_is_color_changing = $("#e_is_color_changing").val();
+            var e_is_variability = $("#e_is_variability").val();
+            var e_is_already_synchronous = $("#e_is_already_synchronous").val();
+
+
+
+            var e_comments = $("#e_comments").val();
+            var url = "{% url 'wms_save_product_frame' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "sku": e_sku,
+                    "product_num":e_product_num,
+                    "name": e_sku_name,
+                    "product_type": e_product_type,
+                    "sku_specs": e_sku_specs,
+                    "frame_type": e_frame_type,
+                    {#"base_price": e_base_price,#}
+                    {#"width": e_width,#}
+                    {#"height": e_height,#}
+                    {#"bridge": e_bridge,#}
+                    {#"ed": e_ed,#}
+                    {#"center": e_center,#}
+
+
+                    "r_a":e_r_a,
+                    "r_b":e_r_b,
+                    "r_ed":e_r_ed,
+                    {#"r_ed_axis":e_r_ed_axis,#}
+                    "r_circ":e_r_circ,
+                    "r_fcrv":e_r_fcrv,
+                    "r_ztilt":e_r_ztilt,
+                    "l_a":e_l_a,
+                    "l_b":e_l_b,
+                    "l_ed":e_l_ed,
+                    {#"l_ed_axis":e_l_ed_axis,#}
+                    "l_circ":e_l_circ,
+                    "l_fcrv":e_l_fcrv,
+                    "l_ztilt":e_l_ztilt,
+                    "dbl":e_dbl,
+                    "temple":e_temple,
+                    "fmat":e_fmat,
+                    "fsha":e_fsha,
+                    "etyp":e_etyp,
+
+                    "attribute_set":e_attribute_set,
+                    "frame_width":e_frame_width,
+                    "is_nose_pad":e_is_nose_pad,
+                    "is_has_spring_hinges":e_is_has_spring_hinges,
+                    "is_color_changing":e_is_color_changing,
+                    "is_variability":e_is_variability,
+                    "is_already_synchronous":e_is_already_synchronous,
+
+                    "comments": e_comments,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#myModal").modal('hide');
+                        layer.msg(arg.msg, {time: 3000, icon: 6});
+                         location.reload();
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+
+        $("#add_sku_btn").click(function () {
+
+            var add_sku = $("#add_sku").val();
+            var add_product_num = $("#add_product_num").val();
+            var add_sku_name = $("#add_sku_name").val();
+            var add_product_type = $("#add_product_type").val();
+            var add_frame_type = $("#add_frame_type").val();
+            var add_sku_specs = $("#add_sku_specs").val();
+            {#var add_base_price = $("#add_base_price").val();#}
+            {#var add_width = $("#add_width").val();#}
+            {#var add_height = $("#add_height").val();#}
+            {#var add_bridge = $("#add_bridge").val();#}
+            {#var add_ed = $("#add_ed").val();#}
+            {#var add_center = $("#add_center").val();#}
+
+
+            var add_r_a = $("#add_r_a").val();
+            var add_r_b = $("#add_r_b").val();
+            var add_r_ed = $("#add_r_ed").val();
+            {#var add_r_ed_axis = $("#add_r_ed_axis").val();#}
+            var add_r_circ = $("#add_r_circ").val();
+            var add_r_fcrv = $("#add_r_fcrv").val();
+            var add_r_ztilt = $("#add_r_ztilt").val();
+            var add_l_a = $("#add_l_a").val();
+            var add_l_b = $("#add_l_b").val();
+            var add_l_ed = $("#add_l_ed").val();
+            {#var add_l_ed_axis = $("#add_l_ed_axis").val();#}
+            var add_l_circ = $("#add_l_circ").val();
+            var add_l_fcrv = $("#add_l_fcrv").val();
+            var add_l_ztilt = $("#add_l_ztilt").val();
+            var add_dbl = $("#add_dbl").val();
+            var add_temple = $("#add_temple").val();
+            var add_fmat = $("#add_fmat").val();
+            var add_fsha = $("#add_fsha").val();
+            var add_etyp = $("#add_etyp").val();
+
+            var add_attribute_set = $("#add_attribute_set").val();
+            var add_frame_width = $("#add_frame_width").val();
+            var add_is_nose_pad = $("#add_is_nose_pad").val();
+            var add_is_has_spring_hinges = $("#add_is_has_spring_hinges").val();
+            var add_is_color_changing = $("#add_is_color_changing").val();
+            var add_is_variability = $("#add_is_variability").val();
+            var add_is_already_synchronous = $("#add_is_already_synchronous").val();
+
+
+            var add_comments = $("#add_comments").val();
+            console.log(add_sku);
+            if(add_sku == ''){
+                layer.msg('SKU不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_product_num == ''){
+                layer.msg('PRODUCT NUMBER不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_sku_name == ''){
+                layer.msg('SKU Name不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_product_type == ''){
+                layer.msg('类型不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_frame_type == ''){
+                layer.msg('镜架类型不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_frame_width == ''){
+                layer.msg('Frame_withd不能为空', {time: 3000, icon: 7});
+                return
+            }
+
+            if(add_r_a == ''){
+                layer.msg('R_A不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_r_b == ''){
+                layer.msg('R_B不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_r_ed == ''){
+                layer.msg('R_ED不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_r_circ == ''){
+                layer.msg('R_CIRC不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_r_fcrv == ''){
+                layer.msg('R_FCRV不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_r_ztilt == ''){
+                layer.msg('R_ZTILT不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_l_a == ''){
+                layer.msg('L_A不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_l_b == ''){
+                layer.msg('L_B不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_l_ed == ''){
+                layer.msg('L_ED不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_l_circ == ''){
+                layer.msg('L_CIRC不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_l_fcrv == ''){
+                layer.msg('L_FCRV不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_l_ztilt == ''){
+                layer.msg('L_ZTILT不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_dbl == ''){
+                layer.msg('DBL不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_temple == ''){
+                layer.msg('TEMPLE不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_fmat == ''){
+                layer.msg('FMAT不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_fsha == ''){
+                layer.msg('FSHA不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_etyp == ''){
+                layer.msg('ETYP不能为空', {time: 3000, icon: 7});
+                return
+            }
+
+            if(add_attribute_set == ''){
+                layer.msg('Attribute_Set不能为空', {time: 3000, icon: 7});
+                return
+            }
+
+            if(add_is_nose_pad == ''){
+                layer.msg('Nose_Pad不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_is_has_spring_hinges == ''){
+                layer.msg('Spring_Hinges不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_is_color_changing == ''){
+                layer.msg('Color_Changing不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_is_variability == ''){
+                layer.msg('Variability不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_is_already_synchronous == ''){
+                layer.msg('Already_synchronous不能为空', {time: 3000, icon: 7});
+                return
+            }
+
+
+            var url = "{% url 'wms_add_product_frame' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "sku": add_sku,
+                    "product_num": add_product_num,
+                    "name": add_sku_name,
+                    "product_type": add_product_type,
+                    "frame_type": add_frame_type,
+                    "sku_specs": add_sku_specs,
+                    {#"base_price": add_base_price,#}
+                    {#"width": add_width,#}
+                    {#"height": add_height,#}
+                    {#"bridge": add_bridge,#}
+                    {#"ed": add_ed,#}
+                    {#"center": add_center,#}
+
+
+                    "r_a":add_r_a,
+                    "r_b":add_r_b,
+                    "r_ed":add_r_ed,
+                    {#"r_ed_axis":add_r_ed_axis,#}
+                    "r_circ":add_r_circ,
+                    "r_fcrv":add_r_fcrv,
+                    "r_ztilt":add_r_ztilt,
+                    "l_a":add_l_a,
+                    "l_b":add_l_b,
+                    "l_ed":add_l_ed,
+                    {#"l_ed_axis":add_l_ed_axis,#}
+                    "l_circ":add_l_circ,
+                    "l_fcrv":add_l_fcrv,
+                    "l_ztilt":add_l_ztilt,
+                    "dbl":add_dbl,
+                    "temple":add_temple,
+                    "fmat":add_fmat,
+                    "fsha":add_fsha,
+                    "etyp":add_etyp,
+
+                    "attribute_set":add_attribute_set,
+                    "frame_width":add_frame_width,
+                    "is_nose_pad":add_is_nose_pad,
+                    "is_has_spring_hinges":add_is_has_spring_hinges,
+                    "is_color_changing":add_is_color_changing,
+                    "is_variability":add_is_variability,
+                    "is_already_synchronous":add_is_already_synchronous,
+
+                    "comments": add_comments,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#addmyModal").modal('hide');
+                        layer.msg(arg.msg, {time: 3000, icon: 6});
+                        location.reload()
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+
+    </script>
+{% endblock %}

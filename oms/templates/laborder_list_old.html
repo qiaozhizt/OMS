@@ -1,0 +1,876 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+{#        .trActive{#}
+{#            display: border-box !important;#}
+{#        }#}
+        .cl:after{display:block;clear:both;content:"";}
+        .cl{zoom:1}
+    .trDetail div{
+        margin-top:10px;
+        margin-bottom: 10px;
+        text-align: left;
+    }
+    .trDetail span{
+        margin-right: 10px;
+    }
+    .divDetail{
+         display: inline-block;
+            text-align: center !important;
+        width: 100%;
+        background: #fff;
+        margin-bottom: -1px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .positionBox{
+        display: inline-block;
+    }
+    .divDetail hr{
+        width: 100%;
+        border: 1px dashed #000;
+    }
+    tbody td{
+        cursor:pointer;
+    }
+    #tabDiv td{
+        padding-right: 5px;
+          }
+    #topbtn button:hover{
+        background-color: #d58512 !important;
+    }
+    #bottom button:hover{
+        background-color: #367fa9 !important;
+        border: 1px solid #3c8dbc;
+    }
+    .ulStyle{
+            -webkit-padding-start: 0px !important;
+            padding: 0;
+
+        }
+
+    .liStyle{
+        float: left;
+        list-style: none;
+        margin-right: 10px;
+        border-radius: 3px;
+        color: #fff;
+        margin-bottom: 5px;
+        cursor:pointer;
+    }
+    #estimate{
+        margin-right: 40px;
+    }
+
+{#    .tdBox{#}
+{#        text-align: left;#}
+{#        width: auto;#}
+{#        display: block;#}
+{#    }#}
+    </style>
+ {% endblock %}
+{#{% block laborder %}<li class="active treeview">{% endblock %}#}
+{% block h1 %}LabOrder{% endblock %}
+{% block small %}Lab Order{% endblock %}
+{% block content %}
+    <div>
+
+         <div class="input-group input-group-sm" style="width: 400px;">
+                <input type="text" class="form-control" id="formvalue" placeholder="请输入单号">
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-default btn-flat" id="btn">search</button>
+                    </span>
+              </div>
+
+    <div class="contentdiv">
+        <table id="tables" class="table table-striped">
+            <thead>
+            <tr>
+
+                <th>订单号</th>
+                <th>发货方式</th>
+                <th>镜架</th>
+{#                <th class="hid">镜片</th>#}
+                <th class="hid">镜片名称</th>
+                <th class="hid">下单日期</th>
+                <th>预计出货时间</th>
+                <th>状态</th>
+                <th>VIP</th>
+                <th class="hid">备注</th>
+            </tr>
+            </thead>
+        <tbody>
+            {% for foo in list %}
+
+                <tr number=0 class="alltr" labid="{{ foo.lab_number }}">
+
+
+
+                    <td>{{ foo.lab_number }}</td>
+
+                    {% if foo.ship_direction == 'STANDARD' %}
+                        <td>普通</td>
+                    {% endif %}
+                    {% if foo.ship_direction == 'EXPRESS' %}
+                        <td>加急单</td>
+                    {% endif %}
+                    {% if foo.ship_direction == 'EMPLOYEE' %}
+                        <td>内部</td>
+                    {% endif %}
+                    {% if foo.ship_direction == 'US' %}
+                        <td>US</td>
+                    {% endif %}
+                    {% if foo.ship_direction == 'CN' %}
+                        <td>CN</td>
+                    {% endif %}
+
+                    <td>{{ foo.frame }}</td>
+
+{#                    <td class="hid">{{ foo.lens_sku }}</td>#}
+
+                    <td class="hid">{{ foo.lens_name }}</td>
+
+                    <td class="hid">{{ foo.order_date }}</td>
+                    <td>{{ foo.estimated_time |date:'Y-n-d'}}</td>
+
+                {% if foo.status == 'PRINT_DATE' %}
+                    <td>打印</td>
+                {% endif %}
+                {% if foo.status == 'FRAME_OUTBOUND' %}
+                    <td>镜架出库</td>
+                {% endif %}
+                {% if foo.status == 'ADD_HARDENED' %}
+                    <td>加硬</td>
+                {% endif %}
+                {% if foo.status == 'COATING' %}
+                    <td>加膜</td>
+                {% endif %}
+                {% if foo.status == 'TINT' %}
+                    <td>染色</td>
+                {% endif %}
+                {% if foo.status == 'LENS_RECEIVE' %}
+                    <td>镜片收货</td>
+                {% endif %}
+                {% if foo.status == 'ASSEMBLING' %}
+                    <td>装配</td>
+                {% endif %}
+                {% if foo.status == 'INITIAL_INSPECTION' %}
+                    <td>初检</td>
+                {% endif %}
+                {% if foo.status == 'SHAPING' %}
+                    <td>整形</td>
+                {% endif %}
+                {% if foo.status == 'PURGING' %}
+                    <td>清洗</td>
+                {% endif %}
+                {% if foo.status == 'FINAL_INSPECTION' %}
+                    <td>终检</td>
+                {% endif %}
+                {% if foo.status == 'ORDER_MATCH' %}
+                    <td>订单配对</td>
+                {% endif %}
+                {% if foo.status == 'PACKAGE' %}
+                    <td>包装</td>
+                {% endif %}
+                {% if foo.status == 'SHIPPING' %}
+                    <td>发货</td>
+                {% endif %}
+                {% if foo.status == 'COMPLETE' %}
+                     <td style="background-color: #00a65a;color: #fff">完成</td>
+                {% endif %}
+                {% if foo.status == '' %}
+                    <td>待打印</td>
+                {% endif %}
+
+                {% if foo.is_vip == True %}
+                        <td><img src="{% static "image/icon-yes.svg"%}"></td>
+                        {% else %}
+                        <td> </td>
+                    {% endif %}
+
+
+
+
+                    <td class="hid">{{ foo.comments }}</td>
+
+                </tr>
+                <tr style="display: none;" class="trDetail">
+                    <td colspan="9" style="text-align: center;">
+                        <div class=" cl divDetail">
+                        <div class="positionBox">
+
+                        <div class="tdBox" id="tabDiv">
+                            <ul class="cl ulStyle" id="topbtn">
+                                <li class="liStyle estime"><button class="btn btn-block btn-default" labid="{{ foo.lab_number }}" aliasname="ESTIMATED_TIME">预计完成时间</button></li>
+                                <li class="liStyle compbtn"><button class="btn btn-block btn-default" labid="{{ foo.lab_number }}" aliasname="COMPLETE">完成</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default" disabled="disabled" labid="{{ foo.lab_number }}" aliasname="ONHOLD">暂停</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default" disabled="disabled" labid="{{ foo.lab_number }}" aliasname="REDO">重做</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default" disabled="disabled" labid="{{ foo.lab_number }}" aliasname="CANCELLED">取消</button></li>
+
+                            </ul>
+
+{#                                        <td><button class="btn btn-block btn-default" labid="{{ foo.lab_number }}" aliasname="COMPLETE">完成</button></td>#}
+{#                                        <td><button class="btn btn-block btn-default" disabled="disabled" labid="{{ foo.lab_number }}" aliasname="ONHOLD">暂停</button></td>#}
+{#                                        <td><button class="btn btn-block btn-default" disabled="disabled" labid="{{ foo.lab_number }}" aliasname="REDO">重做</button></td>#}
+{#                                        <td><button class="btn btn-block btn-default" disabled="disabled" labid="{{ foo.lab_number }}" aliasname="CANCELLED">取消</button></td>#}
+
+
+
+                        </div>
+                        <hr  class="tdBox"></hr>
+
+                        <div class="tdBox">
+                            {% if foo.ship_direction == 'STANDARD' %}
+                            <span><b>发运方式</b>：Standard</span>
+                            {% endif %}
+                        {% if foo.ship_direction == 'EXPRESS' %}
+                            <span><b>发运方式</b>：加急单</span>
+                            {% endif %}
+                        {% if foo.ship_direction == 'EMPLOYEE' %}
+                            <span><b>发运方式</b>：EMPLOYEE(顺丰)</span>
+                            {% endif %}
+
+                            <span><b>订单号</b>：{{ foo.lab_number }}</span>
+                            <span><b>订单日期</b>：{{ foo.order_date }}</span>
+                            {% if foo.comments != None %}
+                                {% if foo.comments != '' %}
+                                    <span><b>备注</b>：{{ foo.comments }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <hr  class="tdBox"></hr>
+                        <div class="tdBox">
+                        {% if foo.size != None %}
+                            <span><b>尺寸</b>：{{ foo.size }}</span>
+                        {% endif %}
+                            <span><b>数量</b>：{{ foo.quantity }}</span>
+                        </div>
+                        <hr  class="tdBox"></hr>
+                        <div class="tdBox">
+                        <span><b>镜架</b>：{{ foo.frame }}</span>
+                            {% if foo.lens_sku != None %}
+                            <span><b>镜片</b>：{{ foo.lens_sku }}</span>
+                            {% endif %}
+                        {% if foo.lens_name != None %}
+                            <span><b>镜片名称</b>：{{ foo.lens_name }}</span>
+                        {% endif %}
+                        {% if foo.coating_sku != None %}
+                            {% if foo.coating_sku != '' %}
+                            <span><b>涂层</b>：{{ foo.coating_sku }}</span>
+                                {% endif %}
+                        {% endif %}
+                        {% if foo.coating_name != None %}
+                            {% if foo.coating_name != '' %}
+                            <span><b>涂层名称</b>：{{ foo.coating_name }}</span>
+                                {% endif %}
+                        {% endif %}
+                        {% if foo.tint_sku != None %}
+                            {% if foo.tint_sku != '' %}
+                            <span><b>染色</b>：{{ foo.tint_sku }}</span>
+                            {% endif %}
+                        {% endif %}
+                        {% if foo.tint_name != None %}
+                            {% if foo.tint_name != '' %}
+                            <span><b>染色名称</b>：{{ foo.tint_name }}</span>
+                            {% endif %}
+
+                        {% endif %}
+                        </div>
+                        <hr  class="tdBox"></hr>
+                        <div class="tdBox">
+                            <span><b>右眼光度</b>：{{ foo.od_sph }}</span>
+                            <span><b>右眼散光</b>：{{ foo.od_cyl }}</span>
+                            <span><b>右眼轴位</b>：{{ foo.od_axis }}</span><br>
+                            <span><b>左眼光度</b>：{{ foo.os_sph }}</span>
+                            <span><b>左眼散光</b>：{{ foo.os_cyl }}</span>
+                            <span><b>左眼轴位</b>：{{ foo.os_axis }}</span><br>
+
+                             {% if foo.is_singgle_pd == True %}
+                                <span><b>瞳距</b>:{{ foo.pd }}</span>
+                            {% else %}
+                                <span><b>右眼瞳距</b>：{{ foo.od_pd }}</span>
+                                <span><b>左眼瞳距</b>：{{ foo.os_pd }}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if foo.od_add == 0 and foo.os_add == 0 and foo.od_prism == 0 and  foo.od_base == '' or foo.od_base == None  and foo.os_prism == 0 and foo.os_base == '' %}
+
+                        {% else %}
+                            <hr  class="tdBox"></hr>
+                            <div class="tdBox">
+                            {% if foo.od_add != 0 %}
+                            <span><b>右眼ADD</b>：{{ foo.od_add }}</span>
+                                {% endif %}
+                            {% if foo.od_prism != 0 %}
+                                <span><b>右眼Prism</b>：{{ foo.od_prism }}</span>
+                                {% endif %}
+                            {% if foo.od_base != None %}
+                            {% if foo.od_base != '' %}
+                                <span><b>右眼Base</b>：{{ foo.od_base }}</span>
+                                {% endif %}
+                                {% endif %}
+                            <br>
+                            {% if foo.os_add != 0 %}
+                            <span><b>左眼ADD</b>：{{ foo.os_add }}</span>
+                            {% endif %}
+                            {% if foo.os_prism != 0 %}
+                             <span><b>左眼Prism</b>：{{ foo.os_prism }}</span>
+                            {% endif %}
+                            {% if foo.os_base != None %}
+                            {% if foo.os_base != '' %}
+                            <span><b>左眼Base</b>：{{ foo.os_base }}</span>
+                            {% endif %}
+                            {% endif %}
+                            </div>
+
+                        {% endif %}
+
+                            <hr  class="tdBox"></hr>
+                            <div class="tdBox">
+                            {% if foo.prescription_id != None %}
+                                {% if foo.prescription_id  != '' %}
+
+                                        <span><b>验光单ID</b>：{{ foo.prescription_id }}</span>
+                                {% endif %}
+                            {% endif %}
+                            {% if foo.prescription_name != None %}
+                                {% if foo.prescription_name  != '' %}
+                            <span><b>名称</b>：{{ foo.prescription_name }}</span>
+                             {% endif %}
+                            {% endif %}
+                             {% if foo.prescription_type != None %}
+                                {% if foo.prescription_type  != '' %}
+                            <span><b>类型</b>：{{ foo.prescription_type }}</span>
+                             {% endif %}
+                            {% endif %}
+                             {% if foo.used_for != None %}
+                                {% if foo.used_for  != '' %}
+                            <span><b>用途</b>：{{ foo.used_for }}</span>
+                            {% endif %}
+                            {% endif %}
+                            <br>
+                            <span><B>下单日期</B>：{{ foo.create_at }}</span>
+                            <span><B>更新日期</B>：{{ foo.update_at }}</span>
+                        </div>
+                        <hr  class="tdBox"></hr>
+                        <div class="tdBox" id="tabDiv">
+                            <ul class="cl ulStyle" id="bottombtn">
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="PRINT_DATE">打印</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="FRAME_OUTBOUND">镜架出库</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="ADD_HARDENED">加硬</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="COATING">加膜</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="TINT">染色</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="LENS_RECEIVE">镜片收货</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="ASSEMBLING">装配</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="INITIAL_INSPECTION">初检</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="SHAPING">整形</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="PURGING">清洗</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="FINAL_INSPECTION">终检</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="ORDER_MATCH">订单配对</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="PACKAGE">包装</button></li>
+                                <li class="liStyle"><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="SHIPPING">发货</button></li>
+{#                        <table id="btntab" class="bottombtn">#}
+{#                            <tr>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="PRINT_DATE">打印</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="FRAME_OUTBOUND">镜架出库</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="ADD_HARDENED">加硬</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="COATING">加膜</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="TINT">染色</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="LENS_RECEIVE">镜片收货</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="ASSEMBLING">装配</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="INITIAL_INSPECTION">初检</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="SHAPING">整形</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="PURGING">清洗</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="FINAL_INSPECTION">终检</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="ORDER_MATCH">订单配对</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="PACKAGE">包装</button></td>#}
+{#                                <td><button class="btn btn-block btn-default"   labid="{{ foo.lab_number }}" aliasname="SHIPPING">发货</button></td>#}
+{#                            </tr>#}
+{#                        </table>#}
+
+
+
+
+
+                            </ul>
+                            </div>
+                        </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    <div style="width: 100%;text-align: center;">
+                    <ul class="pagination" id="pager">
+                            {#上一页按钮开始#}
+                            {# 如果当前页有上一页#}
+                            {% if list.has_previous %}
+                                {#  当前页的上一页按钮正常使用#}
+                                <li class="previous"><a href="/oms/laborderlist?page={{ list.previous_page_number }}">previous</a>
+                                </li>
+                            {% else %}
+                                {# 当前页的不存在上一页时,上一页的按钮不可用#}
+                                <li class="previous disabled"><a href="#">previous</a></li>
+                            {% endif %}
+                            {#上一页按钮结束#}
+                            {# 页码开始#}
+                            {% for num in paginator.page_range %}
+
+                                {% if num == currentPage %}
+                                    <li class="item active"><a href="/oms/laborderlist?page={{ num }}">{{ num }}</a></li>
+                                {% else %}
+                                    <li class="item"><a href="/oms/laborderlist?page={{ num }}">{{ num }}</a></li>
+
+                                {% endif %}
+                            {% endfor %}
+                            {#页码结束#}
+                            {# 下一页按钮开始#}
+                            {% if list.has_next %}
+                                <li class="next"><a href="/oms/laborderlist?page={{ list.next_page_number }}">next</a>
+                                </li>
+                            {% else %}
+                                <li class="next disabled"><a href="#">next</a></li>
+                            {% endif %}
+                            {# 下一页按钮结束#}
+                        </ul>
+        </div>
+    </div>
+    </div>
+    <div id="formList" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+                  <label>承运商</label>
+                  <select class="form-control" name="carrier" id="carrier">
+                    <option value="UPS">UPS</option>
+                    <option value="EMS">邮政(EMS)</option>
+                      <option value="EMPLOYEE">顺丰</option>
+
+                  </select>
+        </div>
+        <div class="form-group"  style="padding: 0 5px;">
+            <label>快递单号</label>
+            <input class="form-control" type="text" value="" name="ship" id="ship">
+        </div>
+
+
+    </div>
+
+    <div id="shippingtime" style="display: none;">
+        <div class="form-group"  style="padding: 0 5px;">
+            <label>预计发货时间</label>
+            <input class="form-control" type="text" value="" name="shiptime" id="shiptime" placeholder="请填写预计发货时间">
+        </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+    $(function(){
+         $.ajaxSetup({
+         data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+        });
+
+
+{#                      点击展开详情                    #}
+
+        $("tbody tr").click(function(){
+            var trname = $(this).attr("class");
+            if (trname == "alltr"){
+                 var labid =  $(this).attr("number");
+                 var type = $(this).attr("type");
+                if(labid == 0){
+                    $(this).css('backgroundColor','#FFFACD');
+                    $(this).next().show();
+                    $(this).attr("number",1);
+                }else{
+                     if(type=="odd"){
+                       $(this).css('backgroundColor','#f9f9f9');
+                    }else{
+                       $(this).css('backgroundColor','transparent');
+                }
+                   $(this).next().css('display','none');
+                   $(this).attr("number",0);
+          }
+            }
+
+        })
+
+
+
+{#                 标记点击状态操作                     #}
+
+        $('.alltr').click(function(){
+            var $this = $(this);
+            var labid = $(this).attr('labid');
+            var number = $(this).attr('number');
+            if(number == 1){
+                $.ajax({
+                url:"/oms/action_status/",
+                type:'POST',
+                data:{
+                    'order_number':labid
+                },
+                success:function(arg){
+                    data = JSON.parse(arg);
+                    if (data != ''){
+                        var $aaa=$this.next('tr').find('.liStyle button');
+
+                         for(var i = 0;i<data.length;i++){
+                          field = data[i].fields;
+                          var action = field.action;
+                          if(action == 'COMPLETE'){
+                               $($aaa).each(function(){
+
+                                       $(this).attr('disabled','disabled');
+
+                                })
+                              break;
+                          }else{
+                               $($aaa).each(function(){
+                            var alias = $(this).attr('aliasname');
+                           if(action == alias){
+                               $(this).attr('disabled','disabled');
+                           }
+                        })
+                          }
+
+                    }
+                    }
+
+                }
+            })
+            }
+        })
+
+        function colors(){
+            $('.alltr').each(function (index,element) {
+              if (index%2==0){
+                  $(this).css('backgroundColor','#f9f9f9');
+                    $(this).attr("type",'odd');
+              }else{
+                  $(this).css('backgroundColor','transparent');
+                   $(this).attr("type",'even');
+              }
+          })
+        }
+     colors();
+
+
+{#            点击查询                 #}
+
+        $('#btn').click(function(){
+
+            var id = $('#formvalue').val();
+            if(id == null || id == ''){
+                $("#formvalue").attr("placeholder","请输入有效的单号");
+            }else{
+                     $.ajax({
+               url:"/oms/address/",
+               type:"POST",
+               data:{
+                   'id':id
+               },
+               success:function(arg){
+                   var data = JSON.parse(arg);
+
+                    var html = []
+                   if(data.length>0 && data!=null){
+
+                   html.push("<table class='table table-striped'>");
+                   html.push("<tr><th>increment id</th><th>firstname</th><th>lastname</th><th>postcode</th><th>street</th><th>city</th><th>region</th><th>country id</th><th>telephone</th></tr>");
+                   html.push("<tr><td>"+data[0].increment_id+"</td><td>"+data[0].firstname+"</td><td>"+data[0].lastname+"</td><td>"+data[0].postcode+"</td><td>"+data[0].street+"</td><td>"+data[0].city+"</td><td>"+data[0].region+"</td><td>"+data[0].country_id+"</td><td>"+data[0].telephone+"</td></tr>");
+                   html.push("</table>");
+                   var contentdiv = $('.contentdiv');
+                   contentdiv.empty();
+                   contentdiv.html(html.join(''));
+                   }else{
+                        html.push("<table class='table table-striped'>");
+                   html.push("<tr><th>increment id</th><th>firstname</th><th>lastname</th><th>postcode</th><th>street</th><th>city</th><th>region</th><th>country id</th><th>elephone</th></tr>");
+                   html.push("<tr><td colspan = '9' style='text-align:center'>No address</td></tr>");
+                   html.push("</table>");
+                   var contentdiv = $('.contentdiv');
+                   contentdiv.empty();
+                   contentdiv.html(html.join(''));
+                   }
+
+
+               }
+           })
+            }
+
+        });
+        var poup =new Array();
+
+
+{#              点击 打印--》发货 的操作                             #}
+
+
+
+        $('#bottombtn li').on('click','button',function(){
+            var width = $(document).width();
+            var $this = $(this);
+            if(width <800){
+                poup =['85%', '35%'];
+            }else{
+                poup =['30%', '35%'];
+            }
+            var aliasname = $(this).attr('aliasname');
+
+            var labid = $(this).attr('labid');
+            var content = $(this).html();
+{#            $(this).attr("disabled","disabled");#}
+            if(content == "发货"){
+
+                var index = layer.open({
+                        title:'Carriers&Shipping Number',
+                        type: 1,
+                        area: poup, //宽高
+                        content: $('#formList') ,
+                        btn: ['保存', '取消'],
+                        yes: function(){
+                            var carrier = $("#carrier").val();
+                            var ship = $("#ship").val();
+
+                            if(ship ==null || ship==""){
+                                layer.msg('请填写运单号', {icon: 5});
+                                return false;
+                            }
+                            $.ajax({
+                                url:"/oms/laborder_status/",
+                                type:"POST",
+                                data:{
+                                    'content':content,
+                                    'labid':labid,
+                                    'aliasname':aliasname,
+                                    'carrier':carrier,
+                                    'ship':ship
+                                },
+                                error: function() {
+                                    layer.msg('添加失败，请稍后重试', {icon: 5});
+                                },
+                                success: function(arg) {
+                                    layer.close(index);
+                                    if (arg == "True"){
+                                        $($this).closest("tr").prev().find("td:eq(7)").text(content);
+                                        $($this).attr('disabled','disabled');
+                                        layer.open({
+                                          title: 'Order Tracking',
+                                          content: '订单'+labid+'已'+content,
+                                          time:10000
+                                        });
+                                    }else if (arg == 'False'){
+                                          layer.open({
+                                          title: 'Order Tracking',
+                                          content: '订单'+labid+'已'+content+',不能重复'+content,
+                                          time:10000
+                                        });
+                                    }else if(arg == 'no'){
+                                         layer.open({
+                                          title: 'Order Tracking',
+                                          content: '无法获取承运商或者运单号',
+                                          time:10000
+                                        });
+                                    }else{
+                                         layer.open({
+                                          title: 'Error',
+                                          content:arg,
+                                          time:10000
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                    })
+            }else{
+                  $.ajax({
+                url:"/oms/laborder_status/",
+                type:"POST",
+                data:{
+                    'content':content,
+                    'labid':labid,
+                    'aliasname':aliasname,
+                    'carrier':'null',
+                    'ship':'null'
+                },
+                success:function(arg){
+
+                    if (arg == "True"){
+                        $($this).closest("tr").prev().find("td:eq(6)").text(content);
+                        $($this).attr('disabled','disabled');
+                        layer.open({
+                          title: 'Order Tracking',
+                          content: '订单'+labid+'已'+content,
+                          time:10000
+                        });
+                    }else if(arg == 'False'){
+                          layer.open({
+                          title: 'Order Tracking',
+                          content: '订单'+labid+'已'+content+',不能重复'+content,
+                          time:10000
+                        });
+                    }else{
+                        layer.open({
+                          title: 'Error',
+                          content: arg,
+                          time:10000
+                        });
+                    }
+                }
+            })
+
+            }
+
+        })
+
+
+        laydate.render({
+            elem: '#shiptime' //指定元素
+        });
+
+
+
+{#                   点击完成按钮的操作                                       #}
+
+
+        $(".estime").on('click','button',function(){
+
+
+            var $this = $(this);
+            var labid = $(this).attr('labid');
+            var alias = $(this).attr('aliasname');
+            var content = $(this).html();
+            var width = $(document).width();
+            if(width <800){
+                poup =['85%', '35%'];
+            }else{
+                poup =['30%', '35%'];
+            }
+
+            var index = layer.open({
+                title: '预计发货时间',
+                type: 1,
+                area: poup, //宽高
+                content: $('#shippingtime'),
+                btn: ['保存', '取消'],
+                yes: function(){
+                    var shiptime = $('#shiptime').val();
+                    if(shiptime == '' || shiptime == null){
+                        layer.msg('请填写预计发货时间', {icon: 5});
+                        return false;
+                    }else{
+                        $.ajax({
+                            url:"/oms/esTime/",
+                            type:"POST",
+                            data:{
+                                'shiptime':shiptime,
+                                'labid':labid,
+                                'content':content,
+                                'alias':alias
+                            },
+                            error: function() {
+                                    layer.msg('添加失败，请稍后重试', {icon: 5});
+                                },
+                            success:function(arg){
+                                var time = $('#shiptime').val();
+                                $($this).closest("tr").prev().find("td:eq(5)").text(time);
+
+                                layer.close(index);
+                                if(arg == "True"){
+
+                                    $($this).attr('disabled','disabled');
+                                    layer.open({
+                                      title: 'Order Tracking',
+                                      content: '订单'+labid+'已添加预期发货时间',
+                                      time:10000
+                                         });
+                                }else{
+                                    layer.open({
+                                      title: 'Error',
+                                      content: arg,
+                                      time:10000
+                                 });
+                                }
+                            }
+                        })
+
+                    }
+
+                }
+            })
+
+        })
+
+
+
+{#                  点击完成操作                          #}
+
+        $(".compbtn").on('click','button',function(){
+            var content = $(this).html();
+            var alias= $(this).attr('aliasname');
+            var labid = $(this).attr('labid');
+            var $this = $(this);
+            var width = $(document).width();
+            if(width <800){
+                poup =['85%', '35%'];
+            }else{
+                poup =['400px', '200px'];
+            }
+            var index = layer.open({
+                title: '完成',
+                type: 1,
+                area: poup, //宽高
+                content: '<p><br/>&nbsp;&nbsp;    是否对订单[ '+labid+' ]进行 [完成] 操作？</p>',
+                btn: ['确定', '取消'],
+                yes: function(){
+                    $.ajax({
+                        url:"/oms/confirmAction/",
+                        type:"POST",
+                        data:{
+                            'labid':labid,
+                            'alias':alias,
+                            'content':content
+                        },
+                        success:function(arg){
+                            layer.close(index);
+                            if(arg == 'True'){
+                                $($this).closest("tr").prev().find("td:eq(6)").text(content);
+                                $($this).closest("tr").prev().find("td:eq(6)").css('backgroundColor','#00a65a').css('color','#fff');
+                                 var $aaa=$($this).closest("tr").find('.liStyle button');
+
+                               $($aaa).each(function(){
+
+                               $(this).attr('disabled','disabled');
+
+                               })
+
+
+                                    layer.open({
+                                      title: 'Order Tracking',
+                                      content: '订单'+labid+'已完成',
+                                      time:10000
+                                    });
+                            }else{
+                                 layer.open({
+                                      title: 'Error',
+                                      content: arg,
+                                      time:10000
+                                    });
+                            }
+                        }
+                    })
+                }
+            });
+
+        })
+
+
+
+
+
+
+
+
+    })
+    </script>
+{% endblock %}

@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}{{ form_data.request_module }}
+    <span id="spn_data_total" class="label label-primary"></span> {% endblock %}
+{% block small %}{{ form_data.request_feature }}{% endblock %}
+{% block content %}
+    <!-- Content Wrapper. Contains page content -->
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <section class="content">
+
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">Actions</h3>
+                    </div>
+                    <div class="box-body">
+
+                        {#                        <div style="float: left;">{% include 'search.html' %}</div>#}
+
+                        <div class="cl">
+                            <div style="float: left;margin-right: 0px;">
+                                <button id="backPrev" type="button" class="btn btn-default btn-flat" role="button"
+                                        onClick="javascript :history.back(-1);">Back
+                                </button>
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.merchandising.CATEGORY_PRODUCT_INDEX %}
+                                    <div style="float: left;">
+                                        <a id="cp_women" class="btn btn-block btn-default btn-flat"
+                                        >Women</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.merchandising.CATEGORY_PRODUCT_INDEX %}
+                                    <div style="float: left;">
+                                        <a id="cp_men" class="btn btn-block btn-default btn-flat"
+                                        >Men</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.merchandising.CATEGORY_PRODUCT_INDEX %}
+                                    <div style="float: left;">
+                                        <a id="cp_kids" class="btn btn-block btn-default btn-flat"
+                                        >Kids</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div style="float: left;margin-left: 10px;">
+                                {% if perms.merchandising.CATEGORY_PRODUCT_INDEX %}
+                                    <div style="float: left;">
+                                        <a id="btn_export_csv" class="btn btn-block btn-default btn-flat"
+                                           href={% url 'category_products_index' %}>导出 CSV</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+
+                            <div style="float: left;margin-left: 10px;">
+                                {% if perms.merchandising.REFRESH_PRODUCT_INDEX %}
+                                    <div style="float: left;">
+                                        <a id="btn_refresh_product_index" class="btn btn-block btn-default btn-flat">刷新产品索引</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">小计</h3>
+                    </div>
+                    <div class="box-body">
+                        <div id="tableSummary">
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title">查询结果</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <!--Table-->
+                        <div id="tableContent">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                <tr>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <!--Table end-->
+
+                        <!--paginator-->
+                        <div style="width: 100%;text-align: center;">
+                            {% include 'page_number.html' %}
+                        </div>
+                        <!--paginator end-->
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+
+            </div>
+        </div>
+    </section>
+    <!-- /.content -->
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = '/comment/all/?biz_id=' + order_number;
+            }
+        });
+
+        $('#cp_women').click(function () {
+            genearte_report('6');
+        });
+
+        $('#cp_men').click(function () {
+            genearte_report('8');
+        });
+
+        $('#cp_kids').click(function () {
+            genearte_report('10');
+        });
+
+        function genearte_report(pa_filter) {
+
+            var tb_message = $("#tableContent");
+            var message = [];
+            message.push('正在生成报表, 请稍候 ....');
+            tb_message.html(message.join(''));
+
+            layer.load();
+            url = '/merchandising/category_products_index_post/';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {category_id: pa_filter,},
+
+                success: function (result) {
+                    layer.closeAll();
+
+                    try {
+                        var data_total = $('#spn_data_total');
+                        var tb_data = $("#tableContent");
+
+                        var data = [];
+
+                        data.push('<table class="table table-striped table-hover">');
+
+                        data.push('<thead>\n' +
+                            '<tr>\n' +
+                            '<th><input id="chk_all" type="checkbox"></th>\n' +
+                            '<th>#</th>\n' +
+                            '<th>ID</th>\n' +
+                            '<th>分类</th>\n' +
+                            '<th>产品ID</th>\n' +
+                            '<th>SKU</th>\n' +
+                            '<th>名称</th>\n' +
+                            '<th>LAB_SKU</th>\n' +
+                            '<th>位置</th>\n' +
+                            '<th>上架时间</th>\n' +
+                            '<th>最近更新</th>\n' +
+                            '</tr>\n' +
+                            '</thead>');
+                        data.push('<tbody>');
+
+                        json_data = JSON.parse(result);
+
+                        data_total.html(json_data.json_body.length);
+
+                        for (var i = 0; i < json_data.json_body.length; i++) {
+                            index = i + 1;
+                            item = json_data.json_body[i];
+                            var line = '<tr>';
+                            data.push(line);
+
+                            data.push('<td><input name="chk_items" type="checkbox"></td>');
+
+                            line = '<td>' + index + '</td>';
+                            data.push(line);
+                            line = '<td>' + item.entity_id + '</td>';
+                            data.push(line);
+                            line = '<td>' + item.category_name + '</td>';
+                            data.push(line);
+                            line = '<td>' + item.product_id + '</td>';
+                            data.push(line);
+                            line = '<td>' + item.sku + '</td>';
+                            data.push(line);
+                            line = '<td>' + item.name + '</td>';
+                            data.push(line);
+                            line = '<td>' + item.lab_sku + '</td>';
+                            data.push(line);
+                            line = '<td>' + item.position + '</td>';
+                            data.push(line);
+                            line = '<td>' + item.created_at + '</td>';
+                            data.push(line);
+                            line = '<td>' + item.updated_at + '</td>';
+                            data.push(line);
+                            line = '</tr>';
+                            data.push(line);
+                        }
+
+                        data.push('</tbody>');
+                        data.push('</table>');
+
+                        console.log(data);
+
+                        tb_data.html(data.join(''));
+
+                        var tb_sum = $('#tableSummary');
+                        data = [];
+                        data.push('<table class="table table-striped table-hover">');
+                        data.push('<thead>\n' +
+                            '<tr>\n');
+
+                        for (var i = 0; i < json_data.positions.length; i++) {
+                            data.push(
+                                '<th>' + json_data.positions[i].position + '</th>\n');
+                        }
+                        data.push('</tr></thead>');
+                        data.push('<tbody><tr>');
+                        for (var i = 0; i < json_data.positions.length; i++) {
+                            data.push(
+                                '<td>' + json_data.positions[i].qty + '</td>\n');
+                        }
+                        data.push('</tr></tbody>');
+                        data.push('</table>');
+                        tb_sum.html(data.join(''));
+                    }
+                    catch (err) {
+                        alert(err);
+                    }
+                }
+            })
+        };
+
+
+        $('#btn_refresh_product_index').click(function () {
+            var tb_message = $("#tableContent");
+            var message = [];
+            message.push('正在请求接口服务器, 请稍候 ....');
+            tb_message.html(message.join(''));
+            layer.load();
+            url = '/merchandising/refresh_product_index/';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                success: function (result) {
+                    layer.closeAll();
+
+                    json_data = JSON.parse(result);
+
+                    var str1 = json_data.message;
+                    var reg = new RegExp("\n", "g");//g,表示全部替换
+                    str1 = str1.replace(reg, "<br/>");
+                    var tb_data = $("#tableContent");
+                    var data = [];
+                    data.push(str1);
+                    tb_data.html(data.join(''));
+                    layer.msg('请关注返回的结果信息 ....');
+                }
+            })
+        });
+
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}QC - 终检{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}成镜退货{% endblock %}
+{% block content %}
+    <!-- Content Wrapper. Contains page content -->
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div id="div_tip" class="callout callout-default" style="display: none;">
+            <h4>Tips!</h4>
+
+            <p>This is only beta version.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">Actions</h3>
+                    </div>
+                    <div class="box-body">
+                        <div style="float: left;">{% include 'search.html' %}</div>
+
+                        <div class="cl">
+                            <div style="float: left;margin-right: 0px;display:none">
+                                <button id="backPrev" type="button" class="btn btn-default btn active" role="button"
+                                        onClick="javascript :history.back(-1);">Back
+                                </button>
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.qc.GLASSES_RETURN %}
+
+                                    <div style="float: left;margin-left: 5px;">
+                                        <button id="btn_glasses_return"
+                                                order_number="{{ form_data.laborder.lab_number }}"
+                                                qualified='0'
+                                                type="button"
+                                                class="btn btn-default btn-flat">生成 成镜返工单
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.qc.GLASSES_RETURN %}
+                                    <div style="float: left;margin-left: 5px;">
+                                        <a class="btn btn-block btn-default btn-flat"
+                                           href={% url 'glasses_return_print' %}?entity_id={{ form_data.laborder.lab_number }}
+                                           target='view_window'>打印 成镜返工单</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+
+        {% include 'laborder_detail_mini.pspf.html' %}
+
+    </section>
+    <!-- /.content -->
+
+    <div id="perliminary_checking_part" style="display: none;">
+        <form class="layui-form" action="">
+            <div>
+                <div class="form-group" style="margin-left: 20px;">
+                    <label>返工类型:</label>
+                    <input id="Lens" name="Lens" type="checkbox" checked="checked"><label style="margin-right: 20px;">镜片</label>
+                    <input id="Frame" name="Frame" type="checkbox"><label>镜架</label>
+                </div>
+            </div>
+            <div class="form-group" id="lens_div" style="padding: 0 5px; margin-left: 20px; display: block">
+                <div class="form-group">
+                    <label>退片类型:</label>
+                    <select name="lens_return" id="lens_return" lay-verify="required">
+                        <option value="">请选择退片类型</option>
+                        <option value="0">整副</option>
+                        <option value="1">右片</option>
+                        <option value="2">左片</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>退片原因:</label>
+                    <select name="reason" id="reason" lay-verify="required">
+                        <option value="">请选择退片原因</option>
+                        {% for reason_item in form_data.lens_reasons %}
+                            <option value="{{ reason_item.reason_code }}">{{ reason_item.reason_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input class="form-control" type="text" value="" name="comments" id="comments" placeholder="备注">
+            </div>
+            <div class="form-group" id="frame_div" style="padding: 0 5px; margin-left: 20px; display: none">
+                <div class="form-group">
+                    <label>镜架损坏原因:</label>
+                    <select name="reason" id="frame_reason" lay-verify="required">
+                        <option value="">请选择镜架损坏原因</option>
+                        {% for reason_item in form_data.frame_reasons %}
+                            <option value="{{ reason_item.reason_code }}">{{ reason_item.reason_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input class="form-control" type="text" value="" name="comments" id="frame_comments" placeholder="备注">
+            </div>
+            <div class="form-group" style="margin-left: 20px;">
+                 <div class="form-group">
+                    <label>装配师:</label>
+                    <select name="reason" id="assembler" lay-verify="required">
+                        <option value="">请选择装配师</option>
+                        {% for item in form_data.assembler_lists %}
+                            <option data="{{ item.user_code }}" value="{{ item.id }}">{{ item.user_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        url = "{% url 'glasses_return' %}";
+
+        $("#btnSearch").on("click", function () {
+            entity = $("#number").val();
+            if (entity == '' || entity == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            }
+            else {
+                //location.href = url + '?entity_id=' + entity;
+                url = "{% url 'glasses_return' %}";
+                var order_number = $("#number").val();
+                var index = layer.load(2); //换了种风格
+                window.location.href = url + '?entity_id=' + order_number;
+            }
+        });
+        $("input:checkbox[name=Lens]").click(function(){
+          if($(this).attr("checked")){
+            $("#lens_div").show();
+          }else{
+            $("#lens_div").hide();
+          }
+        });
+        $("input:checkbox[name=Frame]").click(function(){
+          if($(this).attr("checked")){
+            $("#frame_div").show();
+          }else{
+            $("#frame_div").hide();
+          }
+        });
+        $("#btn_glasses_return").on('click', function () {
+            url = "{% url 'glasses_return' %}";
+            obj = $("#btn_glasses_return");
+            var order_number = obj.attr("order_number");
+            var qualified = obj.attr('qualified');
+            //var order_number = $("#number").val();
+            obj.attr("disabled", 'disabled');
+
+            var index = layer.open({
+                type: 1,
+                shade: false,
+                title: '生成成镜返工单', //不显示标题
+                content: $('#perliminary_checking_part'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+                area: ['600px', '500px'],//弹窗框的长宽
+                btn: ['保存', '取消'],
+
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                },
+                yes: function () {
+                    var lens_check = $('#Lens').is(':checked');
+                    var frame_check = $('#Frame').is(':checked');
+                    var lens_return = $('#lens_return').val();
+                    var reason = $('#reason').val();
+                    var comments = $('#comments').val();
+                    var frame_reason = $("#frame_reason").val();
+                    var frame_comments = $('#frame_comments').val();
+                    var assembler = $("#assembler").val();
+                    var assembler_user_code =  $("#assembler").find("option:selected").attr('data');
+                    var assembler_user_name = $("#assembler").find("option:selected").text();
+
+                    if(!lens_check && !frame_check){
+                        layer.msg('必须选择返工类型', {icon: 5});
+                        return false;
+                    }
+                    if(lens_check){
+                        if (lens_return == '' || lens_return == null) {
+                            layer.msg('必须选择退片类型', {icon: 5});
+                            return false;
+                        }
+                        if(reason == '' || reason == null){
+                            layer.msg('必须选择退片原因', {icon: 5});
+                            return false;
+                        }
+                    }
+                    if(frame_check){
+                        if(frame_reason == '' || frame_reason == null){
+                            layer.msg('必须选择镜架损坏原因', {icon: 5});
+                            return false;
+                        }
+                    }
+                    if(assembler == ''){
+                        layer.msg('请选择装配师', {icon: 5});
+                        return false;
+                    }
+
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: {
+                            'lab_nubmer': order_number,
+                            'qualified': qualified,
+                            'lens_return': lens_return,
+                            'reason_code': reason,
+                            'reason': reason,
+                            'comments': comments,
+                            'frame_reason': frame_reason,
+                            'frame_comments': frame_comments,
+                            'assembler': assembler,
+                            'assembler_user_code': assembler_user_code,
+                            'assembler_user_name': assembler_user_name,
+                            'lens_check': lens_check,
+                            'frame_check': frame_check
+                        },
+                        error: function () {
+                            layer.msg('添加失败，请稍后重试', {icon: 5});
+                        },
+                        success: function (arg) {
+                            //rm = JSON.stringify(arg);
+                            rm = JSON.parse(arg);
+                            layer.close(index);
+                            if (rm.code == 0) {
+                                layer.msg('此操作已成功!');
+                                setTimeout(function () {
+                                    //add your code
+                                    window.location.href = url + '?entity_id=' + order_number;
+                                }, 2 * 1000);//延迟5000毫米
+                            }
+                            else {
+                                layer.msg(rm.code + '-' + rm.message);
+                            }
+                        }
+                    })
+
+                }
+
+            });
+
+
+        });
+
+        // dilivery
+        $("#btn_print").on('click', function () {
+            url = "{% url 'glasses_return' %}";
+            obj = $("#btn_qualified");
+            var order_number = obj.attr("order_number");
+            var qualified = obj.attr('qualified');
+            //var order_number = $("#number").val();
+            //obj.attr("disabled", 'disabled');
+            //var index = layer.load(2); //换了种风格
+
+            layer.msg('此功能尚未实现');
+        });
+
+
+    </script>
+{% endblock %}

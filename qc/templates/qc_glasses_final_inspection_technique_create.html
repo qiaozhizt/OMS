@@ -1,0 +1,1223 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}QC - 终检{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}技术指标{% endblock %}
+{% block content %}
+    <!-- Content Wrapper. Contains page content -->
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <form action="{% url 'qc_glasses_final_inspection_technique_create' %}" method="post" onsubmit="return show_special_handling()">
+        <section class="content">
+            {% ifequal method 'POST' %}
+                {% include 'response_message.html' %}
+            {% endifequal %}
+
+            <div class="row">
+                <div class="col-xs-12">
+
+                    <div class="box box-default">
+                        <div class="box-header">
+                            <h3 class="box-title">Actions</h3>
+                        </div>
+                        <div class="box-header">
+
+                            <div style="float: left;">{% include 'search.html' %}</div>
+
+                            <div style="float: left;margin-left: 10px">
+                                <button id="backPrev" type="button" class="btn btn-default btn flat"
+                                        role="button"
+                                        onClick="javascript :history.back(-1);">Back
+                                </button>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-flat" style="float:left;margin-left: 5px">
+                                Submit
+                            </button>
+                            <button type="reset" class="btn btn-default btn-flat" style="float:left;margin-left: 5px">
+                                Reset
+                            </button>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                    <!-- /.box -->
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">工厂订单</h3>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                            {% if lbo %}
+                                <table class="table">
+                                    <tr>
+                                        <th>Lab Number</th>
+                                        <th>镜架</th>
+                                        <th>染色</th>
+                                        <th>涂层</th>
+                                        <th>设计</th>
+                                        <th>美薄</th>
+                                        <th>订单日期</th>
+                                        <th>备注</th>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="label-info">{{ lbo.lab_number }}</span> </td>
+                                        <td><span class="label-danger">{{ lbo.frame }}</span> </td>
+                                        <td>{{ lbo.tint_name }}</td>
+                                        <td>{{ lbo.coating_name }}</td>
+                                        <td>{{ lbo.pal_design_name }}</td>
+                                        <td>{{ lbo.special_handling_name }}</td>
+                                        <td>{{ lbo.create_at }}</td>
+                                        <td>{{ lbo.comments }}</td>
+                                    </tr>
+                                </table>
+                            {% else %}
+                                {% ifnotequal error_code 0 %}
+                                    {{ error_message }}
+                                {% endifnotequal %}
+                            {% endif %}
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                    <!-- /.box -->
+                </div>
+            </div>
+
+            <div class="row" style="display:none">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">QC-终检-自动检测结果</h3>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                    <!-- /.box -->
+                </div>
+            </div>
+
+            {% ifequal exist True %}
+            <div class="row">
+                <div class="col-xs-8">
+                    <div class="box">
+                        <div class="box-header">
+                            <h3 class="box-title">QC-终检-技术指标</h3>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="box-body">
+
+                            <div class="col-md-12">
+                                {% csrf_token %}
+                                {{ form.non_field_errors }}
+                                <div class="col-md-3">
+                                    {% ifequal lbo.is_singgle_pd True %}
+                                        {% if '双光' in form_data.laborder.act_lens_name %}
+                                            <div class="form-group">
+                                                <label for="id_npd" data="{{ form_data.laborder.pd }}">双眼NPD:</label>
+                                                <input type="number" name="npd" {% if form.npd  %} value="{{ form.npd }}" {% else %} value="{{ form_data.laborder.pd }}" {% endif %} step="any" id="id_npd">
+                                            </div>
+                                        {% else %}
+                                            <div class="form-group">
+                                                <label for="id_pd" data="{{ form_data.laborder.pd }}">双眼PD:</label>
+                                                <input type="number" name="pd" {% if form.pd  %} value="{{ form.pd }}" {% else %} value="{{ form_data.laborder.pd }}" {% endif %} step="any" id="id_pd">
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                         {% if '双光' in form_data.laborder.act_lens_name %}
+                                            <div class="form-group">
+                                                <label for="id_od_npd">右眼NPD:</label>
+                                                <input type="number" name="od_npd" {% if form.od_npd %} value="{{ form.od_npd }}" {% else %} value="{{ form_data.laborder.od_pd }}" {% endif %} step="0.1" id="id_od_npd">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="id_os_npd">左眼NPD:</label>
+                                                <input type="number" name="os_npd" {% if form.od_npd %} value="{{ form.os_npd }}" {% else %} value="{{ form_data.laborder.os_pd }}" {% endif %} step="0.1" id="id_os_npd">
+                                            </div>
+                                        {% else %}
+                                            <div class="form-group">
+                                                <label for="id_od_pd">右眼PD:</label>
+                                                <input type="number" name="od_pd" {% if form.od_pd  %} value="{{ form.od_pd }}" {% else %} value="{{ form_data.laborder.od_pd }}" {% endif %} step="0.1" id="id_od_pd">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="id_os_pd">左眼PD:</label>
+                                                <input type="number" name="os_pd" {% if form.os_pd %} value="{{ form.os_pd }}" {% else %} value="{{ form_data.laborder.os_pd }}" {% endif %} step="0.1" id="id_os_pd">
+                                            </div>
+                                        {% endif %}
+                                    {% endifequal %}
+                                    {% if "双光" in  form_data.laborder.act_lens_name %}
+                                            <div class="form-group">
+                                                <label for="id_od_sub_mirrors_height">右眼子镜高:</label>
+                                                <input type="number" name="od_sub_mirrors_height" {% if form.od_sub_mirrors_height %} value="{{ form.od_sub_mirrors_height }}" {% else %} value="{{ form_data.laborder.sub_mirrors_height }}" {% endif %} step="any" id="id_od_sub_mirrors_height">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="id_os_sub_mirrors_height">左眼子镜高:</label>
+                                                <input type="number" name="os_sub_mirrors_height" {% if form.os_sub_mirrors_height %} value="{{ form.os_sub_mirrors_height }}" {% else %} value="{{ form_data.laborder.sub_mirrors_height }}" {% endif %} step="any" id="id_os_sub_mirrors_height">
+                                            </div>
+                                    {% else %}
+                                            <div class="form-group">
+                                                <label for="id_od_asmbl_seght">右眼瞳高:</label>
+                                                <input type="number" name="od_asmbl_seght" {% if form.od_asmbl_seght %} value="{{ form.od_asmbl_seght }}" {% else %} value="{{ form_data.laborder.lab_seg_height }}" {% endif %} step="any" id="id_od_asmbl_seght">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="id_os_asmbl_seght">左眼瞳高:</label>
+                                                <input type="number" name="os_asmbl_seght" {% if form.os_asmbl_seght %} value="{{ form.os_asmbl_seght }}" {% else %} value="{{ form_data.laborder.lab_seg_height }}" {% endif %} step="any" id="id_os_asmbl_seght">
+                                            </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="id_co">超防水涂层:</label>
+                                        <select name="co" id="id_co">
+                                            <option value="3" {% ifequal form.co False %}selected=""{% endifequal %}>No</option>
+                                            <option value="2" {% ifequal form.co True %}selected=""{% endifequal %}>Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_coatings">膜层:</label>
+                                        <select name="coatings" id="id_coatings">
+                                            <option value="HMC" {% if form.coatings == 'HMC' and form.coatings == '' %}selected=""{% endif %}>HMC</option>
+                                            <option value="SHMC" {% ifequal form.coatings 'SHMC' %}selected=""{% endifequal %}>SHMC</option>
+                                            <option value="HC" {% ifequal form.coatings 'HC' %}selected=""{% endifequal %}>HC</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_is_d_thin">是否美薄:</label>
+                                        <select name="is_d_thin" id="id_is_d_thin">
+                                            <option value="3" {% ifequal form.is_d_thin False %}selected="" {% endifequal %}>No
+                                            </option>
+                                            <option value="2" {% ifequal form.is_d_thin True %}selected="" {% endifequal %}>Yes
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_is_polishing">是否抛光:</label>
+                                        <select name="is_polishing" id="id_is_polishing">
+                                            <option value="3" {% ifequal form.is_polishing False %}selected="" {% endifequal %}>No
+                                            </option>
+                                            <option value="2" {% ifequal form.is_polishing True %}selected="" {% endifequal %}>Yes
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                     {% if "蓝光" in  form_data.laborder.act_lens_name or "抗蓝" in form_data.laborder.act_lens_name %}
+                                        <div class="form-group">
+                                            <label for="id_blue_blocker">镜片抗蓝光:</label>
+                                            <select name="blue_blocker" id="id_blue_blocker">
+                                                <option value="3" {% ifequal form.blue_blocker False %}selected=""{% endifequal %}>No</option>
+                                                <option value="2" {% ifequal form.blue_blocker True %}selected=""{% endifequal %}>Yes</option>
+                                            </select>
+                                        </div>
+                                    {% endif %}
+                                    {% if form.polarized == False and form.light_responsive == False and form.tint == False and form.is_gradient == False %}
+                                       {% if "偏光" in  form_data.laborder.act_lens_name  %}
+                                            <div class="form-group">
+                                                <label for="id_polarized">镜片偏光:</label>
+                                                <select name="polarized" id="id_polarized" class="selects" >
+                                                    <option value="3" {% ifequal form.polarized False %}selected=""{% endifequal %}>No</option>
+                                                    <option value="2" {% ifequal form.polarized True %}selected=""{% endifequal %}>Yes</option>
+                                                </select>
+                                            </div>
+                                        {% endif %}
+                                        {% if "变色" in form_data.laborder.act_lens_name or "膜变" in form_data.laborder.act_lens_name or "基变" in form_data.laborder.act_lens_name %}
+                                            <div class="form-group">
+                                                <label for="id_light_responsive">变色:</label>
+                                                <select name="light_responsive" id="id_light_responsive" class="selects" >
+                                                    <option value="3" {% ifequal form.light_responsive False %}selected=""{% endifequal %}>No</option>
+                                                    <option value="2" {% ifequal form.light_responsive True %}selected=""{% endifequal %}>Yes</option>
+                                                </select>
+                                            </div>
+                                        {% endif %}
+                                   {% else %}
+                                        {% if "偏光" in  form_data.laborder.act_lens_name  %}
+                                            <div class="form-group">
+                                                <label for="id_polarized">镜片偏光:</label>
+                                                <select name="polarized" id="id_polarized" class="selects">
+                                                    <option value="3" {% ifequal form.polarized False %}selected=""{% endifequal %}>No</option>
+                                                    <option value="2" {% ifequal form.polarized True %}selected=""{% endifequal %}>Yes</option>
+                                                </select>
+                                            </div>
+                                        {% endif %}
+                                        {% if "变色" in form_data.laborder.act_lens_name or "膜变" in form_data.laborder.act_lens_name or "基变" in form_data.laborder.act_lens_name %}
+                                            <div class="form-group">
+                                                <label for="id_light_responsive">变色:</label>
+                                                <select name="light_responsive" id="id_light_responsive" class="selects">
+                                                    <option value="3" {% ifequal form.light_responsive False %}selected=""{% endifequal %}>No</option>
+                                                    <option value="2" {% ifequal form.light_responsive True %}selected=""{% endifequal %}>Yes</option>
+                                                </select>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if form.polarized == False and form.light_responsive == False and form.tint == False and form.is_gradient == False %}
+                                        {% if "实色染色" in form_data.laborder.tint_name %}
+                                            <div class="form-group">
+                                                <label for="id_tint">实色染色:</label>
+                                                <select name="tint" id="id_tint" class="selects">
+                                                    <option value="3" {% ifequal form.tint False %}selected=""{% endifequal %}>No</option>
+                                                    <option value="2" {% ifequal form.tint True %}selected=""{% endifequal %}>Yes</option>
+                                                </select>
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if "实色染色" in form_data.laborder.tint_name %}
+                                            <div class="form-group">
+                                                <label for="id_tint">实色染色:</label>
+                                                <select name="tint" id="id_tint" class="selects">
+                                                    <option value="3" {% ifequal form.tint False %}selected=""{% endifequal %}>No</option>
+                                                    <option value="2" {% ifequal form.tint True %}selected=""{% endifequal %}>Yes</option>
+                                                </select>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-3">
+                                    {% if form.polarized == False and form.light_responsive == False and form.tint == False and form.is_gradient == False %}
+                                        {% if "渐变染色" in form_data.laborder.tint_name %}
+                                            <div class="form-group">
+                                                <label for="id_is_gradient">渐变染色:</label>
+                                                <select name="is_gradient" id="id_is_gradient" class="selects">
+                                                    <option value="3" {% ifequal form.is_gradient False %}selected=""{% endifequal %}>No</option>
+                                                    <option value="2" {% ifequal form.is_gradient True %}selected=""{% endifequal %}>Yes</option>
+                                                </select>
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if '渐变染色' in form_data.laborder.tint_name %}
+                                            <div class="form-group">
+                                                <label for="id_is_gradient">渐变染色:</label>
+                                                <select name="is_gradient" id="id_is_gradient" class="selects">
+                                                    <option value="3" {% ifequal form.is_gradient False %}selected=""{% endifequal %}>No</option>
+                                                    <option value="2" {% ifequal form.is_gradient True %}selected=""{% endifequal %}>Yes</option>
+                                                </select>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if "偏光" in form_data.laborder.act_lens_name or "渐变染色" in form_data.laborder.tint_name or "实色染色" in form_data.laborder.tint_name or "变色" in form_data.laborder.act_lens_name or "膜变" in form_data.laborder.act_lens_name or "基变" in form_data.laborder.act_lens_name %}
+                                        <div class="form-group">
+                                            <label for="id_light_responsive_color">颜色:</label>
+                                            <select name="light_responsive_color" id="id_light_responsive_color">
+                                                <option value="" {% ifequal form.light_responsive_color '' %}selected=""{% endifequal %}>NULL</option>
+                                                <option value="G" {% ifequal form.light_responsive_color 'G' %}selected=""{% endifequal %}>Gray</option>
+                                                <option value="B" {% ifequal form.light_responsive_color 'B' %}selected=""{% endifequal %}>Brown</option>
+                                                <option value="E" {% ifequal form.light_responsive_color 'E' %}selected=""{% endifequal %}>Green</option>
+                                                <option value="I" {% ifequal form.light_responsive_color 'I' %}selected=""{% endifequal %}>Pink</option>
+                                                <option value="Y" {% ifequal form.light_responsive_color 'Y' %}selected=""{% endifequal %}>Yellow</option>
+                                            </select>
+                                        </div>
+                                    {% endif %}
+                                    {% if form.od_tint_deepness == 0 and form.os_tint_deepness == 0  %}
+                                        {% if "实色染色" in form_data.laborder.tint_name or "渐变染色" in form_data.laborder.tint_name%}
+                                           <div class="form-group">
+                                                <label for="id_tint_deepness">染色深度:</label>
+                                                <input type="number" name="tint_deepness" value="{{ form.tint_deepness }}" step="any"
+                                                       id="id_tint_deepness"  class="public_inputs">%
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if "实色染色" in form_data.laborder.tint_name or "渐变染色" in form_data.laborder.tint_name%}
+                                            <div class="form-group">
+                                                <label for="id_od_tint_deepness">右片染色深度:</label>
+                                                <input type="number" name="od_tint_deepness" value="{{ form.od_tint_deepness }}" step="any"
+                                                       id="id_od_tint_deepness"  class="public_inputs">%
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="id_os_tint_deepness">左片染色深度:</label>
+                                                <input type="number" name="os_tint_deepness" value="{{ form.os_tint_deepness }}" step="any"
+                                                       id="id_os_tint_deepness" class="public_inputs">%
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group col-md-3">
+                                    <label for="id_clipon_qty">夹片:</label>
+                                    {% if form_data.laborder.status == 'FINAL_INSPECTION_YES' or form_data.laborder.status == 'FINAL_INSPECTION_NO' %}
+                                        <input type="number" name="clipon_qty" value="{% if form.clipon_qty == '' %} 0 {% else %}{{ form.clipon_qty }}{% endif %}" step="any"
+                                           id="id_clipon_qty">
+                                    {% else %}
+                                        <input type="number" name="clipon_qty" value="0" step="any"
+                                           id="id_clipon_qty">
+                                    {% endif %}
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="id_is_near_light">近光区是否完整:</label>
+                                    <select name="is_near_light" id="id_is_near_light" class="near_select">
+                                        <option value="2" {% ifequal form.is_near_light True %}selected=""{% endifequal %}>Yes</option>
+                                        <option value="3" {% ifequal form.is_near_light False %}selected=""{% endifequal %}>No</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="id_is_special_handling">加工要求验证:</label>
+                                    <select name="is_special_handling" id="id_is_special_handling">
+                                        <option value="3" {% ifequal form.is_special_handling False %}selected=""{% endifequal %}>No</option>
+                                        <option value="2" {% ifequal form.is_special_handling True %}selected=""{% endifequal %}>Yes</option>
+                                    </select>
+                                </div>
+                                <!--<div class="form-group col-md-3">
+                                    <label for="id_is_qualified">是否合格:</label>
+                                    <select name="is_qualified" id="id_is_qualified">
+                                        <option value="2" {% ifequal form.is_qualified True %}selected=""{% endifequal %}>Yes</option>
+                                        <option value="3" {% ifequal form.is_qualified False %}selected=""{% endifequal %}>No</option>
+                                    </select>
+                                </div>-->
+                            </div>
+                            {# add lee 2020.8.4 添加计件字段 #}
+                            <div class="col-md-12">
+                                <div class="form-group col-md-3">
+                                    <label for="cutting_edge_user_id">割边师:</label>
+                                    <select name="cutting_edge_user_id" id="cutting_edge_user_id">
+                                        <option value="">请选择割边师</option>
+                                        {% for item in assemblers %}
+                                            <option value="{{ item.id }}" {% if form.cutting_edge_user_id == item.id %}selected=""{% endif %}>{{ item.user_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="assembler_id">装配师:</label>
+                                    <select name="assembler_id" id="assembler_id">
+                                        <option value="">请选择装配师</option>
+                                        {% for item in assemblers %}
+                                            <option value="{{ item.id }}" {% if form.assembler_id == item.id %}selected="" {% elif form.assembler_id == None and request.session.session_assembler_id == item.id %} selected=""  {% endif %}>{{ item.user_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="beauty_user_id">整型师:</label>
+                                    <select name="beauty_user_id" id="beauty_user_id">
+                                        <option value="">请选择整型师</option>
+                                        {% for item in assemblers %}
+                                            <option value="{{ item.id }}" {% if form.beauty_user_id == item.id %}selected="" {% elif form.beauty_user_id == None and request.session.session_beauty_user_id == item.id  %} selected {% endif %}>{{ item.user_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            {# end add #}
+                            <div class="col-md-12">
+                                <div class="form-group col-md-3">
+                                    <label for="repair">误判修复:</label>
+                                    <input name="repair" id="repair" type="checkbox" />
+                                </div>
+                            </div>
+
+                            <!--<div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="assembler_id">装配师:</label>
+                                    <select name="assembler_id" id="assembler_id">
+                                        <option value="">请选择装配师</option>
+                                        {% for item in assemblers %}
+                                            <option value="{{ item.id }}" {% if form.assembler_id == item.id %}selected="" {% endif %}>{{ item.user_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>-->
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_comments">备注:</label>
+                                    <textarea name="comments" maxlength="4096" id="id_comments" rows="5" class="form-control" cols="40">{{ form.comments }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="id_od_prism">右眼棱镜:</label>
+                                        <input type="number" name="od_prism" value="{{ form.od_prism }}" step="any"
+                                               id="id_od_prism" class="public_input">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="id_od_base">右眼方向:</label>
+                                        <input type="number" name="od_base" value="{{ form.od_base }}" step="any"
+                                               id="id_od_base" class="public_input">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="id_os_prism">左眼棱镜:</label>
+                                        <input type="number" name="os_prism" value="{{ form.os_prism }}" step="any"
+                                               id="id_os_prism" class="public_input">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="id_os_base">左眼方向:</label>
+                                        <input type="number" name="os_base" value="{{ form.os_base }}" step="any"
+                                               id="id_os_base" class="public_input">
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="id_od_prism1">右眼棱镜2:</label>
+                                        <input type="number" name="od_prism1" value="{{ form.od_prism1 }}" step="any"
+                                               id="id_od_prism1" class="public_input">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="id_od_base1">右眼方向2:</label>
+                                        <input type="number" name="od_base1" value="{{ form.od_base1 }}" step="any"
+                                               id="id_od_base1" class="public_input">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="id_os_prism1">左眼棱镜2:</label>
+                                        <input type="number" name="os_prism1" value="{{ form.os_prism1 }}" step="any"
+                                               id="id_os_prism1" class="public_input">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="id_os_base1">左眼方向2:</label>
+                                        <input type="number" name="os_base1" value="{{ form.os_base1 }}" step="any"
+                                               id="id_os_base1" class="public_input">
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <input type="hidden" name="lab_number" value="{{ lbo.lab_number }}" />
+
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                    <div class="box">
+                        <div class="box-body">
+                            <div class="col-xs-12">
+                                <table class="table table-hover">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Prism-H</th>
+                                        <th>Base-H</th>
+                                        <th>Prism-V</th>
+                                        <th>Base-V</th>
+                                    </tr>
+                                    <tr>
+                                        <td>OD</td>
+                                        <td>{{ form_data.laborder.od_prism }}</td>
+                                        <td>{{ form_data.laborder.od_base }}</td>
+                                        <td>{{ form_data.laborder.od_prism1 }}</td>
+                                        <td>{{ form_data.laborder.od_base1 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>OS</td>
+                                        <td>{{ form_data.laborder.os_prism }}</td>
+                                        <td>{{ form_data.laborder.os_base }}</td>
+                                        <td>{{ form_data.laborder.os_prism1 }}</td>
+                                        <td>{{ form_data.laborder.os_base1 }}</td>
+                                    </tr>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.box -->
+                </div>
+                 {% include 'qc_laborder_detail_mini.html' %}
+                <!--<div class="form-group col-md-3">
+                    <label for="id_is_qualified">是否合格:</label>
+                    <input name="is_qualified" id="id_is_qualified" type="checkbox" />
+                </div>-->
+                <div class="form-group col-md-3">
+                    <label for="id_is_qualified">是否合格:</label>
+                    <select name="is_qualified" id="id_is_qualified">
+                        <option value="2" {% ifequal form.is_qualified True %}selected=""{% endifequal %}>Yes</option>
+                        <option value="3" {% ifequal form.is_qualified False %}selected=""{% endifequal %}>No</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="box-footer">
+                <div style="float: left;margin-right: 3px">
+                    <button id="backPrev" type="button" class="btn btn-flat btn-default btn active" role="button"
+                            onClick="javascript :history.back(-1);">Back
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-flat btn-primary" >Submit</button>
+                <button type="reset" class="btn btn-flat btn-default">Reset</button>
+            </div>
+            {% endifequal %}
+
+
+        </section>
+        <!-- /.content -->
+    </form>
+    <div id="shippingtime" style="display: none;">
+    <div class="form-group" style="padding: 0 5px;">
+        <p class="form-control" type="date" value="{{ form_data.laborder.special_handling }}" name="shiptime" id="shiptime">请确认特殊要求</p>
+    </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+                return false;
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            url = "{% url 'qc_glasses_final_inspection_technique_create' %}";
+            if (order_number == '' || order_number == null) {
+                layer.msg('请输入 Lab Order 订单号码!', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = url + '?lab_number=' + order_number;
+            }
+        });
+
+        $(document).ready(function(){
+            {#status = '{{ form_data.laborder.status }}'#}
+            {#if(status == 'FINAL_INSPECTION_YES' || status == 'FINAL_INSPECTION_NO') {#}
+            {#    $('#repair').prop("checked", true);#}
+            {#}#}
+            $(".box-body label").css("min-width","80px");
+            $(".box-body select").css("width","60px");
+            $(".box-body input").css("width","60px");
+            $(".box-body .public_input").css("width","60px");
+            $(".box-body .public_inputs").css("width","50px");
+            $(".box-body .near_select").css("width","40px");
+
+
+        });
+{#        {% if form.polarized == True %}#}
+{#             $('.selects').attr("disabled","true");#}
+{#             $('#id_polarized').removeAttr("disabled");#}
+{#        {% elif form.light_responsive == True %}#}
+{#             $('.selects').attr("disabled","true");#}
+{#             $('#id_responsive').removeAttr("disabled");#}
+{#        {% elif form.tint == True %}#}
+{#             $('.selects').attr("disabled","true");#}
+{#             $('#id_tint').removeAttr("disabled");#}
+{#        {% elif form.is_gradient == True %}#}
+{#             $('.selects').attr("disabled","true");#}
+{#             $('#id_is_gradient').removeAttr("disabled");#}
+{#        {% endif %}#}
+{#        $(".selects").change(function () {#}
+{#            item = $(this).val();#}
+{#            if(item == '3'){#}
+{#                $('.selects').removeAttr("disabled");#}
+{#            }else{#}
+{#                $('.selects').attr("disabled","true");#}
+{#                $(this).removeAttr("disabled");#}
+{#            }#}
+{#        });#}
+
+    </script>
+    <script language="javascript">
+    //表单提交前验证
+        function show_special_handling() {
+            order_number = "{{ lbo.lab_number }}";
+            if (order_number == '' || order_number == null) {
+                layer.msg('请输入 Lab Order 订单号码!', {time: 3000, icon: 7});
+                return false
+            }
+
+            //assembler_id = $("#assembler_id").val();
+            //if(assembler_id == ''){
+            //    layer.msg('请选择装配师!', {time: 3000, icon: 7});
+            //    return false
+            //}
+            index = true;
+            var special_handling = "{{ form_data.laborder.special_handling }}";
+            if(special_handling != ''&& special_handling != 'None'&&special_handling != '0') {
+                var index = confirm("特殊要求:       " + special_handling);
+            }
+            var id_is_qualified = $("#id_is_qualified").val();
+            if(id_is_qualified == '2'){
+                //颜色
+                var id_light_responsive_color = $("#id_light_responsive_color").val();
+                //染色
+                tint_name = '{{ form_data.laborder.tint_name }}'
+                //实际名称
+                lab_act_lens_name = "{{ form_data.laborder.act_lens_name }}"
+                if(lab_act_lens_name.indexOf('单光')!= -1 || lab_act_lens_name.indexOf('渐进')!= -1 || lab_act_lens_name.indexOf('平顶双光')!= -1){
+                    {% ifequal form_data.laborder.is_singgle_pd True %}
+                        if(lab_act_lens_name.indexOf('平顶双光')!= -1){
+                            var npd = $("#id_npd").val();
+                            var lab_pd = '{{ form_data.laborder.pd }}'
+                            diff_value = parseInt(lab_pd)-parseInt(npd)
+                           if (diff_value < -8 || diff_value > 8){
+                                layer.msg('请核实双眼NPD', {time: 3000, icon: 7});
+                                return false
+                           }
+                        }else{
+                            var pd = $("#id_pd").val();
+                            if(pd == ''){
+                                layer.msg('请输入双眼PD', {time: 3000, icon: 7});
+                                return false
+                            }
+                            var lab_pd = '{{ form_data.laborder.pd }}'
+                            diff_value = parseInt(lab_pd)-parseInt(pd)
+                            if (diff_value < -4 || diff_value > 4){
+                                layer.msg('请核实双眼PD', {time: 3000, icon: 7});
+                                return false
+                           }
+                        }
+                    {% else %}
+                        if(lab_act_lens_name.indexOf('平顶双光')!= -1){
+                            var od_npd = $("#id_od_npd").val();
+                            if (od_npd == '') {
+                                layer.msg('请输入右眼NPD', {time: 3000, icon: 7});
+                                return false
+                            }
+                            var os_npd = $("#id_os_npd").val();
+                            if (os_npd == '') {
+                                layer.msg('请输入左眼NPD', {time: 3000, icon: 7});
+                                return false
+                            }
+                            var lab_od_pd = '{{ form_data.laborder.od_pd }}'
+                            var lab_os_pd = '{{ form_data.laborder.os_pd }}'
+                            od_diff_value = parseInt(lab_od_pd) - parseInt(od_npd)
+                            os_diff_value = parseInt(lab_os_pd) - parseInt(os_npd)
+                            if (od_diff_value < -4 || od_diff_value > 4) {
+                                layer.msg('请核实右眼NPD', {time: 3000, icon: 7});
+                                return false
+                            }
+                            if (os_diff_value < -4 || os_diff_value > 4) {
+                                layer.msg('请核实左眼NPD', {time: 3000, icon: 7});
+                                return false
+                            }
+                        }else {
+                            var od_pd = $("#id_od_pd").val()
+                            if (od_pd == '') {
+                                layer.msg('请输入右眼PD', {time: 3000, icon: 7});
+                                return false
+                            }
+                            var lab_od_pd = '{{ form_data.laborder.od_pd }}'
+                            var os_pd = $("#id_os_pd").val()
+                            if (os_pd == '') {
+                                layer.msg('请输入左眼PD', {time: 3000, icon: 7});
+                                return false
+                            }
+                            var lab_os_pd = '{{ form_data.laborder.os_pd }}'
+                            od_diff_value = parseInt(lab_od_pd) - parseInt(od_pd)
+                            os_diff_value = parseInt(lab_os_pd) - parseInt(os_pd)
+                            if (od_diff_value < -2 || od_diff_value > 2) {
+                                layer.msg('请核实右眼PD', {time: 3000, icon: 7});
+                                return false
+                            }
+                            if (os_diff_value < -2 || os_diff_value > 2) {
+                                layer.msg('请核实左眼PD', {time: 3000, icon: 7});
+                                return false
+                            }
+                        }
+                    {% endifequal %}
+                }
+
+                if(lab_act_lens_name.indexOf('渐进')!= -1){
+                    var od_asmbl_seght = $("#id_od_asmbl_seght").val();
+                    var os_asmbl_seght = $("#id_os_asmbl_seght").val();
+                    console.log(od_asmbl_seght)
+                    console.log(os_asmbl_seght)
+                    if(od_asmbl_seght == ''){
+                        layer.msg('请输入右眼瞳高', {time: 3000, icon: 7});
+                        return false
+                    }
+                    if(os_asmbl_seght == ''){
+                        layer.msg('请输入左眼瞳高', {time: 3000, icon: 7});
+                        return false
+                    }
+                    var lab_seg_height = '{{ form_data.laborder.lab_seg_height }}'
+                    console.log(parseInt(lab_seg_height))
+                    od_diff_seg_value = parseInt(lab_seg_height)-parseInt(od_asmbl_seght)
+                    os_diff_seg_value = parseInt(lab_seg_height)-parseInt(os_asmbl_seght)
+                    if(od_diff_seg_value < -2 || od_diff_seg_value > 2){
+                            layer.msg('请核实右眼瞳高', {time: 3000, icon: 7});
+                            return false
+                    }
+                    if(os_diff_seg_value < -2 || os_diff_seg_value > 2){
+                            layer.msg('请核实左眼瞳高', {time: 3000, icon: 7});
+                            return false
+                    }
+                }
+
+                if(lab_act_lens_name.indexOf('平顶双光')!= -1){
+                    var od_sub_mirrors_height = $("#id_od_sub_mirrors_height").val();
+                    var os_sub_mirrors_height = $("#id_os_sub_mirrors_height").val();
+                    if(od_sub_mirrors_height == ''){
+                        layer.msg('请输入右眼子镜高', {time: 3000, icon: 7});
+                        return false
+                    }
+                    if(os_sub_mirrors_height == ''){
+                        layer.msg('请输入左眼子镜高', {time: 3000, icon: 7});
+                        return false
+                    }
+
+                    var sub_mirrors_height = '{{ form_data.laborder.sub_mirrors_height }}'
+                    od_diff_mirrors_value = parseInt(sub_mirrors_height)-parseInt(od_sub_mirrors_height)
+                    os_diff_mirrors_value = parseInt(sub_mirrors_height)-parseInt(os_sub_mirrors_height)
+                    if(od_diff_mirrors_value < -2 || od_diff_mirrors_value > 2){
+                            layer.msg('请核实右眼子镜高', {time: 3000, icon: 7});
+                            return false
+                    }
+                    if(os_diff_mirrors_value < -2 || os_diff_mirrors_value > 2){
+                            layer.msg('请核实左眼子镜高', {time: 3000, icon: 7});
+                            return false
+                    }
+                }
+                //判断抗蓝光
+                var id_blue_blocker = $("#id_blue_blocker").val();
+                if(lab_act_lens_name.indexOf('抗蓝')!= -1 && id_blue_blocker == '3'){
+                    layer.msg('请核实眼镜是否具有抗蓝光', {time: 3000, icon: 7});
+                    return false
+                }else if(lab_act_lens_name.indexOf('抗蓝') == -1 && id_blue_blocker == '2'){
+                    layer.msg('请核实眼镜是否具有抗蓝光', {time: 3000, icon: 7});
+                    return false
+                }
+                //判断超防水
+                coating_name = '{{ form_data.laborder.coating_name }}'
+                var id_co = $("#id_co").val();
+                if ((coating_name == 'None' || coating_name == '') && id_co == '2'){
+                    layer.msg('请核实眼镜是否具有超防水', {time: 3000, icon: 7});
+                    return false
+                }
+                //判断偏光
+                var id_polarized = $("#id_polarized").val();
+                if(lab_act_lens_name.indexOf('偏光')!= -1 && id_polarized == '3'){
+                    layer.msg('请核实眼镜是否具有偏光', {time: 3000, icon: 7});
+                    return false
+                }else if (lab_act_lens_name.indexOf('偏光') == -1 && id_polarized == '2'){
+                    layer.msg('请核实眼镜是否具有偏光', {time: 3000, icon: 7});
+                    return false
+                }
+                //判断偏光及颜色
+                if(lab_act_lens_name.indexOf('偏光')!= -1 && ((lab_act_lens_name.indexOf('灰色')!= -1 && id_light_responsive_color != 'G')||(lab_act_lens_name.indexOf('茶色')!= -1 && id_light_responsive_color != 'B')||(lab_act_lens_name.indexOf('绿色')!= -1 && id_light_responsive_color != 'E')||(lab_act_lens_name.indexOf('粉色')!= -1 && id_light_responsive_color != 'I')||(lab_act_lens_name.indexOf('黄色')!= -1 && id_light_responsive_color != 'Y'))){
+                    layer.msg('请核实眼镜偏光及颜色', {time: 3000, icon: 7});
+                    return false
+                }
+                //判断变色
+                var id_light_responsive = $("#id_light_responsive").val();
+                if((lab_act_lens_name.indexOf('变色')!= -1 || lab_act_lens_name.indexOf('膜变')!= -1 || lab_act_lens_name.indexOf('基变')!= -1)&& id_light_responsive == '3'){
+                    layer.msg('请核实眼镜是否具有变色', {time: 3000, icon: 7});
+                    return false
+                }else if((lab_act_lens_name.indexOf('变色')== -1 && lab_act_lens_name.indexOf('膜变')== -1 && lab_act_lens_name.indexOf('基变')== -1)&& id_light_responsive == '2'){
+                    layer.msg('请核实眼镜是否具有变色', {time: 3000, icon: 7});
+                    return false
+                }
+
+                //判断变色及颜色
+                if((lab_act_lens_name.indexOf('变色')!= -1 || lab_act_lens_name.indexOf('膜变')!= -1 || lab_act_lens_name.indexOf('基变')!= -1) && ((lab_act_lens_name.indexOf('灰色')!= -1 && id_light_responsive_color != 'G')||(lab_act_lens_name.indexOf('茶色')!= -1 && id_light_responsive_color != 'B')||(lab_act_lens_name.indexOf('绿色')!= -1 && id_light_responsive_color != 'E')||(lab_act_lens_name.indexOf('粉色')!= -1 && id_light_responsive_color != 'I')||(lab_act_lens_name.indexOf('黄色')!= -1 && id_light_responsive_color != 'Y'))){
+                    layer.msg('请核实眼镜变色及颜色', {time: 3000, icon: 7});
+                    return false
+                }
+                //判断是否具有实色染色
+                var id_tint = $("#id_tint").val();
+                if(tint_name.indexOf('实色染色')!= -1 && id_tint == '3'){
+                    layer.msg('请核实眼镜是否具有实色染色', {time: 3000, icon: 7});
+                    return false
+                }else if(tint_name.indexOf('实色染色') == -1 && id_tint == '2'){
+                    layer.msg('请核实眼镜是否具有实色染色', {time: 3000, icon: 7});
+                    return false
+                }
+                //判断实色染色及颜色
+                if(tint_name.indexOf('实色染色')!= -1 && ((tint_name.indexOf('灰色')!= -1 && id_light_responsive_color != 'G')||(tint_name.indexOf('茶色')!= -1 && id_light_responsive_color != 'B')||(tint_name.indexOf('绿色')!= -1 && id_light_responsive_color != 'E')||(lab_act_lens_name.indexOf('粉色')!= -1 && id_light_responsive_color != 'I')||(lab_act_lens_name.indexOf('黄色')!= -1 && id_light_responsive_color != 'Y'))){
+                    layer.msg('请核实眼镜实色染色及颜色', {time: 3000, icon: 7});
+                    return false
+                }
+                //判断是否具有渐变染色
+                var id_is_gradient = $("#id_is_gradient").val();
+                if(tint_name.indexOf('渐变染色')!= -1 && id_is_gradient == '3'){
+                    layer.msg('请核实眼镜是否具有渐变染色', {time: 3000, icon: 7});
+                    return false
+                }else if(tint_name.indexOf('渐变染色') == -1 && id_is_gradient == '2'){
+                    layer.msg('请核实眼镜是否具有渐变染色', {time: 3000, icon: 7});
+                    return false
+                }
+                //判断渐变染色及颜色
+                if(tint_name.indexOf('渐变染色')!= -1 && ((tint_name.indexOf('灰色')!= -1 && id_light_responsive_color != 'G')||(tint_name.indexOf('茶色')!= -1 && id_light_responsive_color != 'B')||(tint_name.indexOf('绿色')!= -1 && id_light_responsive_color != 'E')||(tint_name.indexOf('粉色')!= -1 && id_light_responsive_color != 'I')||(tint_name.indexOf('黄色')!= -1 && id_light_responsive_color != 'Y'))){
+                    layer.msg('请核实眼镜渐变染色及颜色', {time: 3000, icon: 7});
+                    return false
+                }
+
+                if(id_polarized == '3' && id_light_responsive == '3' && id_tint == '3' && id_is_gradient == '3' && id_light_responsive_color != ''){
+                    layer.msg('请核实眼镜颜色', {time: 3000, icon: 7});
+                    return false
+                }
+                //判断膜层
+                coatings = '{{ form_data.laborder.coatings }}'
+                var id_coatings = $("#id_coatings").val();
+                if(id_coatings == ''){
+                    layer.msg('请选择膜层', {time: 3000, icon: 7});
+                    return false
+                }
+                if(coating_name.indexOf('涂层-SHMC') !=-1 && id_coatings != 'SHMC'){
+                    layer.msg('请核实眼镜膜层', {time: 3000, icon: 7});
+                    return false
+                }else if(coating_name.indexOf('涂层-HMC') !=-1 && id_coatings != 'HMC'){
+                    layer.msg('请核实眼镜膜层', {time: 3000, icon: 7});
+                    return false
+                }else if(coating_name.indexOf('涂层-HC') !=-1 && id_coatings != 'HC'){
+                    layer.msg('请核实眼镜膜层', {time: 3000, icon: 7});
+                    return false
+                }
+
+
+                {#if(id_coatings != 'SHMC' && (coating_name.indexOf('SHMC') != 'None' && coating_name != '')){#}
+                {#    layer.msg('请核实眼镜膜层', {time: 3000, icon: 7});#}
+                {#    return false#}
+                {#}else if(id_coatings != 'HMC' && lab_act_lens_name.indexOf('HMC') != -1 && (coating_name == 'None' || coating_name == '')){#}
+                {#    layer.msg('请核实眼镜膜层', {time: 3000, icon: 7});#}
+                {#    return false#}
+                {#}else if(id_coatings != 'HC' && (lab_act_lens_name.indexOf('HC')!= -1 && lab_act_lens_name.indexOf('M') == -1)){#}
+                {#    layer.msg('请核实眼镜膜层', {time: 3000, icon: 7});#}
+                {#    return false#}
+                {#}#}
+
+                special_handling = '{{ form_data.laborder.special_handling }}'
+                if(special_handling == ''){
+                    var od_tint_deepness = $("#id_od_tint_deepness").val();
+                    var os_tint_deepness = $("#id_os_tint_deepness").val();
+                    if(tint_name.indexOf('实色染色')!= -1){
+                        if(od_tint_deepness == ''){
+                            layer.msg('请输入右片染色深度', {time: 3000, icon: 7});
+                            return false
+                        }
+                        if(os_tint_deepness == ''){
+                            layer.msg('请输入左片染色深度', {time: 3000, icon: 7});
+                            return false
+                        }
+                        od_diff_deepness_value = parseInt(85)-parseInt(od_tint_deepness)
+                        os_diff_deepness_value = parseInt(85)-parseInt(os_tint_deepness)
+                        if(od_diff_deepness_value < -10 || od_diff_deepness_value > 10){
+                                layer.msg('请核实右片染色深度', {time: 3000, icon: 7});
+                                return false
+                        }
+                        if(os_diff_deepness_value < -10 || os_diff_deepness_value > 10){
+                                layer.msg('请核实左片染色深度', {time: 3000, icon: 7});
+                                return false
+                        }
+                    }else if(tint_name.indexOf('渐变染色')!= -1){
+                        if(od_tint_deepness == ''){
+                            layer.msg('请输入右片染色深度', {time: 3000, icon: 7});
+                            return false
+                        }
+                        if(os_tint_deepness == ''){
+                            layer.msg('请输入左片染色深度', {time: 3000, icon: 7});
+                            return false
+                        }
+                        od_diff_deepness_value = parseInt(70)-parseInt(od_tint_deepness)
+                        os_diff_deepness_value = parseInt(70)-parseInt(os_tint_deepness)
+                        if(od_diff_deepness_value < -10 || od_diff_deepness_value > 10){
+                                layer.msg('请核实右片染色深度', {time: 3000, icon: 7});
+                                return false
+                        }
+                        if(os_diff_deepness_value < -10 || os_diff_deepness_value > 10){
+                                layer.msg('请核实左片染色深度', {time: 3000, icon: 7});
+                                return false
+                        }
+                    }else if (tint_name == ''){
+                        if((id_tint == '2' || id_is_gradient == '2')){
+                                layer.msg('请核实染色', {time: 3000, icon: 7});
+                                return false
+                        }
+
+                        if((od_tint_deepness !='' || os_tint_deepness !='') && typeof(od_tint_deepness) != "undefined" && typeof(os_tint_deepness) != "undefined" ){
+                                layer.msg('订单染色为空请核实染色深度', {time: 3000, icon: 7});
+                                return false
+                        }
+                    }
+
+                }else{
+                    var od_tint_deepness = $("#id_od_tint_deepness").val();
+                    var os_tint_deepness = $("#id_os_tint_deepness").val();
+                    if(tint_name.indexOf('实色染色')!= -1){
+                        if(od_tint_deepness == ''){
+                            layer.msg('请输入右片染色深度', {time: 3000, icon: 7});
+                            return false
+                        }
+                        if(os_tint_deepness == ''){
+                            layer.msg('请输入左片染色深度', {time: 3000, icon: 7});
+                            return false
+                        }
+                    }else if(tint_name.indexOf('渐变染色')!= -1){
+                        if(od_tint_deepness == ''){
+                            layer.msg('请输入右片染色深度', {time: 3000, icon: 7});
+                            return false
+                        }
+                        if(os_tint_deepness == ''){
+                            layer.msg('请输入左片染色深度', {time: 3000, icon: 7});
+                            return false
+                        }
+                    }
+                }
+                //判断是否抛光
+                frame_type = '{{ form_data.laborder.frame_type }}'
+                var id_is_polishing = $("#id_is_polishing").val();
+                if(special_handling == ''){
+                    if(frame_type == 'Full Rim' && id_is_polishing == '2'){
+                        layer.msg('请核实是否抛光', {time: 3000, icon: 7});
+                        return false
+                    }else if(frame_type == 'Semi Rimless' && id_is_polishing == '3') {
+                        layer.msg('请核实是否抛光', {time: 3000, icon: 7});
+                        return false
+                    }
+                }
+
+                //判断夹片
+                clipon_qty = '{{ form_data.laborder.clipon_qty }}'
+                var id_clipon_qty = $("#id_clipon_qty").val();
+                if(parseInt(clipon_qty) != parseInt(id_clipon_qty)){
+                        layer.msg('请核实夹片', {time: 3000, icon: 7});
+                        return false
+                }
+                //判断棱镜
+                od_prism = '{{ form_data.laborder.od_prism }}'
+                od_base = '{{ form_data.laborder.od_base }}'
+                od_prism1 = '{{ form_data.laborder.od_prism1 }}'
+                od_base1 = '{{ form_data.laborder.od_base1 }}'
+                os_prism = '{{ form_data.laborder.os_prism }}'
+                os_base = '{{ form_data.laborder.os_base }}'
+                os_prism1 = '{{ form_data.laborder.os_prism1 }}'
+                os_base1 = '{{ form_data.laborder.os_base1 }}'
+                var id_od_prism = $("#id_od_prism").val();
+                var id_od_base = $("#id_od_base").val();
+                var id_od_prism1 = $("#id_od_prism1").val();
+                var id_od_base1 = $("#id_od_base1").val();
+                var id_os_prism = $("#id_os_prism").val();
+                var id_os_base = $("#id_os_base").val();
+                var id_os_prism1 = $("#id_os_prism1").val();
+                var id_os_base1 = $("#id_os_base1").val();
+
+                if (od_base == 'UP'){
+                    od_base_value = 90
+                }else if(od_base == 'DOWN'){
+                    od_base_value = 270
+                }else if(od_base == 'IN'){
+                    od_base_value = 0
+                }else if(od_base == 'OUT'){
+                    od_base_value = 180
+                }
+
+                if (od_base1 == 'UP'){
+                    od_base1_value = 90
+                }else if(od_base1 == 'DOWN'){
+                    od_base1_value = 270
+                }else if(od_base1 == 'IN'){
+                    od_base1_value = 0
+                }else if(od_base1 == 'OUT'){
+                    od_base1_value = 180
+                }
+
+                if (os_base == 'UP'){
+                    os_base_value = 90
+                }else if(os_base == 'DOWN'){
+                    os_base_value = 270
+                }else if(os_base == 'IN'){
+                    os_base_value = 180
+                }else if(os_base == 'OUT'){
+                    os_base_value = 0
+                }
+
+                if (os_base1 == 'UP'){
+                    os_base1_value = 90
+                }else if(os_base1 == 'DOWN'){
+                    os_base1_value = 270
+                }else if(os_base1 == 'IN'){
+                    os_base1_value = 180
+                }else if(os_base == 'OUT'){
+                    os_base1_value = 0
+                }
+
+                if(od_prism == 0.00 && od_prism == '0.00' && id_od_prism != ''){
+                    layer.msg('请核实右眼棱镜', {time: 3000, icon: 7});
+                    return false
+                }
+
+                if(od_prism != 0 && od_prism != 0.00 && od_prism != '0.00' && od_prism != '0' && od_prism != ''){
+                    if (id_od_prism == ''){
+                        layer.msg('请输入右眼棱镜', {time: 3000, icon: 7});
+                        return false
+                    }
+                    od_prism_diff = parseFloat(id_od_prism) * 100 - parseFloat(od_prism) * 100;
+                    if(od_prism_diff < -20 || od_prism_diff > 20){
+                        layer.msg('请核实右眼棱镜', {time: 3000, icon: 7});
+                        return false
+                    }
+                    if($.inArray(od_base, ['UP','DOWN','IN','OUT'])){
+                        if(id_od_base == ''){
+                            layer.msg('请输入右眼方向', {time: 3000, icon: 7});
+                            return false
+                        }
+                        if (parseInt(id_od_base) > 300 && parseInt(od_base_value)==0){
+                            od_base_value = 360
+                        }
+                        od_base_diff = parseInt(id_od_base) - parseInt(od_base_value)
+                        if (od_base_diff < -25 || od_base_diff > 25 ){
+                            layer.msg('请核实右眼方向', {time: 3000, icon: 7});
+                            return false
+                        }
+                    }
+                }else {
+                    if(id_od_base != ''){
+                        layer.msg('请输入右眼方向', {time: 3000, icon: 7});
+                        return false
+                    }
+                }
+
+                if(od_prism1 == 0.00 && od_prism1 == '0.00' && id_od_prism1 != ''){
+                    layer.msg('请核实右眼棱镜2', {time: 3000, icon: 7});
+                    return false
+                }
+
+                if(od_prism1 != 0 && od_prism1 != 0.00 && od_prism1 != '0.00' && od_prism1 != '0' && od_prism1 != ''){
+                    if (id_od_prism1 == ''){
+                        layer.msg('请输入右眼棱镜2', {time: 3000, icon: 7});
+                        return false
+                    }
+                    od_prism1_diff = parseFloat(id_od_prism1) * 100 - parseFloat(od_prism1) * 100;
+                    if(od_prism1_diff < -20 || od_prism1_diff > 20){
+                        layer.msg('请核实右眼棱镜2', {time: 3000, icon: 7});
+                        return false
+                    }
+                     if($.inArray(od_base1, ['UP','DOWN','IN','OUT'])) {
+                        if(id_od_base1 == ''){
+                            layer.msg('请输入右眼方向2', {time: 3000, icon: 7});
+                            return false
+                        }
+                        if (parseInt(id_od_base1) > 300 && parseInt(od_base1_value)==0){
+                            od_base1_value = 360
+                        }
+                         od_base1_diff = parseInt(id_od_base1) - parseInt(od_base1_value)
+                         if (od_base1_diff < -25 || od_base1_diff > 25) {
+                             layer.msg('请核实右眼方向2', {time: 3000, icon: 7});
+                             return false
+                         }
+                     }
+                }else{
+                    if(id_od_base1 != ''){
+                        layer.msg('请输入右眼方向', {time: 3000, icon: 7});
+                        return false
+                    }
+                }
+
+                if(os_prism == 0.00 && os_prism == '0.00' && id_os_prism != ''){
+                    layer.msg('请核实左眼棱镜', {time: 3000, icon: 7});
+                    return false
+                }
+
+                if(os_prism != 0 && os_prism != 0.00 && os_prism != '0.00' && os_prism != '0' && os_prism != ''){
+                    if (id_os_prism == ''){
+                        layer.msg('请输入左眼棱镜', {time: 3000, icon: 7});
+                        return false
+                    }
+                    os_prism_diff = parseFloat(id_os_prism) * 100 - parseFloat(os_prism) * 100;
+                    if(os_prism_diff < -20 || os_prism_diff > 20){
+                        layer.msg('请核实左眼棱镜', {time: 3000, icon: 7});
+                        return false
+                    }
+                    if($.inArray(os_base, ['UP','DOWN','IN','OUT'])){
+                        if(id_os_base == ''){
+                            layer.msg('请输入左眼方向', {time: 3000, icon: 7});
+                            return false
+                        }
+                        if (parseInt(id_os_base) > 300 && parseInt(os_base_value)==0){
+                            os_base_value = 360
+                        }
+                         os_base_diff = parseInt(id_os_base) - parseInt(os_base_value)
+                        if (os_base_diff < -25 || os_base_diff > 25 ){
+                            layer.msg('请核实左眼方向', {time: 3000, icon: 7});
+                            return false
+                        }
+                    }
+                }else{
+                        if(id_os_base != ''){
+                            layer.msg('请输入左眼方向', {time: 3000, icon: 7});
+                            return false
+                        }
+                }
+
+                if(os_prism1 == 0.00 && os_prism1 == '0.00' && id_os_prism1 != ''){
+                    layer.msg('请核实左眼棱镜', {time: 3000, icon: 7});
+                    return false
+                }
+
+                if(os_prism1 != 0 && os_prism1 != 0.00 && os_prism1 != '0.00' && os_prism1 != '0' && os_prism1 != ''){
+                    if (id_os_prism1 == ''){
+                        layer.msg('请输入左眼棱镜2', {time: 3000, icon: 7});
+                        return false
+                    }
+                    os_prism1_diff = parseFloat(id_os_prism1) * 100 - parseFloat(os_prism1) * 100;
+                    if(os_prism1_diff < -20 || os_prism1_diff > 20){
+                        layer.msg('请核实左眼棱镜2', {time: 3000, icon: 7});
+                        return false
+                    }
+                    if($.inArray(os_base1, ['UP','DOWN','IN','OUT'])){
+                        if(id_os_base1 == ''){
+                            layer.msg('请输入左眼方向2', {time: 3000, icon: 7});
+                            return false
+                        }
+                        if (parseInt(id_os_base1) > 300 && parseInt(os_base1_value)==0){
+                            os_base1_value = 360
+                        }
+                        os_base1_diff = parseInt(id_os_base1) - parseInt(os_base1_value)
+                        if (os_base1_diff < -25 || os_base1_diff > 25 ){
+                            layer.msg('请核实左眼方向2', {time: 3000, icon: 7});
+                            return false
+                        }
+                    }
+                }else{
+                        if(id_os_base1 != ''){
+                            layer.msg('请输入左眼方向2', {time: 3000, icon: 7});
+                            return false
+                        }
+                }
+
+                //判断近光区
+                {#var id_is_near_light = $("#id_is_near_light").val();#}
+                {#if((lab_act_lens_name.indexOf('渐进')!= -1 || lab_act_lens_name.indexOf('平顶双光')!= -1)&& id_is_near_light == '3'){#}
+                {#    layer.msg('请核实近光区是否完整', {time: 3000, icon: 7});#}
+                {#    return false#}
+                {#}#}
+
+                var id_is_special_handling = $("#id_is_special_handling").val()
+
+                if(special_handling!='' && id_is_special_handling == '3'){
+                    layer.msg('请核实加工要求', {time: 3000, icon: 7});
+                    return false
+                }
+
+                index = true;
+                var special_handling = "{{ form_data.laborder.special_handling }}";
+                if(special_handling != ''&& special_handling != 'None'&&special_handling != '0'){
+                    var index = confirm("特殊要求:       "+special_handling);
+                }
+                var bischecked=$('#repair').is(':checked');
+                status = '{{ form_data.laborder.status }}'
+                if(status == 'FINAL_INSPECTION_YES' || status == 'FINAL_INSPECTION_NO'){
+                    if(! bischecked){
+                        layer.msg('请选择误判修复', {time: 3000, icon: 7});
+                        return false
+                    }
+                }
+                return index;
+            }else{
+                index = true;
+                var special_handling = "{{ form_data.laborder.special_handling }}";
+                if(special_handling != ''&& special_handling != 'None'&&special_handling != '0'){
+                    var index = confirm("特殊要求:       "+special_handling);
+                }
+                return index;
+            }
+        }
+    </script>
+
+{% endblock %}

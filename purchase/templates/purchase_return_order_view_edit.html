@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+    .pur_plan{display: block;}
+    .order_label{float: left;line-height: 40px;}
+    .form-group .el-input{float: left;width: 200px;height: 40px;}
+    .el-textarea{width: 800px;}
+    .submit_plan{float: right;margin-top: 20px;}
+    .span-left{margin-left: 20px;}
+    </style>
+{% endblock %}
+{% block h1 %}Purchase{% if form_data.total %}<span class="label label-default"></span>
+{% endif %} {% endblock %}
+{% block small %}采购退货{% endblock %}
+{% block content %}
+<div id="app" v-cloak>
+    <div class="row pur_plan">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">采购订单</h3>
+                </div>
+                <div class="box-header">
+                    <el-collapse v-model="activeNames">
+                      <el-collapse-item title="订单信息" name="1">
+                        <template>
+                            <el-row>
+                                <el-col :span="24">
+                                  <div class="form-group">
+                                      <span class="span-left"><label>采购单号:</label>{% verbatim %}{{ order_plan_number }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>创建时间:</label>{% verbatim %}{{ order_create_at }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>供应商:</label>{% verbatim %}{{ order_vendor }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>状态:</label>{% verbatim %}{{ order_status }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>总数量:</label>{% verbatim %}{{ order_total_quantity }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>未清数量:</label>{% verbatim %}{{ order_opening_quantity }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>实收数量:</label>{% verbatim %}{{ order_actual_quantity }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>总金额（元）:</label>{% verbatim %}{{ order_grand_total }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>实付金额（元）:</label>{% verbatim %}{{ order_total_paid }}{% endverbatim %}</span>
+                                  </div>
+                                </el-col>
+                                <el-col :span="24">
+                                  <div class="form-group">
+                                      <span class="span-left"><label>优惠金额（元）:</label>{% verbatim %}{{ order_preferential_amount }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>计划到货日期:</label>{% verbatim %}{{ order_pland_arrival_date }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>付款日期:</label>{% verbatim %}{{ order_pay_date }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>供应商原单号:</label>{% verbatim %}{{ order_vendor_doc_number }}{% endverbatim %}</span>
+                                  </div>
+                                </el-col>
+                                <el-col :span="24">
+                                    <div class="form-group">
+                                        <p class="span-left">说明:{% verbatim %}{{ order_comments }}{% endverbatim %}</p>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-table
+                            :data="plansData"
+                            style="width: 100%">
+                                <el-table-column
+                                  prop="plan_number"
+                                  label="采购单号"
+                                  width="200">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="sku"
+                                  label="SKU"
+                                  width="80">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="quantity"
+                                  label="数量"
+                                  width="120">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="price"
+                                  label="单价/(元)"
+                                  width="120">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="subtotal"
+                                  label="小计/(元)"
+                                  width="80">
+                                </el-table-column>
+                          </el-table>
+                        </template>
+                      </el-collapse-item>
+                      <el-collapse-item title="收货信息" name="2">
+                        <el-row>
+                            <el-col :span="24">
+                              <div class="form-group">
+                                  <span class="span-left"><label>收货单号:</label>{% verbatim %}{{ repect_doc_number }}{% endverbatim %}</span>
+                                  <span class="span-left"><label>收货时间:</label>{% verbatim %}{{ repect_created_at }}{% endverbatim %}</span>
+                                  <span class="span-left"><label>数量:</label>{% verbatim %}{{ repect_quantity }}{% endverbatim %}</span>
+                                  <span class="span-left"><label>总金额:</label>{% verbatim %}{{ repect_grand_total }}{% endverbatim %}</span>
+                                  <span class="span-left"><label>批次:</label>{% verbatim %}{{ repect_batch }}{% endverbatim %}</span>
+                              </div>
+                            </el-col>
+                            <el-col :span="24">
+                                <div class="form-group">
+                                    <p class="span-left">说明:{% verbatim %}{{ repect_comment }}{% endverbatim %}</p>
+                                </div>
+                            </el-col>
+                        </el-row>
+                        <template>
+                          <el-table
+                            :data="repect_plan_items"
+                            style="width: 100%">
+                                <el-table-column
+                                  prop="repect_plan_number"
+                                  label="采购收货单号"
+                                  width="200">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="repect_sku"
+                                  label="SKU"
+                                  width="80">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="repect_quantity"
+                                  label="数量"
+                                  width="120">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="repect_price"
+                                  label="单价"
+                                  width="120">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="repect_subtotal"
+                                  label="小计"
+                                  width="120">
+                                </el-table-column>
+                          </el-table>
+                        </template>
+                      </el-collapse-item>
+                      <el-collapse-item title="退货信息" name="3">
+                        <template>
+                            <el-row>
+                                <el-col :span="24">
+                                  <div class="form-group">
+                                      <span class="span-left"><label>退货单号:</label>{% verbatim %}{{ return_doc_number }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>退货方式:</label>{% verbatim %}{{ return_type }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>状态:</label>{% verbatim %}{{ return_status }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>数量:</label>{% verbatim %}{{ return_total_quantity }}{% endverbatim %}</span>
+                                      <span class="span-left"><label>总金额:</label>{% verbatim %}{{ return_grand_total }}{% endverbatim %}</span>
+                                  </div>
+                                </el-col>
+                                <el-col :span="24">
+                                    <div class="form-group">
+                                        <p class="span-left">说明:{% verbatim %}{{ return_comments }}{% endverbatim %}</p>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                          <el-table
+                            :data="return_plan_items"
+                            style="width: 100%">
+                                <el-table-column
+                                  prop="return_doc_number"
+                                  label="采购退货单号"
+                                  width="200">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="return_sku"
+                                  label="SKU"
+                                  width="80">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="return_quantity"
+                                  label="数量"
+                                  width="120">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="return_price"
+                                  label="单价"
+                                  width="120">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="return_subtotal"
+                                  label="小计"
+                                  width="120">
+                                </el-table-column>
+                          </el-table>
+                        </template>
+                      </el-collapse-item>
+                    </el-collapse>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script src={% static "js/vue.js" %}></script>
+    <script src={% static "js/element.js" %}></script>
+    <!--<script src={% static "js/axios.min.js" %}></script>-->
+    <script src={% static "js/qs.min.js" %}></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                show:false,
+                activeNames: ['1'],
+                order_plan_number:'',
+                order_create_at:'',
+                order_vendor:'',
+                order_status:'',
+                order_total_quantity:0,
+                order_opening_quantity:0,
+                order_actual_quantity:0,
+                order_grand_total:0,
+                order_total_paid:0,
+                order_preferential_amount:0,
+                order_pland_arrival_date:'',
+                order_pay_date:'',
+                order_comments:'',
+                order_vendor_doc_number:'',
+                tableData: [],
+                plansData:[],
+                return_data:[],
+                return_doc_number:"",
+                return_status: "",
+                return_created_at: "",
+                return_type: "",
+                return_total_quantity: "",
+                return_grand_total: "",
+                return_comments: "",
+                return_plan_items:[],
+                receipt_data:[],
+                repect_doc_number:'',
+                repect_created_at:'',
+                repect_quantity:0,
+                repect_grand_total:0,
+                repect_batch:'',
+                repect_comment:'',
+                repect_vendor:'',
+                repect_plan_items:[]
+            },
+            created(){
+
+                this.tableData = [
+                    {% for item in data_list %}
+                        {
+                            plan_number: "{{ item.plan_number  }}",
+                            plan_vendor_num: "{{ item.plan_vendor_num  }}",
+                            plan_created_at:"{{ item.plan_created_at  }}",
+                            plan_status: "{{ item.plan_status  }}",
+                            plan_comments:"{{ item.plan_comments  }}",
+                            plan_vendor_doc_number:"{{ item.plan_vendor_doc_number }}",
+                            plan_arrival_date:"{{ item.plan_arrival_date }}",
+                            plan_grand_total: "{{ item.plan_grand_total }}",
+                            plan_total_paid: "{{ item.plan_total_paid }}",
+                            plan_discount_amount_order: "{{ item.plan_discount_amount_order }}",
+                            plan_total_quantity: "{{ item.plan_total_quantity }}",
+                            plan_actual_quantity: "{{ item.plan_actual_quantity }}",
+                            plan_opening_quantity: "{{ item.plan_opening_quantity }}",
+                            plan_pay_date: "{{ item.plan_pay_date }}",
+                            plan_breach : "{{ item.plan_batch }}",
+                            activities:[
+                                {% for item_ac in item.plan_items %}
+                                    {
+                                        plan_number: "{{ item_ac.plan_number  }}",
+                                        sku: "{{ item_ac.sku  }}",
+                                        price: "{{ item_ac.price }}",
+                                        quantity: "{{ item_ac.quantity  }}",
+                                        subtotal: "{{ item_ac.subtotal  }}",
+                                        item_status: "{{ item_ac.item_status  }}",
+                                        item_id: "{{ item_ac.item_id  }}",
+                                        request_edit_flag:false,
+                                    },
+                                 {% endfor %}
+                            ],
+                        },
+                    {% endfor %}
+                ]
+                this.order_plan_number = this.tableData[0].plan_number;
+                this.order_create_at = this.tableData[0].plan_created_at;
+                this.order_vendor = this.tableData[0].plan_vendor_num;
+                this.order_status = this.tableData[0].plan_status;
+                this.order_total_quantity = this.tableData[0].plan_total_quantity;
+                this.order_actual_quantity = this.tableData[0].plan_actual_quantity;
+                this.order_opening_quantity = this.tableData[0].plan_opening_quantity;
+                this.order_grand_total = this.tableData[0].plan_grand_total;
+                this.order_total_paid = this.tableData[0].plan_total_paid;
+                this.order_preferential_amount = this.tableData[0].plan_discount_amount_order;
+                this.order_pland_arrival_date = this.tableData[0].plan_arrival_date;
+                this.order_pay_date = this.tableData[0].plan_pay_date;
+                this.order_vendor_doc_number = this.tableData[0].plan_vendor_doc_number;
+                this.plansData = this.tableData[0].activities;
+                this.order_comments = this.tableData[0].plan_comments;
+                this.return_data = [
+                    {% for item in return_order_data %}
+                        {
+                            return_doc_number: '{{ item.plan_number}}',
+                            return_status: '{{ item.plan_status }}',
+                            return_created_at: '{{ item.plan_created_at }}',
+                            return_type: '{{ item.plan_return_type }}',
+                            return_total_quantity: '{{ item.plan_total_quantity }}',
+                            return_grand_total: '{{ item.plan_grand_total }}',
+                            return_comments: '{{ item.plan_comments }}',
+                            plan_items:[
+                                    {% for item_ac in item.plan_items %}
+                                        {
+                                            return_doc_number:"{{ item_ac.plan_number }}",
+                                            return_sku:"{{ item_ac.sku }}",
+                                            return_quantity:"{{ item_ac.quantity }}",
+                                            return_price:"{{ item_ac.price }}",
+                                            return_subtotal:"{{ item_ac.subtotal }}",
+                                        },
+                                     {% endfor %}
+                                ]
+                        },
+                    {% endfor %}
+                ]
+                this.return_doc_number = this.return_data[0].return_doc_number,
+                this.return_status = this.return_data[0].return_status,
+                this.return_created_at = this.return_data[0].return_created_at,
+                this.return_type = this.return_data[0].return_type,
+                this.return_total_quantity = this.return_data[0].return_total_quantity,
+                this.return_grand_total = this.return_data[0].return_grand_total,
+                this.return_comments = this.return_data[0].return_comments,
+                this.return_plan_items = this.return_data[0].plan_items
+
+                this.receipt_data = [
+                    {% for item in receipt_order_data %}
+                        {
+                            repect_doc_number:"{{ item.plan_number }}",
+                            repect_quantity:"{{ item.plan_total_quantity }}",
+                            repect_grand_total:"{{ item.plan_grand_total }}",
+                            repect_batch:"{{ item.plan_batch }}",
+                            repect_vendor: "{{ item.plan_vendor_num }}",
+                            repect_comment:"{{ item.plan_comments }}",
+                            repect_created_at:"{{ item.plan_created_at }}",
+                            plan_items:[
+                                    {% for item_ac in item.plan_items %}
+                                        {
+                                            repect_plan_number:"{{ item_ac.plan_number }}",
+                                            repect_sku:"{{ item_ac.sku }}",
+                                            repect_price:"{{ item_ac.price }}",
+                                            repect_quantity:"{{ item_ac.quantity }}",
+                                            repect_subtotal:"{{ item_ac.subtotal }}",
+                                            repect_return_subtotal:"{{ item_ac.subtotal }}",
+                                        },
+                                     {% endfor %}
+                            ]
+                        },
+                    {% endfor %}
+                ]
+                this.repect_doc_number = this.receipt_data[0].repect_doc_number
+                this.repect_created_at = this.receipt_data[0].repect_created_at
+                this.repect_quantity = this.receipt_data[0].repect_quantity
+                this.repect_grand_total = this.receipt_data[0].repect_grand_total
+                this.repect_batch = this.receipt_data[0].repect_batch
+                this.repect_comment = this.receipt_data[0].repect_comment
+                this.repect_vendor = this.receipt_data[0].repect_vendor
+                this.repect_plan_items = this.receipt_data[0].plan_items
+
+            }
+        });
+    </script>
+{% endblock %}

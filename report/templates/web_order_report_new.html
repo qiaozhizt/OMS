@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Report
+
+{% endblock %}
+{% block small %}网单状态统计表(新){% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="cl">
+                <div class="btn-group" id="filters" style="float: left;margin-left: 0px;">
+                    <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                        选择报表周期 <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li class="report" id="report_7d" data="7"><a class="btn">
+                            最近7天</a></li>
+                        <li class="report" id="report_15d" data="15"><a class="btn">
+                            最近15天</a></li>
+                        <li class="report" id="report_31d" data="31"><a class="btn">
+                            最近一个月</a></li>
+                    </ul>
+                </div>
+
+                {% if perms.purchase.SLOD_EXPORT %}
+                    <div style="float: left;margin-left: 5px;" id="onssk">
+                        <a class="btn btn-block btn-default" id="onk" target='view_window'>导出
+                            CSV</a>
+                    </div>
+                {% endif %}
+            </div>
+            <!-- /.box-body -->
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 5px">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">网单状态统计表</h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <!--Table-->
+                    <div id="tableContent">
+                        <!--Table-->
+                        <table class="table table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th><input id="chk_all" type="checkbox"></th>
+                                <th>报表日期</th>
+                                <th>网单</th>
+                                <th>未派单</th>
+                                <th>网单眼镜总量</th>
+                                <th>成镜单</th>
+                                <th>镜片收货</th>
+                                <th>成镜收货</th>
+                                <th>已拣配</th>
+                                <th>工厂预发货比率</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tb_report">
+                                {% for item in data_list %}
+                                    <tr>
+                                        <td><input name="chk_items" type="checkbox"></td>
+                                        <td>{{ item.report_day }}</td>
+                                        <td>{{ item.web_order }}</td>
+                                        <td>{{ item.undisposed }}</td>
+                                        <td>{{ item.web_glasses_qty }}</td>
+                                        <td>{{ item.lad_order }}</td>
+                                        <td>{{ item.lens_receive }}</td>
+                                        <td>{{ item.glasses_recive }}</td>
+                                        <td>{{ item.picking }}</td>
+                                        <td>{{ item.picking_pct }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!--Table end-->
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+
+        </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $(document).ready(function () {
+            document.getElementById('chk_all').onclick = function () {
+                var checkOnes = document.getElementsByName("chk_items");
+                if (this.checked == true) {
+                    for (var i = 0; i < checkOnes.length; i++) {
+                        checkOnes[i].checked = true;
+                    }
+                } else {
+                    for (var i = 0; i < checkOnes.length; i++) {
+                        checkOnes[i].checked = false;
+                    }
+                }
+            };
+
+            $(".report").click(function () {
+                var filter_day = $(this).attr("data");
+                var url = "{% url 'web_order_report_v3' %}";
+                window.location.href = url +"?filter_day="+filter_day
+            });
+            // Genearte_report_v2
+            {#let re_ins = new Genearte_report_v2('/report/redirect_web_order_report_v2/');#}
+            {#$('#report_7d').click(function () {#}
+            {#    re_ins.run(7);#}
+            {#});#}
+            {#$('#report_15d').click(function () {#}
+            {#    re_ins.run(15);#}
+            {#});#}
+            {#$('#report_31d').click(function () {#}
+            {#    re_ins.run(31);#}
+            {#});#}
+
+
+        });
+
+
+        // 逐条查询
+        function Genearte_report_v2(url) {
+            this.m_url = url;
+            this.m_layer = layer;
+            this.m_count = 1;
+            this.m_is_finish = true;
+            this.m_content_box = $("#tb_report");
+            this.m_hold_mgs = $('<tr><td colspan="10" style="text-align:center">正在生成报表, 请稍后 ....</td></tr>');
+        }
+        Genearte_report_v2.prototype.run = function (pa_filter = 7) {
+            let _self = this;
+            if (_self.m_is_finish) {
+                _self.m_is_finish = false;
+                _self.m_count = pa_filter;
+                _self.m_content_box.html(_self.m_hold_mgs.show());
+                _self.get_report_line();
+                _self.m_layer.load(1);
+            } else {
+                _self.m_layer.msg('查询未完成 请稍后');
+            }
+        };
+        Genearte_report_v2.prototype.get_report_line = function () {
+            let _self = this;
+            $.ajax({
+                url: _self.m_url,
+                type: 'POST',
+                data: {filter: _self.m_count},
+                success: function (result) {
+                    try {
+                        json_data = JSON.parse(result);
+                        for (var i = 0; i < json_data.json_body.length; i++) {
+                            item = json_data.json_body[i];
+                            var line = '<tr>';
+                            line += '<td><input name="chk_items" type="checkbox"></td>';
+                            line += '<td>' + item.report_day + '</td>';
+                            line += '<td>' + item.web_order + '</td>';
+                            line += '<td>' + item.undisposed + '</td>'
+                            line += '<td>' + item.web_glasses_qty + '</td>';
+                            line += '<td>' + item.lad_order + '</td>';
+                            line += '<td>' + item.lens_receive + '</td>';
+                            line += '<td>' + item.glasses_recive + '</td>';
+                            line += '<td>' + item.picking + '</td>';
+                            line += '<td>' + item.picking_pct + '</td>';
+                            line += '</tr>';
+                        }
+                        _self.m_content_box.prepend($(line));
+
+                    } catch (err) {
+                        alert(err);
+                    }
+
+                    _self.m_count = _self.m_count - 1;
+                    if (_self.m_count > 0) {
+                        _self.get_report_line(); // 递归的方法去查询
+                    } else {
+                        _self.m_layer.closeAll();
+                        _self.m_hold_mgs.hide();
+                        _self.m_is_finish = true;
+                    }
+                },
+                error: function () {
+                    _self.m_layer.closeAll();
+                    _self.msg('生成失败 请稍后重试');
+                }
+            })
+        };
+
+        var oDiv = document.getElementById("onk");
+        oDiv.addEventListener("click", function () {
+            layer.msg('此功能尚未完成');
+        });
+    </script>
+{% endblock %}

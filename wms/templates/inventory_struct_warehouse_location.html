@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Inventory{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}货位管理{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header">
+
+                    <div style="float: left;">{% include 'search.html' %}</div>
+
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+                        <button class="btn btn-default btn dropdown-toggle btn-flat"
+                                type="button"
+                                data-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false">
+                            Filter <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href={{ requestUrl }}?filter=all>
+                                {% ifequal filter 'all' %}
+                                    *{% endifequal %}All</a></li>
+                            <li>&nbsp</li>
+
+                            {% for wh in form_data.warehouse_list %}
+                                <li><a href={{ requestUrl }}?filter={{ wh.code }}>
+                                    {% ifequal filter wh.code %}*{% endifequal %}
+                                    {{ wh.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;display:none">
+                        <button id="btn_delivery_shipped" name="btn_order_matched_shipped" type="button"
+                                class="btn btn-default btn active btn-flat">发货完成
+                        </button>
+                    </div>
+
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-solid">
+                <div class="box-body">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <th>#</th>
+                        <th>SKU</th>
+                        <th>数量</th>
+                        <th>代码</th>
+                        <th>仓库</th>
+                        <th>货位</th>
+                        <th>在售状态</th>
+                        <th>Action</th>
+                        </thead>
+                        <tbody>
+                        {% for item in list %}
+                            <tr>
+                                <td>{{ item.id }}</td>
+                                <td>{{ item.sku }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.warehouse_code }}</td>
+                                <td>{{ item.warehouse_name }}</td>
+                                <td>{{ item.location }}</td>
+                                <td>{{ item.get_status }}</td>
+                                <td>
+                                    <input type="button" class="btn-primary handle_application " value="更新" sku="{{ item.sku }}"
+                                           location="{{ item.location }}"
+                                           item_id = "{{ item.id }}">
+                                </td>
+                            </tr>
+                            <!-- ./col -->
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+            <div id="callBackPager" style="text-align: center;width: 100%">
+            {% include 'page_number.html' %}
+        </div>
+    </div>
+    <!-- /.row -->
+
+    <!--paginator-->
+{#    <div style="width: 100%;text-align: center;">#}
+{#        <ul class="pagination" id="pager">#}
+            {#上一页按钮开始#}
+            {#如果当前页有上一页#}
+{#            {% if list.has_previous %}#}
+                {#当前页的上一页按钮正常使用#}
+{#                <li class="previous"><a#}
+{#                        href="{{ requestUrl }}?page={{ list.previous_page_number }}{% if is_dr %}&flatrate=#}
+{#                            {{ flatrate }}{% else %}&filter={{ filter }}{% endif %}">previous</a>#}
+{#                </li>#}
+{#            {% else %}#}
+                {#当前页的不存在上一页时,上一页的按钮不可用#}
+{#                <li class="previous disabled"><a href="#">previous</a></li>#}
+{#            {% endif %}#}
+            {#上一页按钮结束#}
+            {#页码开始#}
+{#            {% for num in paginator.page_range %}#}
+{##}
+{#                {% if num == currentPage %}#}
+{#                    <li class="item active"><a#}
+{#                            href="{{ requestUrl }}?page={{ num }}{% if is_dr %}&flatrate=#}
+{#                                {{ flatrate }}{% else %}&filter={{ filter }}{% endif %}">{{ num }}</a>#}
+{#                    </li>#}
+{#                {% else %}#}
+{#                    <li class="item"><a#}
+{#                            href="{{ requestUrl }}?page={{ num }}{% if is_dr %}&flatrate=#}
+{#                                {{ flatrate }}{% else %}&filter={{ filter }}{% endif %}">{{ num }}</a>#}
+{#                    </li>#}
+{##}
+{#                {% endif %}#}
+{#            {% endfor %}#}
+            {#页码结束#}
+            {#下一页按钮开始#}
+{#            {% if list.has_next %}#}
+{#                <li class="next"><a#}
+{#                        href="{{ requestUrl }}?page={{ list.next_page_number }}{% if is_dr %}&flatrate=#}
+{#                            {{ flatrate }}{% else %}&filter={{ filter }}{% endif %}">next</a>#}
+{#                </li>#}
+{#            {% else %}#}
+{#                <li class="next disabled"><a href="#">next</a></li>#}
+{#            {% endif %}#}
+            {#下一页按钮结束#}
+{#        </ul>#}
+{#    </div>#}
+    <div id="handle_div" style="display: none;" class="text-center">
+        <p>更新内容</p>
+        <textarea rows="3" cols="40" name="message" id="reply_text"></textarea>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        // 更新按钮
+        $(".handle_application").click(function () {
+            var item_id = $(this).attr("item_id");
+            var url = "{% url 'update_cargo_location' %}"
+            var btn = ['确认', '关闭']
+            var index = layer.open({
+                type: 1,
+                shade: false,
+                title: '更新货位', //不显示标题
+                content: $('#handle_div'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+                area: ['400px', '280px'],//弹窗框的长宽
+                btn: btn,
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不会更新', {time: 5000});
+                },
+                yes: function () {
+                    var reply_text = $("#reply_text").val();
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: {
+                            'item_id': item_id,
+                            'reply_text': reply_text,
+                        },
+                        success: function (arg) {
+                            layer.close(index);
+                            var obj = JSON.parse(arg);
+                            if (obj.code == 0) {
+                                layer.msg(obj.msg, {time: 5000, icon: 6});
+                                location.reload();
+                            } else {
+                                layer.msg(obj.msg, {time: 10000, icon: 5});
+                            }
+
+                        },
+                        error: function () {
+                            layer.close(index);
+                            layer.msg("遇到错误", {time: 10000, icon: 5});
+                        }
+                    });
+                }
+            });
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+            url = "{% url 'wms_inventory_struct_warehouse_location' %}";
+            if (sku == '' || sku == null) {
+                layer.msg('Please enter a sku', {time: 3000, icon: 7});
+            } else {
+                location.href = url + '?sku=' + sku;
+            }
+        });
+
+        //全选/不选
+        document.getElementById('chk_all').onclick = function () {
+            // 获取所有的复选框
+            var checkElements = document.getElementsByName('chk_items');
+            if (this.checked) {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = "checked";
+                }
+            } else {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = null;
+                }
+            }
+        };
+    </script>
+{% endblock %}

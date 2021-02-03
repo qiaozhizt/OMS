@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Pg Comments {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}All Comments{% endblock %}
+{% block content %}
+    <!-- Content Wrapper. Contains page content -->
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="callout callout-default">
+            <h4>Tips!</h4>
+
+            <p>This is only beta version.</p>
+        </div>
+
+        <div class="row">
+
+
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">Actions</h3>
+                    </div>
+                    <div class="box-body">
+
+                        <div style="float: left;">{% include 'search.html' %}</div>
+
+                        <div class="btn-group" id="filters" style="float: left;margin-left: 10px;display:none">
+                            <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                Filter <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a href={{ requestUrl }}?filter=new&status={{ status }}&vendor={{ vendor }}>
+                                    {% ifequal filter 'new' %}
+                                        *{% endifequal %}New</a></li>
+
+                                <li><a href={{ requestUrl }}?filter=week&status={{ status }}&vendor={{ vendor }}>
+                                    {% ifequal filter 'week' %}
+                                        *{% endifequal %}
+                                    Assigned Me</a></li>
+                                <li><a href={{ requestUrl }}?filter=month&status={{ status }}&vendor={{ vendor }}>
+                                    {% ifequal filter 'month' %}*{% endifequal %}
+                                    My Report</a></li>
+                                <li>&nbsp</li>
+                                <li><a href={{ requestUrl }}?filter=all&status={{ status }}&vendor={{ vendor }}>
+                                    {% ifequal filter 'all' %}
+                                        *{% endifequal %}
+                                    All</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="btn-group" id="filters" style="float: left;margin-left: 5px;display:none">
+                            <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                Status <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a href={{ requestUrl }}?status=all&filter={{ filter }}&vendor={{ vendor }}>
+                                    {% ifequal status 'all' %}
+                                        *{% endifequal %}All</a></li>
+                                <li>&nbsp</li>
+
+                                {% for sta in status_choices %}
+                                    <li>
+                                        <a href={{ requestUrl }}?status={{ sta.key }}&filter={{ filter }}&vendor={{ vendor }}>
+                                            {% ifequal status sta.key %}*{% endifequal %}
+                                            {{ sta.value }}</a></li>
+                                {% endfor %}
+
+                            </ul>
+                        </div>
+
+                        <div class="cl">
+                            <div style="float: left;margin-right: 0px;display:none">
+                                <button id="backPrev" type="button" class="btn btn-default btn active" role="button"
+                                        onClick="javascript :history.back(-1);">Back
+                                </button>
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.oms.ACT_REVIEW %}
+                                    <div style="float: left;">
+                                        <a class="btn btn-block btn-default"
+                                           href={% url 'comments_create' %}>Create New Comment</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title">Comments List</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <!--Table-->
+                        <div id="tableContent">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Biz Type</th>
+                                    <th>Biz ID(s)</th>
+                                    <th>Comments</th>
+                                    <th>Status</th>
+                                    <th>Assign</th>
+                                    <th>Reporter</th>
+                                    <th>Created At</th>
+                                    <th>Updated At</th>
+                                    <th>Reviewed</th>
+                                    <th>Actions</th>
+
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for item in list %}
+                                    <tr>
+                                        <td>
+                                            <a name="comment_view"
+                                               href="javascript:void(0)"
+                                               entity="{{ item.id }}">
+                                                {{ item.id }}</a>
+                                        </td>
+                                        <td>{{ item.get_biz_type_display }}</td>
+                                        <td>
+                                            <a href="{% url 'bizs' %}?biz_type={{ item.biz_type }}&biz_id={{ item.biz_id }}">{{ item.biz_id }}</a>
+                                        </td>
+                                        <td>{{ item.comments }}</td>
+                                        <td>{{ item.get_status_display }}</td>
+                                        <td>{{ item.assign_name }}</td>
+                                        <td>{{ item.user_name }}</td>
+                                        <td>{{ item.created_at }}</td>
+                                        <td>{{ item.updated_at }}</td>
+                                        <td>{{ item.reviewed }}</td>
+                                        <td class=""><!--btn btn-box-tool-->
+                                            <a name="comment_view"
+                                               href="javascript:void(0)"
+                                               entity="{{ item.id }}">
+                                                View</a>
+                                        </td>
+                                    </tr>
+                                    <tr style="display:none">
+                                        <td colspan="12">
+                                            <div name="details">
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <!--Table end-->
+
+                        <!--paginator-->
+                        <div style="width: 100%;text-align: center;">
+                            <ul class="pagination" id="pager">
+                                {#上一页按钮开始#}
+                                {#如果当前页有上一页#}
+                                {% if list.has_previous %}
+                                    {#当前页的上一页按钮正常使用#}
+                                    <li class="previous"><a
+                                            href="{{ requestUrl }}?page={{ list.previous_page_number }}&filter={{ filter }}&status={{ status }}">previous</a>
+                                    </li>
+                                {% else %}
+                                    {#当前页的不存在上一页时,上一页的按钮不可用#}
+                                    <li class="previous disabled"><a href="#">previous</a></li>
+                                {% endif %}
+                                {#上一页按钮结束#}
+                                {#页码开始#}
+                                {% for num in paginator.page_range %}
+
+                                    {% if num == currentPage %}
+                                        <li class="item active"><a
+                                                href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&status={{ status }}">{{ num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="item"><a
+                                                href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&status={{ status }}">{{ num }}</a>
+                                        </li>
+
+                                    {% endif %}
+                                {% endfor %}
+                                {#页码结束#}
+                                {#下一页按钮开始#}
+                                {% if list.has_next %}
+                                    <li class="next"><a
+                                            href="{{ requestUrl }}?page={{ list.next_page_number }}&filter={{ filter }}&status={{ status }}">next</a>
+                                    </li>
+                                {% else %}
+                                    <li class="next disabled"><a href="#">next</a></li>
+                                {% endif %}
+                                {#下一页按钮结束#}
+                            </ul>
+                        </div>
+                        <!--paginator end-->
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+
+            </div>
+        </div>
+    </section>
+    <!-- /.content -->
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = '/comment/all/?biz_id=' + order_number;
+            }
+        });
+
+        $("a[name='comment_view']").each(function () {
+            $(this).bind("click", function () {
+                if ($(this).parents("tr").next().css('display') != 'none') {
+                    $(this).parents("tr").next().toggle(200);
+                    return true;
+                }
+
+                var index = layer.load(2); //换了种风格
+
+                var _html = [];
+                var item_content = this;
+
+                var entity = $(this).attr('entity');
+                $.ajax({
+                    url: '/comment/details/?entity=' + entity,
+                    type: 'get',
+                    data: {
+                        "entity": entity
+                    },
+                    success: function (arg) {
+                        _html.push(arg);
+                        $(item_content).parents("tr").next().find("td").find("div[name='details']").html(_html.join(''));
+                        layer.close(index);
+                    },
+                    error: function (arg) {
+                        layer.closeAll();
+                    }
+                });
+                //$(this).parents("tr").next().find("td").html(_html);
+                $(this).parents("tr").next().toggle(1000);
+            });
+        });
+
+        $(document).on("click.comments-reviewed-each", ".comments-reviewed-each", function () {
+            var index = layer.load(2); //换了种风格
+
+            var _html = [];
+            var item_content = this;
+
+            var entity = $(this).attr('entity');
+            var comments = $("#id_comments").val();
+            var assign = $("#id_assign").val();
+
+            $.ajax({
+                url: '/comment/details/?entity=' + entity,
+                type: 'post',
+                data: {
+                    "entity": entity,
+                    "id_comments": comments,
+                    "id_assign": assign,
+                },
+                success: function (arg) {
+                    _html.push(arg);
+
+                    layer.close(index);
+                    $("#id_comments").val('');
+                },
+                error: function (arg) {
+                    layer.closeAll();
+                }
+            });
+            //$(this).parents("tr").next().find("td").html(_html);
+        });
+
+        $(document).on("click.comments-close-each", ".comments-close-each", function () {
+            var index = layer.load(2); //换了种风格
+
+            var _html = [];
+            var item_content = this;
+
+            var entity = $(this).attr('entity');
+            var comments = $("#id_comments").val();
+            var assign = $("#id_assign").val();
+
+            $.ajax({
+                url: '/comment/close/?entity=' + entity,
+                type: 'post',
+                data: {
+                    "entity": entity,
+                    "id_comments": comments,
+                    "id_assign": assign,
+                },
+                success: function (arg) {
+                    layer.close(index);
+                    alert('Comments has been closed.');
+                    window.location.reload();
+                },
+                error: function (arg) {
+                    layer.closeAll();
+                    window.location.reload();
+                }
+            });
+            //$(this).parents("tr").next().find("td").html(_html);
+        })
+
+    </script>
+
+{% endblock %}

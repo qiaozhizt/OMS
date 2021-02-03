@@ -1,0 +1,471 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .table_p_b{
+        table-layout: fixed;/*首行统一宽度*/
+    }
+    .table_p_b,.table_p_b tr,.table_p_b tr th, .table_p_b tr td{
+        border: 1px solid #000;
+        text-align: center;
+    }
+    .first_th{
+        width: 10px;
+    }
+    .second_th{
+        width: 30px;
+    }
+    .third_th{
+        width: 150px;
+    }
+    </style>
+{% endblock %}
+{% block h1 %}Shipments {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}装箱扫描{% endblock %}
+{% block content %}
+    {% include "error_message.html" %}
+    <div class="col-xs-12">
+        <div class="box box-default">
+            <div class="box-body">
+
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="box box-solid">
+                                    <div class="box-header with-border">
+                                        <i class="fa fa-text-width"></i>
+                                        <h3 class="box-title">已扫描</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                        <h1 class="headline text-red">{{ resp.obj.scaned_count }}</h1>
+                                    </div>
+                                    <!-- /.box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="box box-solid">
+                                    <div class="box-header with-border">
+                                        <i class="fa fa-text-width"></i>
+                                        <h3 class="box-title">当前BAG数量</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                        <h2 class="headline text-red"><span
+                                                id="spn_bag_cur">{{ resp.obj.bag_cur }}</span></h2>
+                                    </div>
+                                    <!-- /.box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="box box-solid">
+                                    <div class="box-header with-border">
+                                        <i class="fa fa-text-width"></i>
+                                        <h3 class="box-title">BAG号</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                        <h2 class="headline text-red"><span id="spn_bag_id">{{ resp.obj.bag_id }}</span>
+                                        </h2>
+                                    </div>
+                                    <!-- /.box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="box box-solid">
+                                    <div class="box-header with-border">
+                                        <i class="fa fa-text-width"></i>
+                                        <h3 class="box-title">总BAG数</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                        <h2 class="headline text-red"><span
+                                                id="spn_bag_count">{{ resp.obj.bag_count }}</span>
+                                            <div id="div_create_new_bag" style="float: left;margin-left: 5px;">
+                                                <button id="btn_create_bag_1" name="btn_create_bag_1" type="button"
+                                                        class="btn btn-primary btn btn-flat">新BAG
+                                                </button>
+                                            </div>
+                                        </h2>
+
+
+                                    </div>
+                                    <!-- /.box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="box box-solid">
+                                    <div class="box-header with-border">
+                                        <i class="fa fa-text-width"></i>
+                                        <h3 class="box-title">总眼镜数</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                        <h2 class="headline text-info">{{ resp.obj.glasses_count }}</h2>
+                                    </div>
+                                    <!-- /.box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="box box-solid">
+                                    <div class="box-header with-border">
+                                        <i class="fa fa-text-width"></i>
+                                        <h3 class="box-title">订单数</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                        <h2 class="headline text-info">{{ resp.obj.order_count }}</h2>
+                                    </div>
+                                    <!-- /.box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+
+                        </div>
+                        <div class="row">
+
+
+                            <div class="col-md-4">
+                                <div class="box box-solid">
+                                    <div class="box-header with-border">
+                                        <i class="fa fa-text-width"></i>
+                                        <h3 class="box-title">工厂订单号</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                        <h2 class="headline text-warning">{{ resp.obj.lab_number }}</h2>
+                                    </div>
+                                    <!-- /.box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="box box-solid">
+                                    <div class="box-header with-border">
+                                        <i class="fa fa-text-width"></i>
+                                        <h3 class="box-title">眼镜SKU</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                        <h2 class="headline text-warning">{{ resp.obj.frame }}</h2>
+                                    </div>
+                                    <!-- /.box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="box box-solid">
+                                    <div class="box-header with-border">
+                                        <i class="fa fa-text-width"></i>
+                                        <h3 class="box-title">BOX ID</h3>
+                                    </div>
+                                    <!-- /.box-header -->
+                                    <div class="box-body">
+                                        <h2 class="headline text-primary">{{ resp.obj.box_id }}</h2>
+                                    </div>
+                                    <!-- /.box-body -->
+                                </div>
+                                <!-- /.box -->
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <div style="float: left;">{% include 'search.html' %}</div>
+
+                <div id="div_create_new_bag" style="float: left;margin-left: 5px;"
+                     {% ifnotequal resp.obj.need_new_bag 1 %}class="hidden" {% endifnotequal %}>
+                    <button id="btn_create_bag" name="btn_create_bag" type="button"
+                            class="btn btn-danger btn btn-flat">打开一个新的BAG
+                    </button>
+
+                    <span id="blink"><----现在点击开始创建新的BAG ....</span>
+                </div>
+                <!--Search-->
+                <!--Search end-->
+
+                <!--Table-->
+                <div id="tableContent">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>BOX ID</th>
+                            <th>BAG ID</th>
+                            <th>订单号</th>
+                            <th>工厂订单</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in list %}
+                            <tr>
+                                <td>
+                                    {{ item.id }}
+                                </td>
+                                <td>
+                                    {{ item.box_id }}
+                                </td>
+                                <td>
+                                    {{ item.bag_id }}
+                                </td>
+                                <td>
+                                    {{ item.order_number }}
+                                </td>
+                                <td>
+                                    {{ item.lab_number }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!--Table end-->
+                <!--paginator-->
+                <div style="width: 100%;text-align: center;">
+                    <ul class="pagination" id="pager">
+                        {#上一页按钮开始#}
+                        {#如果当前页有上一页#}
+                        {% if list.has_previous %}
+                            {#当前页的上一页按钮正常使用#}
+                            <li class="previous"><a
+                                    href="{{ requestUrl }}?page={{ list.previous_page_number }}&filter={{ filter }}">previous</a>
+                            </li>
+                        {% else %}
+                            {#当前页的不存在上一页时,上一页的按钮不可用#}
+                            <li class="previous disabled"><a href="#">previous</a></li>
+                        {% endif %}
+                        {#上一页按钮结束#}
+                        {#页码开始#}
+                        {% for num in paginator.page_range %}
+
+                            {% if num == currentPage %}
+                                <li class="item active"><a
+                                        href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="item"><a
+                                        href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a>
+                                </li>
+
+                            {% endif %}
+                        {% endfor %}
+                        {#页码结束#}
+                        {#下一页按钮开始#}
+                        {% if list.has_next %}
+                            <li class="next"><a
+                                    href="{{ requestUrl }}?page={{ list.next_page_number }}&filter={{ filter }}">next</a>
+                            </li>
+                        {% else %}
+                            <li class="next disabled"><a href="#">next</a></li>
+                        {% endif %}
+                        {#下一页按钮结束#}
+                    </ul>
+                </div>
+                <!--paginator end-->
+                <!-- 模态框（Modal） -->
+                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" style="width:80%;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                    &times;
+                                </button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    合并发货
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <div style="position: relative;width: 100%;height: 80px; overflow: auto;">
+                                    <div style="float: left; width: 50%;">
+                                        <table class="cell-border table_p_b">
+                                            <thead>
+                                                <tr>
+                                                    <th class="first_th">box_id</th>
+                                                    <th class="second_th">order_number</th>
+                                                    <th class="third_th">lab_number</th>
+                                                    <th class="second_th">lab_status</th>
+                                                    <th class="second_th">vendor</th>
+                                                    <th class="second_th">combined_number</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="pick_html">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div style="float: right; width:50%;">
+                                        <table class="cell-border table_p_b">
+                                            <thead>
+                                                <tr>
+                                                    <th class="first_th">box_id</th>
+                                                    <th class="second_th">order_number</th>
+                                                    <th class="third_th">lab_number</th>
+                                                    <th class="second_th">lab_status</th>
+                                                    <th class="second_th">vendor</th>
+                                                    <th class="second_th">combined_number</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="box_html">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                                </button>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal -->
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        {% if response_message.code == 0 %}
+            box_html = ""
+            pick_html = ""
+            data_str = "{{ response_message.obj.flag }}"
+            {% for item in response_message.obj.combined_list %}
+                {% if item.lab_status == "BOXING" %}
+                    box_html = box_html + "<tr><td>{{ item.box_id }}</td><td>{{ item.order_number }}</td><td>{{ item.lab_number }}</td><td>{{ item.lab_status }}</td><td>{{ item.vendor }}</td><td>{{ item.combined_number }}</td></tr>"
+                {% else %}
+                    pick_html = pick_html + "<tr><td>{{ item.box_id }}</td><td>{{ item.order_number }}</td><td>{{ item.lab_number }}</td><td>{{ item.lab_status }}</td><td>{{ item.vendor }}</td><td>{{ item.combined_number }}</td></tr>"
+                {% endif %}
+            {% endfor %}
+            $(".pick_html").empty();
+            $(".pick_html").append(pick_html)
+            $(".box_html").empty();
+            $(".box_html").append(box_html)
+            if(data_str == "true"){
+                $('#myModal').modal('show');
+            }else{
+                $('#myModal').modal('hide');
+            }
+        {% else %}
+            $('#myModal').modal('hide');
+        {% endif %}
+        $(function() {
+            $(document).keypress(function (e) {
+                if (e.keyCode == "32") {
+                    $('#myModal').modal('hide');
+                }else if(e.keyCode == "97"){
+                    $('#myModal').modal('show');
+                }
+            })
+        })
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            var url = "{{ requestUrl }}";
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                url += setParam("lab_order_entity", order_number);
+                location.href = url;
+            }
+        });
+
+        //设置url中参数值
+        function setParam(param, value) {
+            var query = location.search.substring(1);
+            var p = new RegExp("(^|)" + param + "=([^&]*)(|$)");
+            if (p.test(query)) {
+                var firstParam = query.split(param)[0];
+                var secondParam = query.split(param)[1];
+                if (secondParam.indexOf("&") > -1) {
+                    var lastPraam = secondParam.substring(secondParam.indexOf('&') + 1);
+                    return '?' + firstParam + param + '=' + value + '&' + lastPraam;
+                } else {
+                    if (firstParam) {
+                        return '?' + firstParam + param + '=' + value;
+                    } else {
+                        return '?' + param + '=' + value;
+                    }
+                }
+            } else {
+                if (query == '') {
+                    return '?' + param + '=' + value;
+                } else {
+                    return '?' + query + '&' + param + '=' + value;
+                }
+            }
+        }
+
+        function changeColor() {
+            var color = "#f00|#0f0|#00f|#880|#808|#088|yellow|green|blue|gray";
+            color = color.split("|");
+            document.getElementById("blink").style.color = color[parseInt(Math.random() * color.length)];
+        }
+
+        setInterval("changeColor()", 200);
+
+        $("#btn_create_bag_1").click(function () {
+            create_bag('');
+        });
+
+        $("#btn_create_bag").click(function () {
+            create_bag('');
+        });
+
+        function create_bag(box_id) {
+            box_id = '';
+
+            var index = layer.load();
+            $.ajax({
+                url: '{% url "glasses_boxing_create_bag" %}',
+                type: 'post',
+                data: {
+                    box_id: "{{ resp.obj.gb_id }}",
+                },
+                success: function (arg) {
+                    layer.close(index);
+                    var obj = JSON.parse(arg);
+
+                    if (obj.code == 0) {
+                        layer.msg('成功创建了一个新的BAG.', {time: 2000, icon: 6}, function () {
+                            var spn_bag_id = $('#spn_bag_id');
+                            spn_bag_id.html(obj.obj.gbb_id);
+                            var spn_bag_cur = $('#spn_bag_cur');
+                            spn_bag_cur.html(0);
+                            var div_create_new_bag = document.getElementById("div_create_new_bag");
+                            //var div_create_new_bag = $('#div_create_new_bag');
+                            div_create_new_bag.style.display = "none";
+                            var ctrl = document.getElementById("number");
+                            ctrl.focus();
+                            // window.location.reload();
+                        });
+                    } else {
+                        alert(obj.message);
+                    }
+                }
+            })
+        }
+    </script>
+{% endblock %}

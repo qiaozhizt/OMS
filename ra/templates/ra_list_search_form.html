@@ -1,0 +1,114 @@
+<div class="col-xs-12">
+    <div class="box-body">
+        <form role="form" class="form-inline box" id="ra_search" method="GET" style="padding:5px;margin-bottom: 0px;">
+            <div class="form-group">
+                <div class="btn-group" id="ra_state" style="float: left;">
+                    <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                        State <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% for state in form_data.states %}
+                            <li>
+                                <a class="dropdown-item state_item"
+                                   data="{{ state.key }}" href="#">
+                                    {% ifequal state.key req.state %}*{% endifequal %}
+                                    {{ state.value }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input readonly type="text" name="state" class="form-control hidden" id="state"
+                       value="{{ req.state }}"
+                       placeholder="" style="width:150px;"/>
+            </div>
+
+        <div class="form-group">
+                <div class="btn-group" id="ra_status" style="float: left;">
+                    <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                        Status <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        {% for status in form_data.statuses %}
+                            <li>
+                                <a class="dropdown-item status_item"
+                                   data="{{ status.key }}" href="#">
+                                    {% ifequal status.key req.status %}*{% endifequal %}
+                                    {{ status.value }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input readonly type="text" name="status" class="form-control hidden" id="status"
+                       value="{{ req.status }}"
+                       placeholder="" style="width:150px;"/>
+            </div>
+
+
+            <div class="form-group">
+                <div class="btn-group" id="ra_type_group" style="float: left;">
+                    <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                        RA Type <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a id="ra_type_cpn" class="dropdown-item" href="#" data="CPN">{% ifequal 'CPN' req.ra_type %}*{% endifequal %}CPN - Return Coupon</a></li>
+                        <li><a id="ra_type_rfd" class="dropdown-item" href="#" data="RFD">{% ifequal 'RFD' req.ra_type %}*{% endifequal %}RFD - Return Refund</a></li>
+                        <li><a id="ra_type_ins" class="dropdown-item" href="#" data="INS">{% ifequal 'INS' req.ra_type %}*{% endifequal %}INS - Inspection</a></li>
+                        <li><a id="ra_type_dmg" class="dropdown-item" href="#" data="DMG">{% ifequal 'DMG' req.ra_type %}*{% endifequal %}DMG - Damaged</a></li>
+                        <li><a id="ra_type_rfw" class="dropdown-item" href="#" data="RFW">{% ifequal 'RFW' req.ra_type %}*{% endifequal %}RFW - Risk Free Warranty</a></li>
+                        <li><a id="ra_type_rmk" class="dropdown-item" href="#" data="RMK">{% ifequal 'RMK' req.ra_type %}*{% endifequal %}RMK - Internal Remake</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="form-group">
+                <input readonly type="text" name="txt_order_entity" class="form-control hidden"
+                       id="txt_order_entity" value="{{ obj.id }}"
+                       placeholder="" style="width:150px;"/>
+            </div>
+            <div class="form-group">
+                <input readonly type="text" name="ra_type" class="form-control hidden"
+                       id="ra_type"
+                       placeholder="RA Type" style="width:150px;"/>
+            </div>
+            <div class="form-group">
+                <input readonly type="text" name="txt_ra_type" class="form-control" id="txt_ra_type"
+                       value="{{ req.txt_ra_type }}"
+                       placeholder="RA Type" style="width:150px;"/>
+            </div>
+            <div class="form-group">
+                <input type="text" name="startDate" class="form-control hidden" id="startDate"
+                       placeholder="From" value="{{ req.startDate }}"
+                       readonly="readonly"/>
+            </div>
+            <div class="form-group">
+                <input type="text" name="endDate" class="form-control hidden" id="endDate"
+                       value="{{ req.endDate }}"
+                       placeholder="To"
+                       readonly="readonly"/>
+            </div>
+            <div class="form-group">
+                <input type="text" name="order_number" class="form-control" id="order_number"
+                       value="{{ req.order_number }}"
+                       placeholder="Order Number"/>
+            </div>
+
+            <div class="form-group">
+                <input type="text" name="customer_name" class="form-control" id="customer_name"
+                       value="{{ req.customer_name }}"
+                       placeholder="Customer Name"/>
+            </div>
+            <button id="btnSearch" type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,2504 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .cl:after {
+            display: block;
+            clear: both;
+            content: "";
+        }
+
+        .cl {
+            zoom: 1
+        }
+
+        .trDetail div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .trDetail span {
+            margin-right: 10px;
+        }
+
+        .divDetail {
+            display: inline-block;
+            text-align: center !important;
+            width: 100%;
+            background: #fff;
+            margin-bottom: -1px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .positionBox {
+            display: inline-block;
+        }
+
+        .divDetail hr {
+            width: 100%;
+            border: 1px dashed #000;
+        }
+
+        tbody .ondetail {
+            cursor: pointer;
+        }
+
+        .pgorderdetail span {
+            margin-left: 20px;
+        }
+
+        div.order-imags > div {
+            padding: 15px
+        }
+
+        div.item-each-addcomments > div {
+            padding: 15px
+        }
+    </style>
+{% endblock %}
+{% block h1 %}PgOrder{% endblock %}
+{% block small %}ALL PG Orders{% endblock %}
+{% block content %}
+    <div class="blockContent" id="blockContent">
+        <!--Actions-->
+        <div class="cl">
+            {%  if not is_remake %}
+            <div style="float: left;margin-right:10px;">
+                <a class="btn btn-block btn-danger " href={% url 'pg_order_reorder' %}?order_number={{ order_number }}
+                target='view_window'>Reorder</a>
+            </div>
+            {%  endif %}
+
+
+            <div style="float: left;margin-right: 3px">
+                <button id="backPrev" type="button" class="btn btn-default bt " role="button"
+                        onClick="javascript :history.back(-1);">Back
+                </button>
+            </div>
+
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'holded' or form.status.value == 'canceled' or form.is_inlab.value == True or form.status_control.value == 'REVIEWED' or form.status_control.value == 'APPROVED' %}
+                    {% if perms.oms.ACT_REVIEW %}
+                        <button id="btnReview" type="button" class="btn btn-default btn " disabled="disabled"
+                                order_number={{ order_number }}>Review
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if perms.oms.ACT_REVIEW %}
+                        <button id="btnReview" type="button" class="btn btn-default btn "
+                                order_number={{ order_number }}>Review
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status_control.value == 'REVIEWED' %}
+                    {% if perms.oms.ACT_CANCEL_REVIEW %}
+                        <button id="btnCancelReview" type="button" class="btn btn-default btn "
+                                order_number={{ order_number }}>Cancel Review
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'holded' or form.status.value == 'canceled' or form.is_inlab.value == True or form.status_control.value == 'APPROVED' %}
+                    {% if perms.oms.ACT_APPROVE %}
+                        <button id="btnApprove" type="button" class="btn btn-default btn " disabled="disabled"
+                                order_number={{ order_number }}>Approve
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if perms.oms.ACT_APPROVE %}
+                        <button id="btnApprove" type="button" class="btn btn-default btn "
+                                order_number={{ order_number }}>Approve
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'holded' or form.status.value == 'canceled' or form.is_inlab.value == True %}
+                    {% if perms.oms.ACT_GLO %}
+                        <button id="btnLab" type="button" class="btn btn-default btn " disabled="disabled"
+                                order_number={{ order_number }}>Generate Lab Orders
+                        </button>
+                    {% endif %}
+                {% else %}
+                    {% if perms.oms.ACT_GLO %}
+                        {% if form.status.value == 'fraud' %}
+                            <button id="btnLabIfc" type="button" class="btn btn-danger btn "
+                                    order_number={{ order_number }}>Gen LBO Ignore Fraud Check
+                            </button>
+                        {% else %}
+                            <button id="btnLab" type="button" class="btn btn-default btn "
+                                    order_number={{ order_number }}>Generate Lab Orders
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'canceled' %}
+                    <button tag='holded' content="Hold" type="button" class="btn btn-default btn  status"
+                            disabled="disabled" order_number={{ order_number }}>Hold
+                    </button>
+                {% else %}
+                    {% if form.status.value == 'holded' %}
+                        <button tag='unhold' content="Unhold" type="button" class="btn btn-default btn  status"
+                                order_number={{ order_number }}>Unhold
+                        </button>
+                    {% else %}
+                        <button tag='holded' content="Hold" type="button" class="btn btn-default btn  status"
+                                order_number={{ order_number }}>Hold
+                        </button>
+                    {% endif %}
+                {% endif %}
+
+                {% if form.status.value != 'canceled' and form.status.value != 'holded' and form.status.value != 'r2hold' and form.status.value != 'delivered' %}
+                    <!-- 按钮触发模态框 -->
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#HoldModal"
+                            data-whatever="R2Hold" data-entity="{{ base_entity }}">R2Hold
+                    </button>
+
+                    <div class="modal fade" id="HoldModal" tabindex="-1" role="dialog"
+                         aria-labelledby="HoldModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h3 class="modal-title" id="HoldModalLabel"></h3>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form>
+                                        <input type="hidden" id="action"/>
+                                        <input type="hidden" id="entity_id"/>
+                                        <span style="font-size:20px;">{{ order_number }} R2HOLD</span>
+                                        <div class="form-group">
+                                            <label for="message-text" class="col-form-label">Ticket Number:</label>
+                                            <textarea class="form-control" id="ticket_numbers" rows="2"
+                                                      style="min-width: 90%"></textarea>
+                                            <label for="message-text" class="col-form-label">Reason:</label>
+                                            <textarea class="form-control" id="reason" rows="10"
+                                                      style="min-width: 90%"></textarea>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close
+                                    </button>
+                                    <button type="button" class="btn btn-primary" id="hold_btn">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                {% endif %}
+
+            </div>
+            <div style="float: left;margin-left: 5px;">
+                {% if form.status.value == 'canceled' %}
+                    <button tag="canceled" content="Cancel" type="button" class="btn btn-default btn "
+                            disabled="disabled" order_number={{ order_number }}>Cancel
+                    </button>
+                {% else %}
+                    <button tag="canceled" content="Cancel" type="button" class="btn btn-default btn  status_v3"
+                            order_number={{ order_number }}>Cancel
+                    </button>
+                {% endif %}
+            </div>
+            {#        Set In Lab button #}
+            <div style="float: left;margin-left: 5px;">
+                <button id="SetInLab" order_number="{{ form.order_number.value }}" type="button"
+                        class="btn btn-default btn ">Set In Lab
+                </button>
+            </div>
+
+            <!--priority-->
+            <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+                <button class="btn
+                    {% ifequal priority 5 %}btn-default{% endifequal %}
+                    {% ifequal priority 4 %}btn-primary{% endifequal %}
+                    {% ifequal priority 3 %}btn-success{% endifequal %}
+                    {% ifequal priority 2 %}btn-warning{% endifequal %}
+                    {% ifequal priority 1 %}btn-danger{% endifequal %}
+                    btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                   Priority[{{ priority }}] <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li style=""><a name="btn_priority" index=1 order_number="{{ order_number }}"
+                            href="#">
+                        {% ifequal priority 1 %}
+                            *{% endifequal %}1.2-Day Delivery</a></li>
+                    <li style=""><a name="btn_priority" index=2 order_number="{{ order_number }}"
+                            href="#">
+                        {% ifequal priority 2 %}
+                            *{% endifequal %}2.Express</a></li>
+                    <li style=""><a name="btn_priority" index=3 order_number="{{ order_number }}"
+                            href="#">
+                        {% ifequal priority 3 %}
+                            *{% endifequal %}3.Priority</a></li>
+                    <li style=""><a name="btn_priority" index=4 order_number="{{ order_number }}"
+                            href="#">
+                        {% ifequal priority 4 %}
+                            *{% endifequal %}4.Standard</a></li>
+                    <li style=""><a name="btn_priority" index=5 order_number="{{ order_number }}"
+                            href="#">
+                        {% ifequal priority 5 %}
+                            *{% endifequal %}5.Time Consuming</a></li>
+                </ul>
+            </div>
+
+            {#        push date button #}
+            {% if perms.oms.ACT_PUSH_DATE %}
+                <div style="float: left;margin-left: 5px;">
+                    <button id="pushDate" estimated_date="{{ form.estimated_ship_date.value|date:"m/d/Y" }}"
+                            targeted_date="{{ form.targeted_ship_date.value|date:"m/d/Y" }}"
+                            promised_date="{{ form.promised_ship_date.value |date:"m/d/Y" }}" type="button"
+                            class="btn btn-default btn ">Push Date
+                    </button>
+                </div>
+            {% endif %}
+            {#        shipping#}
+            <div style="float: left;margin-left: 5px;">
+                <button id="shipping" order_number="{{ order_number }}" type="button"
+                        class="btn btn-default btn " {% if form.is_shiped_api.value %}disabled{% endif %}>Push
+                    Address
+                </button>
+            </div>
+            {#     add comments   #}
+            <div style="float: left;margin-left: 5px;">
+                <button id="add_comment" order_number="{{ form.order_number.value }}" type="button"
+                        class="btn btn-default btn ">Edit Comment
+                </button>
+            </div>
+            {#     send comment  #}
+            {% if perms.oms.OTRC_VIEW %}
+                <div style="float: left;margin-left: 5px;">
+                    <a id="send_comment" type="button" class="btn btn-default btn "
+                       href="/oms/send_message?p={{ form.order_number.value }}">Send Comment</a>
+                </div>
+            {% endif %}
+{#            {% if perms.oms.PG_REORDER %}#}
+{#                <div style="float: left;margin-left: 5px;">#}
+{#                    < button id="reorder" order_number="{{ form.order_number.value }}" type="button"#}
+{#                            class="btn btn-default btn "#}
+{#                            { % if form.is_inlab.value == False %}disabled="disabled"{% endif %}>ReOrder#}
+{#                    </button>#}
+{#                </div>#}
+{#            {% endif %}#}
+            {# add by ranhy 2019-07-31  #}
+            <div style="float: left;margin-left: 5px;">
+                <button id="send_invoice" order_number="{{ form.order_number.value }}" type="button"
+                        class="btn btn-default btn ">Send Invoice
+                </button>
+                {% if form.has_warranty.value %}
+                    <button id="cancel_warranty" entity_id="{{ base_entity }}" type="button"
+                            class="btn btn-default btn" data-toggle="modal" data-target="#CancelWarrantyModal">Cancel
+                        Warranty
+                    </button>
+                {% endif %}
+                <div class="modal fade" id="CancelWarrantyModal" tabindex="-1" role="dialog"
+                     aria-labelledby="CancelWarrantyModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title" id="CancelWarrantyModalLabel">Cancel Warranty</h3>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <input type="hidden" id="action"/>
+                                    <input type="hidden" id="cancle_warranty_entity_id" value="{{ base_entity }}"/>
+                                    <span style="font-size:20px;">{{ base_entity }} Cancel Warranty</span>
+                                    <div class="form-group">
+                                        <label for="message-text" class="col-form-label">Reason:</label>
+                                        <textarea class="form-control" id="cancle_warranty_reason" rows="10"
+                                                  style="min-width: 90%"></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close
+                                </button>
+                                <button type="button" class="btn btn-primary" id="cancle_warranty_btn">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="float: left;margin-left: 5px;">
+                <button type="button" class="btn btn-default btn " data-entity="{{ base_entity }}" order_number="{{ form.order_number.value }}" id="hold_to_processing">To Processing
+                </button>
+            </div>
+        </div>
+
+        <!--PgOrder Form-->
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">PgOrder Detail</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <div class="col-md-3">
+                            <div class="box-body">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.order_number.label }}</td>
+                                        <td>{{ form.order_number.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.order_datetime.label }}</td>
+                                        <td>{{ form.order_datetime.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.status.label }}</td>
+                                        <td>{{ form.status.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.priority.label }}</td>
+                                        <td>{{ form.priority.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.tag.label }}</td>
+                                        <td>{{ form.tag.value }}</td>
+                                    </tr>
+                                    </tr>
+                                    <tr>
+                                        {% if form.coupon_code.value %}
+                                            <td style="font-weight:bold;">{{ form.coupon_code.label }}</td>
+                                            <td>{{ form.coupon_code.value }}</td>
+                                        {% endif %}
+                                    </tr>
+                                    <tr>
+                                        {% if form.is_inst.value == True %}
+                                            <td style="font-weight:bold;">{{ form.is_inst.label }}</td>
+                                            <td>{{ form.is_inst }}</td>
+                                        {% endif %}
+                                    </tr>
+                                    <tr>
+                                        {% if form.is_inst.value == True %}
+                                            <td style="font-weight:bold;">{{ form.instruction.label }}</td>
+                                            <td style="color:red">{{ form.instruction.value }}</td>
+                                        {% endif %}
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="box-body">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.estimated_ship_date.label }}</td>
+                                        <td>{{ form.estimated_ship_date.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.final_date.label }}</td>
+                                        <td>{{ form.final_date.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.targeted_ship_date.label }}</td>
+                                        <td>{{ form.targeted_ship_date.value }}</td>
+                                    </tr>
+                                    <tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.promised_ship_date.label }}</td>
+                                        <td>{{ form.promised_ship_date.value }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="box-body">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.shipping_method.label }}</td>
+                                        <td> {{ form.ship_direction }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.email.label }}</td>
+                                        <td>{{ form.email.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.phone.label }}</td>
+                                        <td>{{ form.phone.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.relation_email.label }}</td>
+                                        <td>{{ form.relation_email.value }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.relation_phone.label }}</td>
+                                        <td>{{ form.relation_phone.value }}</td>
+                                    </tr>
+                                    <tr>
+                                    <tr>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="box-body">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <td style="font-weight:bold;">Order History</td>
+                                        <td>
+                                            {% for oh in order_history %}
+                                                <a href="{% url 'pgorder_detail_v3' %}?number={{ oh.order_number }}"
+                                                   target="_blank">
+                                                    {{ oh.order_number }}</a>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">ReOrder Number</td>
+                                        <td>
+                                            {% for rl in reorder_list %}
+                                                <a href="{% url 'pgorder_detail_v3' %}?number={{ rl }}"
+                                                   target="_blank">{{ rl }}</a>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">Original Number</td>
+                                        <td>
+                                             <a href="{% url 'pgorder_detail_v3' %}?number={{ origin_order_number }}"
+                                                   target="_blank">{{ origin_order_number }}</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">Shipping Method</td>
+                                        <td>
+                                            {% if form.shipping_method.value == 'standard_standard' %}
+                                                Standard
+                                            {% elif  form.shipping_method.value == 'express_express' %}
+                                                Express
+                                            {% elif  form.shipping_method.value == 'canada_express_canada_express' %}
+                                                CA_Express
+                                            {% elif  form.shipping_method.value == 'flatrate_flatrate' %}
+                                                Flatrate
+                                            {% else %}
+                                                {{ form.shipping_method.value }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:bold;">Warranty</td>
+                                        <td>
+                                        <div id="div_warranty">
+                                            <span> Obtaining Warranty info ....</span>
+{#                                            {% if invoice_status == 'PAID' %}#}
+{#                                                {% if form.has_warranty.value or form.warranty.value %}#}
+{#                                                    <font style="color:red"> Risk Free#}
+{#                                                        Warranty（${{ form.warranty.value|floatformat:"2" }}）</font>#}
+{#                                                {% elif invoice_type == 'warranty' %}#}
+{#                                                    <font style="color:red"> Risk Free Warranty（${{ warranty }}）</font>#}
+{#                                                {% else %}#}
+{#                                                    Standard Warranty (#}
+{#                                                    <font style="color: red"> Upgrade needs ${{ warranty }}</font>)#}
+{#                                                {% endif %}#}
+{#                                            {% else %}#}
+{#                                                {% if form.has_warranty.value or form.warranty.value %}#}
+{#                                                    <font style="color:red"> Risk Free#}
+{#                                                        Warranty（${{ form.warranty.value|floatformat:"2" }}）</font>#}
+{#                                                {% else %}#}
+{#                                                    Standard Warranty (#}
+{#                                                    <font style="color: red"> Upgrade needs ${{ warranty }}</font>)#}
+{#                                                {% endif %}#}
+{#                                            {% endif %}#}
+                                        </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="box-body">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                    <tr>
+                                        <td style="font-weight:bold;">{{ form.comments.label }}</td>
+                                        <td>
+                                            <div id="comments_pgorder" style="width: auto;word-wrap:break-word;">
+                                                <textarea name="comments" rows="5" cols="100"
+                                                          id="id_comments">{{ form.comments.value }}</textarea></div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!--PgOrder Items-->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget collapsed-box" id="activity_toggle">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">PgOrder Items</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-plus" id="scan_toggle"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+
+                    <div class="box-body">
+                        <div class="layui-collapse" lay-filter="test">
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title" style="font-weight: bold;">RX</h2>
+                                <div class="layui-colla-content layui-show">
+                                    <form class="form-horizontal" METHOD="post" action="/oms/pgOrderItemUpdate/">
+                                        {% csrf_token %}
+                                        {{ formsets.management_form }}
+                                        <input type="hidden" value={{ order_number }} name="order_number">
+                                        <input type="hidden" value={{ base_entity }} id="base_entity">
+                                        <table class='table table-striped'>
+                                            <thead>
+                                            <tr>
+                                                <th>Attribute Set Name</th>
+                                                <th class='hid'>VIP</th>
+                                                <th>WEBSITE ITEM ID</th>
+                                                {#<th>TAG</th>#}
+                                                <th>FRAME</th>
+                                                <th>QUANTITY</th>
+                                                <th>LENS SKU</th>
+                                                <th class='hid'>LENS NAME</th>
+                                                <th class="hid">Lab Status</th>
+                                                <th class='hid'>INSTRUCTION</th>
+                                                <th class='hid'>COMMENTS</th>
+                                                <th class='hid'>COMMENTS INNER</th>
+                                                <th>SO TYPE</th>
+                                                <th>ACTIONS</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for formset in formsets.forms %}
+                                                <tr>
+                                                    <td>{{ formset.attribute_set_name.value }}</td>
+                                                    <td class='hid'>{{ formset.vip.value }}</td>
+                                                    <td class=""><!--btn btn-box-tool-->
+                                                        <a name="poi_view"
+                                                           href="javascript:void(0)"
+                                                           order_number="{{ form.order_number.value }}"
+                                                           item_id="{{ formset.item_id.value }}" product_index="{{ formset.product_index.value }}">
+                                                            {{ formset.item_id.value }}</a>
+                                                    </td>
+                                                    {#                                    <td>{{ formset.tag.value }}</td>#}
+                                                    <td>{{ formset.frame.value }}</td>
+                                                    <td align="center">{{ formset.quantity.value }}</td>
+                                                    <td>{{ formset.lens_sku.value }}</td>
+                                                    <td class='hid {% if 'Lined Bifocal' in formset.lens_name.value %}
+                                                                            text-danger
+                                                                        {% endif %}
+                                                    '>{{ formset.lens_name.value }}
+                                                    </td>
+                                                    <td class='hid'>{{ formset.lab_status }}</td>
+                                                    <td class='hid'>{% if formset.instruction.value != '' %}
+                                                        <span style="color: red">{{ formset.instruction.value }}</span>
+                                                    {% else %}
+                                                        <span>{{ formset.instruction.value }}</span>
+                                                    {% endif %}
+                                                    </td>
+                                                    <td class='hid'
+                                                        id="item_{{ formset.item_id.value }}_cmt_p">{{ formset.comments.value }}</td>
+                                                    <td class='hid'>{{ formset.comments_inner.value }}</td>
+                                                    <td class='hid'>{{ formset.so_type.value }}</td>
+                                                    <td>
+                                                        <a name="poi_view"
+                                                           href="javascript:void(0)"
+                                                           order_number="{{ form.order_number.value }}"
+                                                           item_id="{{ formset.item_id.value }}" product_index="{{ formset.product_index.value }}">
+                                                            View</a>
+                                                        &nbsp;&nbsp;<a name="poi_edit" href="javascript:void(0)"
+                                                                       style="display:none">Edit</a>
+                                                    </td>
+                                                </tr>
+                                                <tr style="display:none">
+                                                    <td colspan="10">
+                                                        <div name="item">
+
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+
+                                            </tbody>
+                                        </table>
+
+                                        <!-- /.box-body -->
+                                        <div class="box-footer">
+                                            <button type="submit" class="btn btn-default btn pull-right"
+                                                    style="display:none">Save Items
+                                            </button>
+                                        </div>
+                                        <!-- /.box-footer -->
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="layui-colla-item">
+                                <h2 class="layui-colla-title" style="font-weight: bold;">nRX</h2>
+                                <div class="layui-colla-content layui-show">
+                                    <form class="form-horizontal" METHOD="post" action="/oms/pgOrderItemUpdate/">
+                                        {% csrf_token %}
+                                        {{ formsets.management_form }}
+                                        <input type="hidden" value={{ order_number }} name="order_number">
+                                        <input type="hidden" value={{ base_entity }} id="base_entity">
+                                        <table class='table table-striped'>
+                                            <thead>
+                                            <tr>
+                                                <th>Attribute Set Name</th>
+                                                <th class='hid'>VIP</th>
+                                                <th>WEBSITE ITEM ID</th>
+                                                <th>Inner SKU</th>
+                                                <th>QUANTITY</th>
+                                                <th>Inner NAME</th>
+                                                <th>Inner COMMENTS</th>
+                                                <th>Lab Status</th>
+                                                <th>SO TYPE</th>
+                                                <th>ACTIONS</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {% for formset in formsets_nrx.forms %}
+                                                <tr>
+                                                    <td>{{ formset.attribute_set_name.value }}</td>
+                                                    <td class='hid'>{{ formset.vip.value }}</td>
+                                                    <td class=""><!--btn btn-box-tool-->
+                                                        <a name="accs_view"
+                                                           href="javascript:void(0)"
+                                                           order_number="{{ form.order_number.value }}"
+                                                           item_id="{{ formset.item_id.value }}" product_index="{{ formset.product_index.value }}">
+                                                            {{ formset.item_id.value }}</a>
+                                                    </td>
+                                                    <td>{{ formset.frame.value }}</td>
+                                                    <td align="center">{{ formset.quantity.value }}</td>
+                                                    <td class='hid {% if 'Lined Bifocal' in formset.lens_name.value %}
+                                                                            text-danger
+                                                                        {% endif %}
+                                                    '>{{ formset.lens_name.value }}
+                                                    </td>
+                                                    <td class='hid'>{{ formset.comments_inner.value }}</td>
+                                                    <td class='hid'>{{ formset.lab_status.value }}</td>
+                                                    <td class='hid'>{{ formset.so_type.value }}</td>
+                                                    <td>
+                                                        <a name="accs_view"
+                                                           href="javascript:void(0)"
+                                                           order_number="{{ form.order_number.value }}"
+                                                           item_id="{{ formset.item_id.value }}" product_index="{{ formset.product_index.value }}">
+                                                            View</a>
+                                                        &nbsp;&nbsp;<a name="poi_edit" href="javascript:void(0)"
+                                                                       style="display:none">Edit</a>
+                                                    </td>
+                                                </tr>
+                                                <tr style="display:none">
+                                                    <td colspan="10">
+                                                        <div name="item">
+
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+
+                                            </tbody>
+                                        </table>
+
+                                        <!-- /.box-body -->
+                                        <div class="box-footer">
+                                            <button type="submit" class="btn btn-default btn pull-right"
+                                                    style="display:none">Save Items
+                                            </button>
+                                        </div>
+                                        <!-- /.box-footer -->
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!--PgOrder Items-->
+        {#        <div class="row">#}
+        {#            <div class="col-md-12">#}
+        {#                <!-- Box Comment -->#}
+        {#                <div class="box box-widget collapsed-box">#}
+        {##}
+        {#                    <div class="box-header with-border">#}
+        {#                        <div class="user-block">#}
+        {#                            <span class="username"><a href="#">PgOrder Items</a></span>#}
+        {#                        </div>#}
+        {#                        <!-- /.user-block -->#}
+        {#                        <div class="box-tools">#}
+        {#                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">#}
+        {#                                <i class="fa fa-circle-o"></i></button>#}
+        {#                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i#}
+        {#                                    class="fa fa-plus"></i>#}
+        {#                            </button>#}
+        {#                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i#}
+        {#                                    class="fa fa-times"></i>#}
+        {#                            </button>#}
+        {#                        </div>#}
+        {#                        <!-- /.box-tools -->#}
+        {#                    </div>#}
+        {#                    <!-- /.box-header -->#}
+        {#                    <form class="form-horizontal" METHOD="post" action="/oms/pgOrderItemUpdate/">#}
+        {#                        {% csrf_token %}#}
+        {#                        {{ formsets.management_form }}#}
+        {#                        <input type="hidden" value={{ order_number }} name="order_number">#}
+        {#                         <input type="hidden" value={{ base_entity }} id="base_entity">#}
+        {#                        <table class='table table-striped'>#}
+        {#                            <thead>#}
+        {#                            <tr>#}
+        {#                                <th class='hid'>VIP</th>#}
+        {#                                <th>WEBSITE ITEM ID</th>#}
+        {#                                <th>TAG</th>#}
+        {#                                <th>FRAME</th>#}
+        {#                                <th>QUANTITY</th>#}
+        {#                                <th>LENS SKU</th>#}
+        {#                                <th class='hid'>LENS NAME</th>#}
+        {#                                <th class='hid'>INSTRUCTION</th>#}
+        {#                                <th class='hid'>COMMENTS</th>#}
+        {#                                <th class='hid'>COMMENTS INNER</th>#}
+        {#                                <th>ACTIONS</th>#}
+        {#                            </tr>#}
+        {#                            </thead>#}
+        {#                            <tbody>#}
+        {#                            {% for formset in formsets.forms %}#}
+        {#                                <tr>#}
+        {#                                    <td class='hid'>{{ formset.vip.value }}</td>#}
+        {#                                    <td class=""><!--btn btn-box-tool-->#}
+        {#                                        <a name="poi_view"#}
+        {#                                           href="javascript:void(0)"#}
+        {#                                           order_number="{{ form.order_number.value }}"#}
+        {#                                           item_id="{{ formset.item_id.value }}">#}
+        {#                                            {{ formset.item_id.value }}</a>#}
+        {#                                    </td>#}
+        {#                                    <td>{{ formset.tag.value }}</td>#}
+        {#                                    <td>{{ formset.frame.value }}</td>#}
+        {#                                    <td align="center">{{ formset.quantity.value }}</td>#}
+        {#                                    <td>{{ formset.lens_sku.value }}</td>#}
+        {#                                    <td class='hid {% if 'Lined Bifocal' in formset.lens_name.value  %}#}
+        {#                                                                text-danger#}
+        {#                                                            {% endif %}#}
+        {#                                        '>{{ formset.lens_name.value }}#}
+        {#                                    </td>#}
+        {#                                    <td class='hid'>{% if formset.instruction.value != '' %}#}
+        {#                                                            <span style="color: red">{{ formset.instruction.value }}</span>#}
+        {#                                                    {% else %}#}
+        {#                                                            <span>{{ formset.instruction.value }}</span>#}
+        {#                                                    {% endif %}#}
+        {#                                    </td>#}
+        {#                                    <td class='hid'#}
+        {#                                        id="item_{{ formset.item_id.value }}_cmt_p">{{ formset.comments.value }}</td>#}
+        {#                                    <td class='hid'>{{ formset.comments_inner.value }}</td>#}
+        {#                                    <td>#}
+        {#                                        <a name="poi_view"#}
+        {#                                           href="javascript:void(0)"#}
+        {#                                           order_number="{{ form.order_number.value }}"#}
+        {#                                           item_id="{{ formset.item_id.value }}">#}
+        {#                                            View</a>#}
+        {#                                        &nbsp;&nbsp;<a name="poi_edit" href="javascript:void(0)"#}
+        {#                                                       style="display:none">Edit</a>#}
+        {#                                    </td>#}
+        {#                                </tr>#}
+        {#                                <tr style="display:none">#}
+        {#                                    <td colspan="10">#}
+        {#                                        <div name="item">#}
+        {##}
+        {#                                        </div>#}
+        {#                                    </td>#}
+        {#                                </tr>#}
+        {#                            {% endfor %}#}
+        {##}
+        {#                            </tbody>#}
+        {#                        </table>#}
+        {##}
+        {#                        <!-- /.box-body -->#}
+        {#                        <div class="box-footer">#}
+        {#                            <button type="submit" class="btn btn-default btn pull-right" style="display:none">Save Items#}
+        {#                            </button>#}
+        {#                        </div>#}
+        {#                        <!-- /.box-footer -->#}
+        {#                    </form>#}
+        {#                </div>#}
+        {#                <!-- /.box-body -->#}
+        {#                <!-- /.box-footer -->#}
+        {#            </div>#}
+        {#            <!-- /.box -->#}
+        {#        </div>#}
+        {#        <div id="callBackPager" style="text-align: center;width: 100%"></div>#}
+                <div id="comments" style="display: none; margin:10px 10px;">
+                    <textarea class="form-control" rows="6" id="remarks" style="resize:none;"></textarea>
+                </div>
+
+        <!--Activities-->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget collapsed-box" id="activity_toggle_2">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">Order Activities</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-plus" id="scan_toggle"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+
+                    <div class="box-body" id="tableActivity">
+
+
+                    </div>
+                    <!-- /.box-body -->
+
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!--INVOICE-->
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget collapsed-box" id="activity_toggle_3">
+
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username"><a href="#">Invoice Detail</a></span>
+                        </div>
+                        <!-- /.user-block -->
+                        <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+                                <i class="fa fa-circle-o"></i></button>
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-plus" id="scan_toggle"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <!-- /.box-tools -->
+                    </div>
+                    <!-- /.box-header -->
+
+                    <div class="box-body" id="tableActivity">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Order Number</th>
+                                <th>Status</th>
+                                <th>Invoice Type</th>
+                                <th>Invoice Imount</th>
+                                <th>Ticket No</th>
+                                <th>Invoice Id</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in pg_order_inv %}
+                                <tr>
+                                    <td>{{ item.order_number }}</td>
+                                    <td>{{ item.status }}</td>
+                                    <td>{{ item.inv_type }}</td>
+                                    <td>{{ item.inv_amount }}</td>
+                                    <td>{{ item.ticket_no }}</td>
+                                    <td>{{ item.invoice_id }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Comments</td>
+                                    <td colspan="5">{{ item.comments }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- /.box-body -->
+
+                </div>
+                <!-- /.box-body -->
+                <!-- /.box-footer -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div id="cancel_reason_box" style="display:none">
+        <div style="padding:20px 20px 0;width:100%">
+            <p style="width:100%"><b>注意:&nbsp;&nbsp;所有对应【工厂订单】将被【暂停】</b></p>
+            <textarea style="resize:none;width:100%;min-height:100px" maxlength="128"
+                      placeholder="请填写取消PG订单原因......"></textarea>
+        </div>
+    </div>
+    {% if perms.oms.PG_REORDER %}
+        <div id="re_order" style="padding-top:10px;display:none">
+            <div class="col-md-12 column">
+                <table class="table" style="margin-bottom:0px">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>item id</th>
+                        <th>frame</th>
+                        <th>comments</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for formset in formsets.forms %}
+                        <tr>
+                            <td><input type="checkbox" name="is_redo_{{ formset.item_id.value }}"
+                                       data-item_id="{{ formset.item_id.value }}"></td>
+                            <td>{{ formset.item_id.value }}</td>
+                            <td>{{ formset.frame.value }}</td>
+                            <td id="item_{{ formset.item_id.value }}_cmt_h">{{ formset.comments.value }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    <div id="div_send_invoice" style="padding-top:10px;display:none">
+        <div class="col-md-12 column">
+            <table class="table" style="margin-bottom:0px" id="tbInvoice">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Days Until Due</th>
+                    <th colspan="2"><input type="text" name="days_until_due" id="days_until_due" value="3"></th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Ticket Number</th>
+                    <th colspan="2"><input type="text" name="ticket_number" id="ticket_number" value=""></th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Invoice Type</th>
+                    <th colspan="2">
+                        <select id="invoice_type">
+                            <option selected value="">----</option>
+                            <option value="warranty">warranty</option>
+                            <option value="other">other</option>
+                        </select>
+                    </th>
+                </tr>
+                <tr>
+                    <th><a href="#" id="btnAddRow">+</a></th>
+                    <th>Unit Amount</th>
+                    <th>Quantity</th>
+                    <th>Invoice Item Description</th>
+                </tr>
+                </thead>
+                <tbody id="tbInvoiceBody">
+                <tr>
+                    <td><a href="#" name="btnRemoveRow">-</a></td>
+                    <td><input type="text" name="unit_amount[]" onkeyup="clearNoNum(this)" value=""></td>
+                    <td><input type="text" name="quantity[]" onkeyup="clearNoNum(this)" value=""></td>
+                    <td><input type="text" name="invoice_item_description[]" value=""></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="shippingtime" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            <input class="form-control" type="date" value="{{ form.targeted_ship_date.value |date:"Y-m-d" }}"
+                   name="shiptime" id="shiptime">
+        </div>
+    </div>
+{% endblock %}
+
+{% block jquery %}
+    <script src="{% static 'layui/layui.js' %}"></script>
+    <script>
+        layui.use(['element', 'layer'], function () {
+            var element = layui.element;
+            var layer = layui.layer;
+
+            //监听折叠
+            //element.on('collapse(test)', function(data){
+            //  layer.msg('展开状态：'+ data.show);
+            //});
+        });
+    </script>
+    <script>
+
+        $(document).ready(function () {
+            var order_number = "{{ order_number }}";
+            var url = "{% url 'pgorder_get_warranty_by_order' %}";
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: {
+                    'order_number': order_number,
+                },
+                success: function (arg) {
+                    var data = arg;
+                    var div_war = $("#div_warranty");
+                    var html = [];
+                    console.log(html);
+                    if ("{{ invoice_status }}" == 'PAID' || 1 == 1) {
+                        if ("{{ form.warranty.value }}" != '0' && "{{ form.warranty.value }}" != '0.0000') {
+                            html.push('<font style="color:red">');
+                            html.push('Risk Free ');
+                            html.push('Warranty($');
+                            html.push(data);
+                            html.push('</font>)');
+                            console.log(html);
+                        }
+                        else if ("{{ invoice_type }}" == 'warranty' && "{{ invoice_status }}" == 'PAID') {
+                            html.push('<font style="color:red">');
+                            html.push('Risk Free Warranty');
+                            html.push('($');
+                            html.push(data);
+                            html.push('</font>)');
+                            console.log(html);
+                        }
+                        else {
+                            html.push('Standard Warranty ');
+                            html.push('<font style="color:red">');
+                            html.push('Upgrade needs');
+                            html.push('($');
+                            html.push(data);
+                            html.push('</font>)');
+                            console.log(html);
+                        }
+                    }
+                    div_war.empty();
+                    div_war.html(html.join(''));
+                    console.log(html);
+                }
+            });
+        });
+
+        $(function () {
+            var width = $(window).width();
+            if (width < 600) {
+                $("#comments_pgorder").css({"width": '190px'});
+            } else {
+                $("#comments_pgorder").css({"width": 'auto'});
+            }
+            //定义通用地变量
+            //1.发货方式
+            var ship_direction = ['Standard', 'Express', 'Employee'];
+
+            //Action 名字
+            var actions = ['SHIPPING', 'ADD COMMENTS'];
+
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            });
+
+            var order_number = '{{ order_number|safe }}';
+
+            function createTables(data) {
+                var html = [];
+                html.push("<table class='table table-hover'>");
+                html.push("<thead>");
+                html.push("<tr>");
+                html.push("<th class='hid'>VIP</th>");
+                html.push("<th>ORDER NUMBER</th>");
+                html.push("<th>ORDER DATE</th>");
+                html.push("<th>SHIPPING METHOD</th>");
+                html.push("<th class='hid'>FRAME</th>");
+                html.push("<th class='hid'>LENS SKU</th>");
+                html.push("<th class='hid'>LENS NAME</th>");
+                html.push("<th class='hid'>COMMENTS</th>");
+                html.push("</tr>");
+                html.push("</thead>");
+                html.push("<tbody>");
+
+
+                for (var i = 0; i < data.length; i++) {
+
+                    field = data[i].fields;
+                    if (i % 2 == 0) {
+                        html.push("<tr class='alltr'  orderNumber=" + field.order_number + " toggle=0 type='even'>");
+                    } else {
+                        html.push("<tr class='alltr'  orderNumber=" + field.order_number + " toggle=0 type='odd'>");
+                    }
+
+
+                    if (field.is_vip == true) {
+                        html.push("<td class='hid'><img src='{% static "image/icon-yes.svg"%}'></td>")
+                    } else {
+                        html.push("<td class='hid'>  </td>")
+                    }
+
+                    html.push("<td id='" + field.order_number + "' class='ondetail' productIndex=" + field.product_index + " orderNumber=" + field.order_number + " toggle=0><a target='_Blank' href='/oms/pgOrderItemDetail?pk=" + data[i].pk + "'>" + field.order_number + "</a></td>");
+                    html.push("<td>" + field.order_date + "</td>");
+
+                    if (field.ship_direction == 'STANDARD') {
+                        html.push("<td>" + ship_direction[0] + "</td>");
+                    } else if (field.ship_direction == 'EXPRESS') {
+                        html.push("<td>" + ship_direction[1] + "</td>");
+                    } else {
+                        html.push("<td>" + ship_direction[2] + "</td>");
+                    }
+
+                    html.push("<td class='hid'>" + field.frame + "</td>");
+                    html.push("<td class='hid'>" + field.lens_sku + "</td>");
+                    html.push("<td class='hid'>" + field.lens_name + "</td>");
+                    if (field.comments == '' || field.comments == null) {
+                        html.push("<td class='hid originValue'> </td>");
+                    } else {
+                        html.push("<td class='hid originValue'>" + field.comments + "</td>");
+                    }
+
+
+                    html.push("</tr>");
+                }
+
+                html.push("</tbody>");
+                html.push("</table>");
+                var tabcon = $("#tableContent");
+                tabcon.html(html.join(''));
+            }
+
+            extendsBoxes();
+            function extendsBoxes() {
+                $('#activity_toggle').attr('class', 'box box-widget');
+                $('#activity_toggle_2').attr('class', 'box box-widget');
+                $('#activity_toggle_3').attr('class', 'box box-widget');
+                $('#scan_toggle').attr('class', 'fa fa-minus');
+                $('#tableActivity').css('display', 'block')
+            }
+
+            queryActivities(order_number);
+
+            function queryActivities(order_number) {
+                $.ajax({
+                    url: "/oms/queryActivities/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                        'obj_type': 'OPOR'
+                    },
+                    success: function (arg) {
+                        var data = JSON.parse(arg);
+                        var html = [];
+                        html.push("<table class='table table-hover'>");
+                        html.push("<thead><tr><th>Username</th><th>Comments</th><th>Create At</th><th>Modify</th><th>Is_Send</th><th>Send</th></tr></thead><tbody>");
+
+                        if (data.length > 0) {
+                            for (var i = 0; i < data.length; i++) {
+                                activity = data[i].fields;
+                                html.push("<tr>");
+                                html.push("<td>" + activity.user_name + "</td>");
+                                html.push("<td id='text-comments'>" + activity.comments + "</td>");
+                                html.push("<td>" + longTime(activity.create_at) + "</td>");
+                                html.push("<td><span class='fa fa-file-o text-change' pk=" + data[i].pk + "></span></td>");
+                                html.push("<td>" + activity.is_send + "</td>")
+                                if (activity.is_send) {
+                                    html.push("<td><a class='fa fa-send send_comment' href='/oms/redirectComment?num=" + activity.order_number + "&comment=" + activity.comments + "&pk=" + data[i].pk + "'></a></td>")
+                                } else {
+                                    html.push("<td><a class='fa fa-send send_comment' href='/oms/redirectComment?num=" + activity.order_number + "&comment=" + activity.comments + "&pk=" + data[i].pk + "'></a></td>")
+
+                                }
+                                html.push("</tr>")
+                            }
+                            $('#activity_toggle').attr('class', 'box box-widget');
+                            $('#activity_toggle_2').attr('class', 'box box-widget');
+                            $('#activity_toggle_3').attr('class', 'box box-widget');
+                            $('#scan_toggle').attr('class', 'fa fa-minus');
+                            $('#tableActivity').css('display', 'block')
+
+                        } else {
+                            html.push("<tr>");
+                            html.push("<td colspan='4'style='text-align:center'>There is no data</td>");
+                            html.push("</tr>")
+                        }
+                        html.push("</tbody></table>");
+                        var tableActivity = $("#tableActivity");
+                        tableActivity.empty();
+                        tableActivity.html(html.join(''));
+
+                    }
+                })
+            }
+
+            //修改comments
+            $("#blockContent").on("click", ".text-change", function () {
+
+                var width = $(document).width();
+                if (width < 800) {
+                    poup = ['85%', '35%'];
+                } else {
+                    poup = ['30%', '35%'];
+                }
+                var pk = $(this).attr('pk');
+                var comments = $(this).parent().siblings("#text-comments").html();
+
+                $('#remarks').val(comments);
+                var $this = $(this);
+                var index = layer.open({
+                    title: 'Change Comments',
+                    type: 1,
+                    area: poup, //宽高
+                    content: $('#comments'),
+                    btn: ['SAVE', 'CANCEL'],
+                    yes: function () {
+                        var comments_value = $('#remarks').val();
+
+                        $.ajax({
+                            url: "/oms/changeComments/",
+                            type: 'POST',
+                            data: {
+                                'pk': pk,
+                                'comments_value': comments_value
+
+                            },
+                            success: function (arg) {
+                                layer.close(index);
+                                if (arg == "Success") {
+                                    $this.parent().siblings("#text-comments").html(comments_value);
+                                    layer.msg('The modification is successful', {time: 3000, icon: 6});
+                                } else {
+                                    layer.open({
+                                        title: 'Error',
+                                        content: arg,
+                                        time: 5000
+                                    });
+                                }
+                            }
+                        })
+                    }
+                })
+            });
+
+
+            var currentpage ={{ currentpage|safe }};
+            var filter = {{ filter|safe }};
+
+            $("#btnReview").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/pg_order_review/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 10000, icon: 7}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+                            });
+
+                        }
+                    }
+                })
+            });
+
+            $("#btnCancelReview").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/pg_order_cancel_review/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 10000, icon: 7}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+                            });
+
+                        }
+                    }
+                })
+            });
+
+            $("#btnApprove").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/pg_order_approve/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 10000, icon: 7}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+                            });
+
+                        }
+                    }
+                })
+
+            });
+
+            $("#btnLab").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                generate_lab_orders(order_number, '')
+            });
+
+            $("#btnLabIfc").on("click", function () {
+                var order_number = $(this).attr("order_number");
+                layer.confirm('你确定要跳过欺诈检查吗？\r\n如果确认已经验证订单，请点击确定继续；否则请点击取消重新验证!', {btn: ['确定', '取消'], title: "提示"},
+                    function
+                    () {
+                    $(this).attr("disabled", 'disabled');
+                    generate_lab_orders(order_number, '1')
+                });
+            });
+
+            function generate_lab_orders(order_number, ignore_fraud_check) {
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/generateLabOrders/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number,
+                        'ignore_fraud_check': ignore_fraud_check
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'Success') {
+                            layer.msg('Success', {time: 3000, icon: 6}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+                            });
+                        } else {
+                            layer.msg(arg, {time: 5000, icon: 7}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+                            });
+                        }
+                    }
+                })
+            }
+
+            $(".status_v3").on('click', function () {
+                content_v = $(this).attr('content');
+                tag = $(this).attr('tag');
+                number = $(this).attr('order_number');
+                let lock = true; // 防止重复点击
+                let idx = layer.open({
+                    type: 1,
+                    shadeClose: true,
+                    title: "填写取消原因",
+                    content: $("#cancel_reason_box").html(),
+                    area: "35%",
+                    btn: ['SAVE', 'CANCEL'],
+                    yes: function (i, e) {
+                        let m_reason = e.find('textarea').val();
+                        if (m_reason == '') {
+                            layer.alert("请填写原因");
+                        } else {
+                            layer.close(idx);
+                            if (lock) {
+                                lock = false;
+                                $.ajax({
+                                    url: "/oms/pgorder_status_v3/",
+                                    type: "POST",
+                                    data: {
+                                        'content': content_v,
+                                        'order_number': number,
+                                        'reason': m_reason
+                                    },
+                                    success: function (res) {
+                                        console.log(res);
+                                        console.log($("[data-bind='status']").text());
+                                        if (res.code == '0') {
+                                            layer.msg("订单已取消", {
+                                                icon: 1,
+                                                shade: [0.6, '#000000'],
+                                                shadeClose: true,
+                                            });
+                                            $("[data-bind='status']").text(res.message.status);
+                                        } else {
+                                            layer.msg("取消订单失败", {
+                                                icon: 4,
+                                                shade: [0.6, '#000000'],
+                                                shadeClose: true
+                                            });
+                                        }
+                                        lock = true;
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+            });
+
+            {# cancel 已经放在了 status_v3的事件中 #}
+            $(".status").on('click', function () {
+                content = $(this).attr('content');
+                tag = $(this).attr('tag');
+                number = $(this).attr('order_number');
+                $.ajax({
+                    url: "/oms/pgorder_status/",
+                    type: 'POST',
+                    data: {
+                        'content': content,
+                        'tag': tag,
+                        'order_number': number
+                    },
+                    success: function (arg) {
+                        if (arg == 'True') {
+                            layer.msg('The order status was modified successfully.', {
+                                icon: 6,
+                                time: 3000
+                            }, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?number=" + number + "&page=" + currentpage + "&filter=" + filter
+                            });
+
+                        } else if (arg == "False") {
+                            layer.msg("The initial status of the order is holded..", {icon: 5, time: 5000})
+                        } else {
+                            layer.msg("The order has been generated LabOrder, please handle LabOrder first.", {
+                                icon: 5,
+                                time: 5000
+                            })
+                        }
+                    }
+                })
+            });
+
+            {#pushDate ajax#}
+            $("#pushDate").on('click', function () {
+                var promised_date = ($(this).attr("promised_date"));
+                var targeted_date = ($(this).attr("targeted_date"));
+                var estimated_date = ($(this).attr("estimated_date"));
+                var order_number = ('{{ form.order_number.value }}');
+                //点击取消返回NULL，点击确定返回对话框中的值
+                var index_one = layer.open({
+                    type: 1,
+                    shade: false,
+                    title: '填写预计发货时间', //不显示标题
+                    content: $('#shippingtime'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['保存', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+
+                    },
+                    yes: function () {
+                        layer.close(index_one);
+                        var ship_date = $('#shiptime').val();
+                        var index_two = layer.load();
+                        if (ship_date != null && ship_date != "") {
+                            $.ajax({
+                                url: '/oms/pgOrderPushDate/',
+                                type: 'post',
+                                data: {
+                                    promised_date: promised_date,
+                                    targeted_date: ship_date,
+                                    estimated_date: estimated_date,
+                                    order_number: order_number
+                                },
+                                success: function (arg) {
+                                    layer.close(index_two);
+                                    var obj = JSON.parse(arg);
+                                    if (obj.error_code == 0) {
+                                        layer.msg(obj.error_message, {time: 3000, icon: 6})
+                                    } else if (obj.error_code == 1) {
+                                        layer.msg(obj.error_message, {time: 3000, icon: 5})
+                                    } else {
+                                        layer.msg("error", {time: 3000, icon: 5})
+                                    }
+                                }
+                            })
+                        }
+                    }
+                })
+            });
+
+            // push address
+            $("#shipping").on('click', function () {
+                var order_number = $(this).attr("order_number");
+                $(this).attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: "/oms/shipmentServer/",
+                    type: "POST",
+                    data: {
+                        'order_number': order_number
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        if (arg == 'success') {
+                            layer.msg('Success', {time: 2000, icon: 6}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+
+                            });
+
+                        } else {
+                            layer.msg(arg, {time: 5000, icon: 7}, function () {
+                                window.location.href = "{% url 'pgorder_list_v3' %}?page=" + currentpage + "&filter=" + filter
+                            });
+                        }
+                    }
+                })
+            });
+
+            {#    add Comment#}
+            $("#add_comment").on('click', function () {
+                var order_number = $(this).attr("order_number")
+                var $this = $(this);
+                $.ajax({
+                    url: '/oms/getOrderItem/',
+                    type: 'post',
+                    data: {
+                        "order_number": order_number
+                    },
+                    success: function (arg) {
+                        var x = JSON.parse(arg)
+                        var xx = x[0].fields
+                        var ordernum = xx.order_number
+                        var ordertype = xx.type
+                        var id = x[0].pk
+                        var action_value = "ADD COMMENTS"
+                        addCOMMENTS(ordernum, ordertype, id, action_value, $this);
+                    }
+                })
+            })
+            {#    SetInLab#}
+            $("#SetInLab").on('click', function () {
+                var order_number = $(this).attr("order_number");
+                $.ajax({
+                    url: '/oms/pgOrderSetInLab/',
+                    type: 'post',
+                    data: {
+                        "order_number": order_number
+                    },
+                    success: function (arg) {
+                        if (arg['code'] == '0') {
+                            layer.msg(arg['message'], {time: 3000, icon: 6})
+                        } else {
+                            layer.msg(arg['message'], {time: 3000, icon: 6})
+                        }
+                    }
+                })
+            });
+        })
+
+
+        $("#tableActivity").on("click", '.send_comment', function () {
+
+            var order_number = $(this).attr('order_number')
+            var comment = $(this).closest("tr").find("#text-comments").html()
+
+            $.ajax({
+                url: "",
+                type: 'post',
+                data: {},
+                success: function (arg) {
+                }
+            })
+        });
+
+        $("a[name='poi_view']").each(function () {
+            $(this).bind("click", function () {
+                if ($(this).parents("tr").next().css('display') != 'none') {
+                    $(this).parents("tr").next().toggle(200);
+                    return true;
+                }
+
+                var index = layer.load(2); //换了种风格
+
+                var _html = [];
+                var item_content = this;
+
+                var order_number = $(this).attr('order_number');
+                var item_id = $(this).attr('item_id');
+                var product_index = $(this).attr('product_index');
+                $.ajax({
+                    url: '/oms/pgorder_item_detail_v3/ef2aedd2-f8aa-4942-a618-58f8f65a6e3a/',
+                    type: 'post',
+                    data: {
+                        "order_number": order_number,
+                        "item_id": item_id,
+                        "product_index": product_index
+                    },
+                    success: function (arg) {
+                        _html.push(arg);
+                        $(item_content).parents("tr").next().find("td").find("div[name='item']").html(_html.join(''));
+                        layer.close(index);
+
+                        // 请求接口 获取ED
+                        try {
+                            $.post("/oms/get_mg_ed/", {"item_id": item_id}, function (res) {
+                                if (res.code == "0") {
+                                    if (res.obj.code == 1) {
+                                        {#console.log(res.obj.product_info);#}
+                                        let m_ed = res.obj.product_info.ed;
+                                        $("#item_" + item_id).find('.item_ed').text(m_ed);
+                                    } else {
+                                        $("#item_" + item_id).find('.item_ed').text("Failed...");
+                                    }
+                                } else {
+                                    $("#item_" + item_id).find('.item_ed').text("Failed...");
+                                    console.log(res.message);
+                                }
+                            });
+                        } catch (e) {
+                            layer.msg(e);
+                        }
+
+                    }
+                });
+                //$(this).parents("tr").next().find("td").html(_html);
+                $(this).parents("tr").next().toggle(1000);
+            });
+        });
+        $("a[name='accs_view']").each(function () {
+            $(this).bind("click", function () {
+                if ($(this).parents("tr").next().css('display') != 'none') {
+                    $(this).parents("tr").next().toggle(200);
+                    return true;
+                }
+
+                var index = layer.load(2); //换了种风格
+
+                var _html = [];
+                var item_content = this;
+
+                var order_number = $(this).attr('order_number');
+                var item_id = $(this).attr('item_id');
+                var product_index= $(this).attr('product_index');
+                var url = '{% url "pgorder_item_detail_v3_nrx" %}';
+                $.ajax({
+                    url: url,
+                    type: 'post',
+                    data: {
+                        "order_number": order_number,
+                        "item_id": item_id,
+                        "product_index": product_index
+                    },
+                    success: function (arg) {
+                        _html.push(arg);
+                        $(item_content).parents("tr").next().find("td").find("div[name='item']").html(_html.join(''));
+                        layer.close(index);
+
+                        // 请求接口 获取ED
+                        try {
+                            $.post("/oms/get_mg_ed/", {"item_id": item_id}, function (res) {
+                                if (res.code == "0") {
+                                    if (res.obj.code == 1) {
+                                        {#console.log(res.obj.product_info);#}
+                                        let m_ed = res.obj.product_info.ed;
+                                        $("#item_" + item_id).find('.item_ed').text(m_ed);
+                                    } else {
+                                        $("#item_" + item_id).find('.item_ed').text("Failed...");
+                                    }
+                                } else {
+                                    $("#item_" + item_id).find('.item_ed').text("Failed...");
+                                    console.log(res.message);
+                                }
+                            });
+                        } catch (e) {
+                            layer.msg(e);
+                        }
+
+                    }
+                });
+                //$(this).parents("tr").next().find("td").html(_html);
+                $(this).parents("tr").next().toggle(1000);
+            });
+        });
+        $("a[name='poi_edit']").each(function () {
+            $(this).bind("click", function () {
+                alert('This function not complete. \nYou can only view pg order item now.');
+            });
+        });
+
+        $(document).on("click.order-images-each", ".order-images-each", function () {
+            var img = "<img src = '" + $(this).find("img").attr('src') + "' width='100%'>";
+            layer.open({title: false, shadeClose: false, content: img, area: '60%'});
+        });
+
+        $(document).on("click.item-each-addcomments", ".item-each-addcomments", function () {
+            var obj = $(this);
+            var order_number = obj.data('order_number');
+            var obj_type = obj.data('obj_type');
+            var obj_id = obj.data('obj_id');
+            var action_value = obj.data('action_value');
+            addCOMMENTS(order_number, obj_type, obj_id, action_value, $(this));
+        });
+
+        $(document).on("click.item-each-shipcomments", ".item-each-shipcomments", function () {
+            var _self = $(this);
+            _self.attr("disabled", "disabled");
+            var order_number = _self.attr('data-order_number');
+            var item_id = _self.attr('data-item_id');
+            var product_index = _self.attr('data-product_index');
+            var clk_ld = layer.load(2);
+            $.ajax({
+                url: '/oms/edit_lab_comments/',
+                type: 'POST',
+                data: {
+                    "order_number": order_number,
+                    "item_id": item_id,
+                    "product_index": product_index,
+                    "op_type": '0',
+                    "ship": '1'
+                },
+                success: function (res_data) {
+                    layer.close(clk_ld);
+                    var lay_idx = layer.open({
+                        title: "修改发货备注",
+                        content: res_data,
+                        area: '30%',
+                        btn: ['SAVE', 'CANCEL'],
+                        type: 1,
+                        success: function (e) {
+                            var cmt_box = e.find("textarea").eq(0);
+                            e.find("select").eq(0).change(function () {
+                                var class_str = ".id_" + $(this).val();
+                                cmt_box.val($(class_str).text());
+                            });
+                        },
+                        btn2: function () {
+                            _self.removeAttr("disabled");
+                        },
+                        cancel: function () {
+                            _self.removeAttr("disabled");
+                        },
+                        yes: function (i, e) {
+                            layer.close(lay_idx);
+                            var lbo_id = e.find("select").eq(0).val();
+                            var cmt = e.find("textarea").eq(0).val();
+                            $.ajax({
+                                url: '/oms/edit_lab_comments/',
+                                type: 'POST',
+                                data: {
+                                    "lbo_id": lbo_id,
+                                    "comments": cmt,
+                                    "op_type": '1',
+                                    "ship": '1'
+                                },
+                                success: function (res) {
+                                    _self.removeAttr("disabled");
+                                    if (res.code == '0') {
+                                        var cls_str = ".p_chg_" + lbo_id;
+                                        _self.parents().filter(".self_pspf").eq(0).find(cls_str).eq(0).text(cmt);
+                                        layer.msg("发货备注修改成功");
+                                    } else {
+                                        layer.msg(res.code + ' : ' + res.message);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        $(document).on("click.item-each-labcomments", ".item-each-labcomments", function () {
+            var _self = $(this);
+            _self.attr("disabled", "disabled");
+            var order_number = _self.attr('data-order_number');
+            var item_id = _self.attr('data-item_id');
+            var product_index = _self.attr('data-product_index');
+            var clk_ld = layer.load(2);
+            $.ajax({
+                url: '/oms/edit_lab_comments/',
+                type: 'POST',
+                data: {
+                    "order_number": order_number,
+                    "item_id": item_id,
+                    "product_index": product_index,
+                    "op_type": '0'
+                },
+                success: function (res_data) {
+                    layer.close(clk_ld);
+                    var lay_idx = layer.open({
+                        title: "修改工厂订单备注",
+                        content: res_data,
+                        area: '30%',
+                        btn: ['SAVE', 'CANCEL'],
+                        type: 1,
+                        success: function (e) {
+                            var cmt_box = e.find("textarea").eq(0);
+                            e.find("select").eq(0).change(function () {
+                                var class_str = ".id_" + $(this).val();
+                                cmt_box.val($(class_str).text());
+                            });
+                        },
+                        btn2: function () {
+                            _self.removeAttr("disabled");
+                        },
+                        cancel: function () {
+                            _self.removeAttr("disabled");
+                        },
+                        yes: function (i, e) {
+                            layer.close(lay_idx);
+                            var lbo_id = e.find("select").eq(0).val();
+                            var cmt = e.find("textarea").eq(0).val();
+                            $.ajax({
+                                url: '/oms/edit_lab_comments/',
+                                type: 'POST',
+                                data: {
+                                    "lbo_id": lbo_id,
+                                    "comments": cmt,
+                                    "op_type": '1'
+                                },
+                                success: function (res) {
+                                    _self.removeAttr("disabled");
+                                    if (res.code == '0') {
+                                        var cls_str = ".chg_" + lbo_id;
+                                        _self.parents().filter(".self_pspf").eq(0).find(cls_str).eq(0).text(cmt);
+                                        layer.msg("备注修改成功");
+                                    } else {
+                                        layer.msg(res.code + ' : ' + res.message);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // 返回JSON格式字符串
+        function getFormData(form) {
+            var data = form.serialize();
+            console.log(data);
+            data = decodeURI(data);
+            var arr = data.split('&');
+            var item, key, value, newData = {};
+            for (var i = 0; i < arr.length; i++) {
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if (key.indexOf('[]') != -1) {
+                    key = key.replace('[]', '');
+                    if (!newData[key]) {
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                } else {
+                    newData[key] = value;
+                }
+            }
+            return newData;
+        }
+
+        // about prescripion edit
+        $(document).on("click.item-each-editdetail", ".item-each-editdetail", function () {
+            var _self = $(this);
+            _self.attr("disabled", "disabled");
+            var order_number = _self.attr('data-order_number');
+            var item_id = _self.attr('data-item_id');
+            var product_index = _self.attr('data-product_index');
+            var _html = [];
+            var item_detail = _self.parents("[name='item']");
+            var clk_ld = layer.load(2);
+
+            $.ajax({
+                url: '/oms/prescripion_update_v3/',
+                type: 'POST',
+                data: {
+                    "order_number": order_number,
+                    "item_id": item_id,
+                    "product_index": product_index,
+                    'clk_flag': '1'
+                },
+                success: function (res_data) {
+                    layer.close(clk_ld);
+                    var index = layer.open({
+                        title: "Edit prescription",
+                        content: res_data,
+                        area: '55%',
+                        btn: ['SAVE', 'CANCEL'],
+                        type: 1,
+                        success: function (ex) {
+                            var e_is_sg = ex.find("[name='is_singgle_pd']");
+                            var e_pd = ex.find("[name='pd']");
+                            var e_od_pd = ex.find("[name='od_pd']");
+                            var e_os_pd = ex.find("[name='os_pd']");
+                            $(e_is_sg).click(function () {
+                                var _self = $(this);
+                                if (_self.prop("checked")) {
+                                    e_pd.show();
+                                    e_od_pd.hide();
+                                    e_os_pd.hide();
+                                    _self.val('True');
+                                } else {
+                                    e_pd.hide();
+                                    e_od_pd.show();
+                                    e_os_pd.show();
+                                    _self.val('False');
+                                }
+                            });
+
+                        },
+                        btn2: function () {
+                            _self.removeAttr("disabled");
+                        },
+                        cancel: function () {
+                            _self.removeAttr("disabled");
+                        },
+                        yes: function (i, e) {
+                            layer.close(index);
+                            var index_load = layer.load(2);
+                            let form_data = getFormData(e.find("form.edit_form").eq(0));
+                            form_data["name"] = form_data["name"].replace(/\+/, " ");
+                            form_data["is_singgle_pd"] = e.find("[name='is_singgle_pd']").val();
+
+                            $.ajax({
+                                url: '/oms/prescripion_update_v3/',
+                                type: 'POST',
+                                data: {
+                                    "order_number": order_number,
+                                    "item_id": item_id,
+                                    "product_index": product_index,
+                                    "form_data": JSON.stringify(form_data)
+                                },
+                                success: function (arg) {
+                                    _self.removeAttr("disabled");
+                                    if (arg["flag"] == "0") {
+                                        layer.alert(arg["content"]);
+                                    } else {
+                                        _html.push(arg);
+                                        item_detail.html(_html.join('<br/>'));
+                                        layer.msg("修改成功");
+                                    }
+                                    layer.close(index_load);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // 加工信息更改
+        $(document).on("click.", ".item-each-editprocess", function () {
+            var _self = $(this);
+            _self.attr("disabled", "disabled");
+            var tar = _self.parents().filter(".self_pspf").find(".pspf_process");
+
+            var lab_seg_height_form = _self.next().find("[name='lab_seg_height']");
+            var assemble_height_form = _self.next().find("[name='assemble_height']");
+            var sub_mirrors_height_form = _self.next().find("[name='sub_mirrors_height']");
+            var special_handling_form = _self.next().find(".process_form_sh");
+
+            var order_num = _self.attr("data-order_number");
+            var item_id = _self.attr("data-item_id");
+
+            var idx = layer.open({
+                title: "更新【Pg Order Item】及所有对应【Lab Order】",
+                content: _self.next(),
+                area: '40%',
+                btn: ['SAVE', 'CANCEL'],
+                type: 1,
+                success: function () {
+                    lab_seg_height_form.val(tar.eq(0).text());
+                    assemble_height_form.val(tar.eq(1).text());
+                    sub_mirrors_height_form.val(tar.eq(2).text());
+                    special_handling_form.val(tar.eq(3).text());
+                },
+                cancel: function () {
+                    _self.removeAttr("disabled");
+                },
+                btn2: function () {
+                    _self.removeAttr("disabled");
+                },
+                yes: function () {
+                    var fm = getFormData(_self.next().find(".process_form"));
+                    fm["assemble_height"] = _self.next().find(".process_form_ah").eq(0).val();
+                    fm["special_handling"] = _self.next().find(".process_form_sh").eq(0).val();
+                    var fm_json = JSON.stringify(fm);
+                    layer.close(idx);
+                    $.ajax({
+                        url: "{% url 'edit_process' %}",
+                        method: "POST",
+                        data: {'form_info': fm_json},
+                        success: function (rm) {
+                            _self.removeAttr("disabled");
+                            if (rm.code == '0') {
+                                tar.eq(0).text(lab_seg_height_form.val());
+                                tar.eq(1).text(assemble_height_form.val());
+                                tar.eq(2).text(sub_mirrors_height_form.val());
+                                tar.eq(3).text(special_handling_form.val());
+                                if (rm.unchange_list.length > 0) {
+                                    var msg = "成功更新PgOrder Item及部分对应Lab Order，订单【";
+                                    msg += rm.unchange_list;
+                                    msg += "】由于镜片已生产，无法更改";
+                                    layer.msg(msg, {
+                                        icon: 1,
+                                        shade: [0.6, '#000000'],
+                                        time: false,
+                                        shadeClose: true,
+                                    });
+                                } else {
+                                    layer.msg("成功更新PgOrder Item及所有对应Lab Order", {
+                                        icon: 1,
+                                        shade: [0.6, '#000000'],
+                                        shadeClose: true,
+                                    });
+                                }
+                            } else if (rm.code == '1') {
+                                layer.msg(rm.message, {icon: 4, shade: [0.6, '#000000'], shadeClose: true});
+                            } else if (rm.code == '-1') {
+                                layer.msg(rm.message);
+                            }
+                        }
+                    });
+                },
+            });
+        });
+
+        $(document).on("click", ".item-each-editchannel", function () {
+
+            var _self = $(this);
+            var idx = layer.load(2);
+            var item_id = $(this).attr('data-item_id');
+            var product_index = $(this).attr('data-product_index');
+            $.post("{% url 'edit_channel' %}", {"is_get_type": "1"}, function (res) {
+                layer.close(idx);
+                // 拼接html
+                var inner = $("<div><div style='padding:20px 20px 10px'><span style='padding-right:20px'>通道:</span><select id='c_type_opt'></select></div></div>")
+                $.each(res, function (index, value) {
+                    inner.find("#c_type_opt").append("<option value ='" + index + "'>" + value + "</option>")
+                });
+
+                layer.open({
+                    title: "Edit channel",
+                    content: inner.html(),
+                    {#area: '20%',#}
+                    btn: ['SAVE', 'CANCEL'],
+                    type: 1,
+                    yes: function (c, e) {
+                        layer.closeAll();
+                        let chl_idx = layer.load(2);
+                        $.ajax({
+                            url: "{% url 'edit_channel' %}",
+                            type: "POST",
+                            data: {
+                                "channel": e.find("#c_type_opt").val(),
+                                "item_id": item_id,
+                                "product_index": product_index
+                            },
+                            success: function (res) {
+                                _self.parents("#item_" + _self.attr("data-item_id")).find(".m_channel").html(res.message);
+                                layer.close(chl_idx);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        // 查询原始验光单功能
+        $(document).on("click", ".prescription_id", function () {
+            let _self = $(this);
+            let m_layer_ins = layer.load(1);
+            $.ajax({
+                url: "{% url 'get_prescription' %}",
+                method: "POST",
+                data: {"m_item_id": _self.attr("data-psid")},
+                success: function (res) {
+                    layer.close(m_layer_ins);
+                    layer.open({
+                        title: "Original Prescription",
+                        content: res,
+                        shadeClose: true,
+                        area: '30%',
+                        type: 1
+                    })
+                }
+            });
+        });
+
+
+        //add by ranhy 2019-07-31
+        $(document).delegate("#btnAddRow", 'click', function (e) {
+            row_str = '<tr>\
+                            <td><a href="#" name="btnRemoveRow">-</a></td>\
+                            <td><input type="text" name="unit_amount[]" onkeyup="clearNoNum(this)" value=""></td>\
+                            <td><input type="text" name="quantity[]" onkeyup="clearNoNum(this)" value=""></td>\
+                            <td><input type="text" name="invoice_item_description[]" value=""></td>\
+                        </tr>';
+            $("#tbInvoice tbody").append($(row_str));
+        });
+
+
+        function clearNoNum(obj) {
+            obj.value = obj.value.replace(/[^\d.]/g, "");  //清除“数字”和“.”以外的字符
+            obj.value = obj.value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的
+            obj.value = obj.value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+            obj.value = obj.value.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3');//只能输入两个小数
+            if (obj.value.indexOf(".") < 0 && obj.value != "") {//以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+                obj.value = parseFloat(obj.value);
+            }
+        }
+        $(document).delegate("a[name='btnRemoveRow']", 'click', function (e) {
+            $(this).parents("tr").remove();
+        });
+
+        $("#send_invoice").click(function () {
+            var _self = $(this);
+            var redo_url = "{% url 'send_invoice' %}";
+            var order_number = _self.attr("order_number");
+            var reorder_info = $("div#div_send_invoice");
+            var inv_list = [];
+            var obj_inv = {}
+            var invoice_idx = layer.open({
+                title: "Invoice",
+                content: reorder_info.html(),
+                shadeClose: true,
+                area: "40%",
+                type: 1,
+                btn: ["Send Invoice"],
+                yes: function (i, e) {
+                    inv_list = [];
+                    quantity_objs = e.find("input[name='quantity[]']");
+                    description_objs = e.find("input[name='invoice_item_description[]']");
+                    sum_total = 0
+                    e.find("input[name='unit_amount[]']").each(function (i, v) {
+                        obj_inv = {
+                            "unit_amount": $(v).val(), "quantity": $(quantity_objs[i]).val(),
+                            "invoice_item_description": $(description_objs[i]).val()
+                        };
+                        inv_list.push(obj_inv);
+                    });
+
+                    layer.close(invoice_idx);
+                    let lay_load = layer.load(2);
+                    days_until_due = e.find("input[name='days_until_due']").val();
+                    ticket_no = e.find("input[name='ticket_number']").val();
+                    invoice_type = e.find("select").eq(0).val();
+
+                    $.ajax({
+                        url: redo_url,
+                        type: "POST",
+                        data: {
+                            "ticket_no": ticket_no,
+                            "invoice_type": invoice_type,
+                            "days_until_due": days_until_due,
+                            "order_number": order_number,
+                            "inv_list": JSON.stringify(inv_list),
+                        },
+                        dataType: "json",
+                        success: function (res) {
+                            console.log(res);
+                            if (res.code == 0) {
+                                layer.msg('success!')
+                            } else {
+                                layer.msg(res.msg)
+                            }
+
+                            layer.close(lay_load);
+                        },
+                        error: function (res) {
+                            layer.msg('fail!')
+                            layer.close(lay_load);
+                        }
+                    });
+                }
+            });
+        });
+
+
+        // 重做单功能
+        {% if perms.oms.PG_REORDER %}
+            $("#reorder").click(function () {
+                var _self = $(this);
+                var redo_url = "{% url 're_order_v3' %}";
+                var order_number = _self.attr("order_number");
+                var reorder_info = $("div#re_order");
+                var redo_list = [];
+                var redo_idx = layer.open({
+                    title: "选择要重做订单",
+                    content: reorder_info.html(),
+                    shadeClose: true,
+                    area: "40%",
+                    type: 1,
+                    btn: ["重做"],
+                    yes: function (i, e) {
+                        redo_list = [];
+                        e.find("input").each(function (i, v) {
+                            if ($(v).prop("checked")) {
+                                redo_list.push($(v).attr("data-item_id"));
+                            }
+                        });
+                        layer.close(redo_idx);
+                        let lay_load = layer.load(2);
+
+                        $.post(redo_url, {
+                            "order_number": order_number,
+                            "redo_list": redo_list,
+                        }, function (res) {
+                            layer.close(lay_load);
+                            var r_msg = [2, ''];
+                            if (res.code == '0') {
+                                r_msg[0] = 1;
+                                r_msg[1] = res.message + " -- 重做单号: " + res.obj.increment_id;
+                            } else {
+                                if (res.code == '-1') {
+                                    r_msg[1] = res.obj[0].code + "|" + res.obj[0].message;
+                                } else if (res.code == '-2') {
+                                    r_msg[0] = 3;
+                                    r_msg[1] = res.message;
+                                } else {
+                                    r_msg[1] = res;
+                                }
+                            }
+                            layer.msg(r_msg[1], {
+                                icon: r_msg[0],
+                                area: '30%',
+                                shade: true,
+                                shadeClose: true,
+                                shade: [0.7, '#000000'],
+                                end: function () {
+                                    window.location.reload();
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+        {% endif %}
+
+        $('#HoldModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var recipient = button.data('whatever') // Extract info from data-* attributes
+            var entity_id = button.data('entity')
+            var modal = $(this)
+            //此处即为修改modal的标题
+            modal.find('.modal-title').text(recipient)
+            modal.find('#entity_id').val(entity_id)
+        })
+
+
+        $(document).on("click", "#hold_btn", function () {
+            var entity_id = $("#entity_id").val();
+            var reason = $("#reason").val();
+            var ticket_number = $("#ticket_numbers").val();
+            var order_number = '{{ order_number }}'
+            var url = "{% url 'pg_order_hold_request' %}";
+            var lay_load = layer.load();
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    'entity_id': entity_id,
+                    'item_id': '',
+                    'ticket_number': ticket_number,
+                    'order_number': order_number,
+                    'reason': reason,
+                    'is_web': 'N'
+                },
+                success: function (msg) {
+                    console.log(msg.code)
+                    if (msg.code != 0) {
+                        layer.msg('failed: ' + msg.message);
+                        layer.close(lay_load);
+                    } else {
+                        layer.closeAll();
+                        layer.alert("Your order has been successfully holded");
+                        $("#HoldModal").modal('hide');
+                        $('body').on('hidden.bs.modal', '.modal', function () {
+                            $(this).removeData('bs.modal');
+                        });
+                        window.location.reload()
+                    }
+
+                },
+                error: function (arg) {
+                    layer.msg('fail!')
+                    layer.close(lay_load);
+                }
+            })
+        });
+
+        $(document).on("click", "#cancle_warranty_btn", function () {
+            var entity_id = $("#cancle_warranty_entity_id").val();
+            var reason = $("#cancle_warranty_reason").val();
+            var order_number = '{{ order_number }}'
+            var url = "{% url 'pg_cancle_warranty_request' %}";
+            var lay_load = layer.load();
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    'entity_id': entity_id,
+                    'order_number': order_number,
+                    'reason': reason
+                },
+                success: function (msg) {
+                    console.log(msg.code)
+                    if (msg.code != 0) {
+                        layer.msg('failed: ' + msg.message);
+                        layer.close(lay_load);
+                    } else {
+                        layer.closeAll();
+                        layer.msg(msg.message);
+                        setTimeout(function () {
+                            $("#CancelWarrantyModal").modal('hide');
+                            window.location.reload()
+                        }, 2 * 1000);//延迟5000毫米
+                    }
+
+                },
+                error: function (arg) {
+                    layer.msg('fail!')
+                    layer.close(lay_load);
+                }
+            })
+        });
+        $("#hold_to_processing").on("click", function () {
+           var order_number = $(this).attr('order_number');
+           var url = '{% url "edit_hold_to_processing" %}';
+            layer.confirm('你确定要改变订单状态为processing？', {btn: ['确定', '取消'], title: "提示"},
+                function () {
+                   $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: {
+                            'order_number': order_number
+                        },
+                        dataType:'json',
+                        success: function (res) {
+                            if (res.code != 0) {
+                                layer.msg('failed: ' + res.msg);
+                            } else {
+                                layer.msg(res.msg);
+                                window.location.reload()
+                            }
+
+                        }
+                    })
+            });
+        });
+
+        // 支持在Pg Order调整订单优先级
+        $("a[name='btn_priority']").each(function () {
+            $(this).bind("click", function () {
+                var index = $(this).attr('index');
+                var order_number = $(this).attr('order_number');
+                layer.confirm('Please confirm this new priority is[' + index + ']\r\n', {
+                        btn: ['Yes', 'Cancel'],
+                        title: "Prompt"
+                    },
+                    function
+                        () {
+                    layer.load(2);
+                        $(this).attr("disabled", 'disabled');
+                        $.ajax({
+                            url: "{% url 'pgorder_set_priority' %}",
+                            type: 'POST',
+                            data: {
+                                priority: index,
+                                order_number: order_number
+                            },
+                            async: true
+                        }).done(function (arg) {
+                            obj = JSON.parse(arg);
+                            layer.closeAll();
+                            if (obj.code == 0) {
+                                msg = 'Successful!';
+                                layer.msg(msg);
+                                setTimeout(function () {  //使用  setTimeout（）方法设定定时2000毫秒
+                                    window.location.href = "{{ request_url }}" + "?number=" + order_number;
+                                }, 2000);
+                            }
+                            else {
+                                layer.msg(obj.message);
+                            }
+                        });
+                    });
+            });
+        });
+    </script>
+{% endblock %}

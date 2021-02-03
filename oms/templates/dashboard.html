@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block dashboard %}
+{% endblock %}
+{% block style %}
+    <style>
+
+    </style>
+{% endblock %}
+
+{% block h1 %}
+    OMS
+{% endblock %}
+{% block small %}
+    Dashboard
+{% endblock %}
+{% block content %}
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        {% if perms.report.DASHBOARD_NOT_INLAB %}
+            <div class="col-md-3">
+                <!-- general form elements -->
+                <div class="box box-danger">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Not In LAB</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form">
+                        <div class="box-body">
+                            <div class="col-xs-12 table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th>Total</th>
+                                        <td>{{ form.obj_not_inlab.total }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Processing</th>
+                                        <td class="fa fa-link"><a href="/oms/dashbord_processing_list">{{ form.obj_not_inlab.processing }}</a></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Holded</th>
+                                        <td class="label-warning">{{ form.obj_not_inlab.holded }}</td>
+                                    </tr>
+                                     <tr>
+                                        <th>Canceled</th>
+                                        <td class="label-warning">{{ form.obj_not_inlab.canceled }}</td>
+                                    </tr>
+                                     <tr>
+                                        <th>Closed</th>
+                                        <td>{{ form.obj_not_inlab.closed }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                        {#<div class="box-footer">#}
+                        {# </div>#}
+                    </form>
+                </div>
+                <!-- /.box -->
+            </div>
+            <!--/.col (right) -->
+        {% endif %}
+
+        {% if perms.report.DASHBOARD_NEW_LABORDERS %}
+            <div class="col-md-3">
+                <!-- general form elements -->
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">New Lab Orders</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form">
+                        <div class="box-body">
+                            <div class="col-xs-12 table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th>Total</th>
+                                        <td>{{ form.obj_new.total }}</td>
+                                    </tr>
+
+                                    <tr>
+                                        <th>VD0</th>
+                                        <td class="label-warning">{{ form.obj_new.vd_0 }}</td>
+                                    </tr>
+                                     <tr>
+                                        <th>VD1000</th>
+                                        <td class="label-warning">{{ form.obj_new.vd_1000 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>DY</th>
+                                        <td>{{ form.obj_new.vd_2_4_7_8 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>SH</th>
+                                        <td>{{ form.obj_new.vd_5_6_9_10 }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                        {#<div class="box-footer">#}
+                        {# </div>#}
+                    </form>
+                </div>
+                <!-- /.box -->
+            </div>
+            <!--/.col (right) -->
+        {% endif %}
+
+    {% if perms.report.DASHBOARD_PROCESSING_LABORDERS %}
+            <div class="col-md-3">
+                <!-- general form elements -->
+                <div class="box box-warning">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Processing Orders</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form">
+                        <div class="box-body">
+                            <div class="col-xs-12 table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th>Total</th>
+                                        <td>{{ form.obj_processing.total }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>DY</th>
+                                        <td>{{ form.obj_processing.vd_2_4_7_8 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>SH</th>
+                                        <td>{{ form.obj_processing.vd_5_6_9_10 }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                        {#<div class="box-footer">#}
+                        {# </div>#}
+                    </form>
+                </div>
+                <!-- /.box -->
+            </div>
+            <!--/.col (right) -->
+        {% endif %}
+
+    {% if perms.report.DASHBOARD_COMPLETED_TODAY_LABORDERS %}
+            <div class="col-md-3">
+                <!-- general form elements -->
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Completed Orders Today</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form">
+                        <div class="box-body">
+                            <div class="col-xs-12 table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th>Total</th>
+                                        <td>{{ form.obj_today_complete.total }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>DY</th>
+                                        <td>{{ form.obj_today_complete.vd_2_4_7_8 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>SH</th>
+                                        <td>{{ form.obj_today_complete.vd_5_6_9_10 }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                        {#<div class="box-footer">#}
+                        {# </div>#}
+                    </form>
+                </div>
+                <!-- /.box -->
+            </div>
+            <!--/.col (right) -->
+        {% endif %}
+    </div>
+    {% if perms.report.DASHBOARD_COMPLETED_TODAY_LABORDERS %}
+         <div class="row">
+            <div class="col-md-3">
+                <!-- general form elements -->
+                <div class="box box-info">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Shipped Orders Today</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form">
+                        <div class="box-body">
+                            <div class="col-xs-12 table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th>Total</th>
+                                        <td>{{ form.obj_today_shipped.total }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>DY</th>
+                                        <td>{{ form.obj_today_shipped.vd_2_4_7_8 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>SH</th>
+                                        <td>{{ form.obj_today_shipped.vd_5_6_9_10 }}</td>
+                                    </tr>
+                                     <tr>
+                                        <th>Holded</th>
+                                        <td class="label-warning">{{ form.obj_today_shipped.holded }}</td>
+                                    </tr>
+                                     <tr>
+                                        <th>Canceled</th>
+                                        <td class="label-warning">{{ form.obj_today_shipped.canceled }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                        {#<div class="box-footer">#}
+                        {# </div>#}
+                    </form>
+                </div>
+                <!-- /.box -->
+            </div>
+         </div>
+            <!--/.col (right) -->
+        {% endif %}
+    <!-- /.row -->
+</section>
+<!-- /.content -->
+</div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $(document).ready(function () {
+            var feature_id = "{{ form.feature_id }}";
+            var cur_page = 1;
+
+            // $("#spn_loading_message").hide();
+        });
+
+    </script>
+{% endblock %}

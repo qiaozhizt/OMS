@@ -1,0 +1,126 @@
+<div class="col-md-12">
+    <!-- /.box-body -->
+    <!-- /.box-footer -->
+    <table class="table table-striped">
+
+        {% for item in list %}
+            <tr>
+                <td>
+                    <div class="col-md-12">
+                        <!--4、左边渐变透明：-->
+                        <hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="#987cb9"
+                            size=3>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+
+                                <div class="form-group">
+                                    <div class="col-sm-12 order-images-each">
+                                        <img src="{{ prd_img_pre }}{{ item.thumbnail.value }}"
+                                             class="img-responsive center-block"></img>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-sm-2"><b>Created at</b></div>
+                                    <div class="col-sm-10">
+                                        {{ item.created_at }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-2"><b>Updated at</b></div>
+                                    <div class="col-sm-10">
+                                        {{ item.updated_at }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-sm-2"><b>Reporter</b></div>
+                                    <div class="col-sm-10">
+                                        {{ item.user_name }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-2"><b>Assigned</b></div>
+                                    <div class="col-sm-10">
+                                        {{ item.assign_name }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-sm-2"><b>Comments</b></div>
+                                    <div class="col-sm-10">
+                                        {{ item.comments }}
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+
+    </table>
+    <form action="{% url 'comments_details' %}" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-12">
+                <!--4、左边渐变透明：-->
+                <hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="#987cb9" size=3>
+            </div>
+            <div class="col-md-12">
+                {{ form.comments.label_tag }}:{{ form.comments }}
+            </div>
+            <div class="col-md-12">
+                {{ form.assign.label_tag }}:{{ form.assign }}
+            </div>
+            <div style="display:none">
+                <input id="parent_entity" name="parent_entity" value="{{ form_data.entity }}" hidden>
+                <input id="full_path" name="full_path" value="{{ form_data.full_path }}" hidden>
+            </div>
+        </div>
+        <!-- /.box-body -->
+        <div class="row">
+            <div class="col-md-12">
+                <!--4、左边渐变透明：-->
+                <hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="#987cb9" size=3>
+            </div>
+            <div class="col-md-12">
+                <button type="submit" name="btn_add_item_comments"
+                        class="btn btn-default btn pull-left  item-each-addcomments"
+                        style="margin-left: 5px;display:none"
+                        data-order_number="{{ item.order_number.value }}"
+                        data-obj_type="{{ obj_type }}"
+                        data-obj_id="{{ obj_id }}"
+                        data-action_value="ADD COMMENTS"
+                >Reviewed
+                </button>
+
+                <div style="float: left;margin-left: 5px;"
+                     class="comments-reviewed-each"
+                     entity="{{ form_data.entity  }}"
+                >
+                    <a id='btn_reviwed' name='btn_reviwed' class="btn btn-block btn-default"
+                       entity="{{ form_data.entity  }}"
+                       href="javascript:void(0)">Reviewed</a>
+                </div>
+
+                <div style="float: left;margin-left: 5px;"
+                     class="comments-close-each"
+                     entity="{{ form_data.entity  }}"
+                >
+                    <a id='btn_reviwed' name='btn_reviwed' class="btn btn-block btn-default"
+                       entity="{{ form_data.entity  }}"
+                       href="javascript:void(0)">Close</a>
+                </div>
+
+            </div>
+        </div>
+
+    </form>
+
+    <!-- /.box-footer -->
+</div>

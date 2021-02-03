@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Report{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}出货速度统计报表{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <button id="g_submit" class="btn btn-default" style="float: right">导出数据</button>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+
+    <div class="row">
+        <div id="content" class="box">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-sm-1">lab_number</th>
+                        <th class="col-sm-1">status</th>
+                        <th class="col-sm-1">ship_direction</th>
+                        <th class="col-sm-1">vendor</th>
+                        <th class="col-sm-1">tint_sku</th>
+                        <th class="col-sm-1">shipping_id</th>
+                        <th class="col-sm-1">created_at</th>
+                        <th class="col-sm-1">shipped_date</th>
+                        <th class="col-sm-1">ship_diff</th>
+                        <th class="col-sm-1">shipped_diff_level</th>
+                        <th class="col-sm-1">quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list %}
+                        <tr>
+                            <td>{{ item.lab_number }}</td>
+                            <td>{{ item.status }}</td>
+                            <td>{{ item.ship_direction }}</td>
+                            <td>{{ item.vendor }}</td>
+                            <td>{{ item.tint_sku }}</td>
+                            <td>{{ item.shipping_id }}</td>
+                            <td>{{ item.created_at }}</td>
+                            <td>{{ item.shipped_date }}</td>
+                            <td>{{ item.ship_diff }}</td>
+                            <td>{{ item.shipped_diff_level }}</td>
+                            <td>{{ item.quantity }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- /.row -->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+
+            url = "{% url 'wms_inventory_struct' %}";
+
+            if (sku == '' || sku == null) {
+                layer.msg('Please enter a sku', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = url + '?sku=' + sku;
+            }
+        });
+        // 生成csv
+        $("#g_submit").click(function () {
+            location.href = "{% url 'report_save_shipping_speed_report_csv' %}";
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,874 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css %}
+{% endblock %}
+{% block h1 %}Merchandising{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}产品管理{% endblock %}
+{% block content %}
+    <!--Search-->
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle btn-flat"
+                type="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            Filter <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href={{ requestUrl }}?filter=all&sort_filter={{ sort_filter }}&status_filter={{ status_filter }}>
+                {% ifequal filter 'all' %}{% ifequal flatrate 'all' %}*{% endifequal %}{% endifequal %}All</a>
+            </li>
+            <li class="divider"></li>
+            <li><a href={{ requestUrl }}?filter=in_stock&sort_filter={{ sort_filter }}&status_filter={{ status_filter }}>
+                {% ifequal filter 'in_stock' %}*{% endifequal %}In Stock</a></li>
+            <li><a href={{ requestUrl }}?filter=out_of_stock&sort_filter={{ sort_filter }}&status_filter={{ status_filter }}>
+                {% ifequal filter 'out_of_stock' %}*{% endifequal %}Out of stock</a></li>
+            <li><a href={{ requestUrl }}?filter=draft&sort_filter={{ sort_filter }}&status_filter={{ status_filter }}>
+                {% ifequal filter 'draft' %}*{% endifequal %}Draft</a></li>
+            <li class="divider"></li>
+            <li><a href={{ requestUrl }}?filter=retired&sort_filter={{ sort_filter }}&status_filter={{ status_filter }}>
+                {% ifequal filter 'retired' %}*{% endifequal %}retired</a></li>
+            <li class="divider"></li>
+            {% for fd in filter_doctors %}
+                <li><a href={{ requestUrl }}?flatrate={{ fd.id }}>
+                    {% ifequal flatrate|add:'0' fd.id %}*{% endifequal %}{{ fd.name }}</a></li>
+            {% endfor %}
+        </ul>
+
+    </div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle btn-flat"
+                type="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            Sort Filter <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href={{ requestUrl }}?filter=all&sort_filter=all&status_filter={{ status_filter }}>
+                All
+            </li>
+            <li><a href={{ requestUrl }}?filter={{ filter }}&sort_filter=1&status_filter={{ status_filter }}>
+                {% ifequal sort_filter '1' %}*{% endifequal %}差异数量升序排序</a>
+            </li>
+            <li><a href={{ requestUrl }}?filter={{ filter }}&sort_filter=5&status_filter={{ status_filter }}>
+                {% ifequal sort_filter '5' %}*{% endifequal %}可分配数量降序排序</a></li>
+            <li class="divider"></li>
+            <li><a href={{ requestUrl }}?filter={{ filter }}&sort_filter=2&status_filter={{ status_filter }}>
+                {% ifequal sort_filter '2' %}*{% endifequal %}oms库存数量小于50</a></li>
+            <li class="divider"></li>
+            <li><a href={{ requestUrl }}?filter={{ filter }}&sort_filter=3&status_filter={{ status_filter }}>
+                {% ifequal sort_filter '3' %}*{% endifequal %}OMS_网站差异为0</a></li>
+            <li><a href={{ requestUrl }}?filter={{ filter }}&sort_filter=4&status_filter={{ status_filter }}>
+                {% ifequal sort_filter '4' %}*{% endifequal %}OMS_网站差异不为0</a></li>
+        </ul>
+
+    </div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle btn-flat"
+                type="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            Status Filter <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href={{ requestUrl }}?filter=all&sort_filter=all&status_filter=all>All</li>
+            <li><a href={{ requestUrl }}?filter={{ filter }}&sort_filter={{ sort_filter }}&status_filter=status_diff>
+                {% ifequal status_filter 'status_diff' %}*{% endifequal %}oms与网站状态不一致</a></li>
+            <li><a href={{ requestUrl }}?filter={{ filter }}&sort_filter={{ sort_filter }}&status_filter=status_same>
+                {% ifequal status_filter 'status_same' %}*{% endifequal %}oms与网站状态一致</a></li>
+            <li class="divider"></li>
+        </ul>
+    </div>
+    <button type="button" class="btn btn-default exported_data" style="float: right;" download="downlaod.csv">导出数据</button>
+    <button type="button" class="btn btn-default sync_web_data" style="float: right;">同步网站数据</button>
+    <button type="button" class="btn btn-default sync_reserve_quantity" style="float: right;">重新计算预订数量</button>
+    <!--Search end-->
+    <!--Actions-->
+    <!-- 全选按钮 -->
+    {% include 'laborder_list_v2_exceed.pspf.html' %}
+    <!--Actions end-->
+    <!--Table-->
+    <div id="tableContent">
+        <h3 style="background: #ff2025;color: #ffffff;display: none;">点击差异按钮之前请确认(NEW Mg Order List)模块中是否有订单,请处理完再点差异操作</h3>
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>名称</th>
+                    <th>状态</th>
+                    <th>库存数量</th>
+                    <th>锁定数量</th>
+                    <th>预订数量</th>
+                    <th>不可售数量</th>
+                    <th>已分配数量</th>
+                    <th>可分配数量</th>
+                    <th>是否停售</th>
+                    <th>Estimate RP Date</th>
+                    <th>网站状态</th>
+                    <th>网站数量</th>
+                    <th>OMS_网站差异</th>
+                    <th>最新下架原因</th>
+                    <th>最新上架原因</th>
+                    <th>最新停售原因</th>
+                    <th>最新备注信息</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td><a target="_blank" href="/wms/wms_production_sku_history?sku={{ item.sku }}&type=invrs">{{ item.sku }}</a></td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.lock_quantity }}</td>
+                    <td>{{ item.reserve_quantity }}</td>
+                    <td>{{ item.no_sale_quantity }}</td>
+                    <td>{{ item.ch_quantity }}</td>
+                    <td>{{ item.al_quantity }}</td>
+                    <td>{{ item.retired }}</td>
+                    <td>{% ifequal item.estimate_replenishment_date None %}
+                            unset
+                        {% else %}
+                           {{ item.estimate_replenishment_date|date:'Y-m-d' }}
+                        {% endifequal %}
+                    </td>
+                    <td>{{ item.web_status }}</td>
+                    <td>{{ item.web_quantity }}</td>
+                    <td>{{ item.oms_web_diff }}</td>
+                    <td>{{ item.last_out_of_stock }}</td>
+                    <td>{{ item.last_in_stock }}</td>
+                    <td>{{ item.last_retired }}</td>
+                    <td>{{ item.last_sign }}</td>
+                    <td>
+                        <button type="button" class="btn btn-xs dis_quantity" data="distribution" data_sku="{{ item.sku }}" data_quantity="{{ item.al_quantity }}">分配</button>
+                        <button type="button" class="btn btn-xs dis_quantity" data="withdraw" data_sku="{{ item.sku }}" data_quantity="{{ item.ch_quantity }}">撤回</button>
+                        <button type="button" class="btn btn-xs btn_stock edit_stock" data-info="{{ item.sku }}" data-isr="IN_STOCK">上架</button>
+                        <button type="button" class="btn btn-xs btn_stock edit_stock" data-info="{{ item.sku }}" data-isr="OUT_OF_STOCK">下架</button>
+                        <button type="button" class="btn btn-xs btn_stock edit_retired" data-info="{{ item.sku }}" data-isr="{{ item.retired }}">停售</button>
+                        <button type="button" class="btn btn-xs btn_stock edit_lock_quantity" data-info="{{ item.sku }}">设置锁定库存</button>
+                        <button type="button" class="btn btn-xs btn_stock edit_no_sale_quantity" data-info="{{ item.sku }}">设置不可售数量</button>
+                        {% if perms.wms.REPLENISHMENT %}
+                            <button type="button" class="btn btn-xs btn_stock date_li" data-info="{{ item.sku }}" data-item-id="{{ item.id }}">设置预计到货日期</button>
+                        {% endif %}
+                        <button type="button" class="btn btn-xs btn_stock sync_reserve_quantity" data-info="{{ item.sku }}">重新计算该sku预订数量</button>
+                        <button type="button" class="btn btn-xs btn_stock sync_web_data" data-info="{{ item.sku }}">同步该sku网站数据</button>
+                        <button type="button" class="btn btn-xs btn_stock sync_difference" data-info="{{ item.sku }}" data="{{ item.oms_web_diff }}">差异</button>
+                        <button type="button" class="btn btn-xs btn_stock edit_stock" data-info="{{ item.sku }}" data-isr="SIGN">添加备注</button>
+                        <button type="button" class="btn btn-xs btn_stock sync_sku_reason" data-info="{{ item.sku }}" data-toggle="modal" data-target="#myModal">所有操作</button>
+
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+<style>
+.modal.fade.in {
+     top: 10%;
+     left: 10%;
+     right: 10%;
+     background:rgba(0,0,0,0);
+}
+</style>
+<div class="modal fade in" id="myModal" role="dialog" aria-labelledby="myModalLabel" style="margin-top: 30px;display: none" >
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">产品操作</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="reserve_top_line">
+                    <table class="table table-hover">
+                        <tr>
+                            <th>#ID</th>
+                            <th>用户</th>
+                            <th>操作类型</th>
+                             <th>原因</th>
+                            <th>时间</th>
+                        </tr>
+                      <tbody id="tbody">
+
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="saveBtn" class="btn btn-primary btn-flat" data-dismiss="modal">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!--Table end-->
+    <div class="modal fade" id="loading" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop='static'>
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title" id="myModalLabel">提示</h4>
+          </div>
+          <div class="modal-body">
+            请稍候。。。<span id="result"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+    <div id="edit_dis_quantity" class="col-md-12 column hidden">
+        <style>
+            label {
+                display: block;
+                line-height: 42px;
+                font-size: 16px;
+                letter-spacing: 1px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                margin-bottom: 0px;
+                font-weight: 500;
+            }
+
+            label > input[name='is_ret'] {
+                margin-right: 8px;
+            }
+
+            textarea {
+                resize: none;
+                width: 100%;
+                min-height: 100px;
+                margin-top: 20px;
+            }
+            .quantity_div{
+                margin-bottom: 10px;
+            }
+            .al_ch_quantity{
+                display:none;
+            }
+        </style>
+        <form role="form" style="margin-left: 26px;">
+            <div class="quantity_div al_ch_quantity al_quantity"><span>可分配数量：</span><span id="al_quantity"></span></div>
+            <div class="quantity_div al_ch_quantity ch_quantity"><span>已分配数量：</span><span id="ch_quantity"></span></div>
+            <div class="quantity_div"><input type="text" id="quantity" placeholder="请输入数量"/></div>
+            <div class="quantity_div"><span>分配渠道：</span><span id="channel_code">WEBSITE</span></div>
+        </form>
+    </div>
+
+    <div id="edit_stock" class="col-md-12 column hidden">
+        <style>
+            label {
+                display: block;
+                line-height: 42px;
+                font-size: 16px;
+                letter-spacing: 1px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                margin-bottom: 0px;
+                font-weight: 500;
+            }
+
+            label > input[name='is_ret'] {
+                margin-right: 8px;
+            }
+
+            textarea {
+                resize: none;
+                width: 100%;
+                min-height: 100px;
+                margin-top: 20px;
+            }
+        </style>
+        <form role="form">
+            <textarea maxlength="128" placeholder="请填写原因......"></textarea>
+        </form>
+    </div>
+
+    <div id="edit_ret" class="col-md-12 column hidden">
+        <style>
+            label {
+                display: block;
+                line-height: 42px;
+                font-size: 16px;
+                letter-spacing: 1px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                margin-bottom: 0px;
+                font-weight: 500;
+            }
+
+            label > input[name='is_ret'] {
+                margin-right: 8px;
+            }
+
+            textarea {
+                resize: none;
+                width: 100%;
+                min-height: 100px;
+                margin-top: 20px;
+            }
+        </style>
+        <form role="form">
+            <label><input name="is_ret" type="radio" value="true"/>true</label>
+            <label><input name="is_ret" type="radio" value="false"/>false</label>
+            <textarea maxlength="128" placeholder="请填写变更原因......"></textarea>
+        </form>
+    </div>
+    <div id="edit_lock_qty" class="col-md-12 column hidden">
+        <style>
+            .edit_lock_qty label {
+                border-bottom: 0px !important;
+            }
+            .edit_lock_qty input {
+                line-height: 32px;
+                padding:0 0 0 10px;
+                margin-left: 20px;
+            }
+        </style>
+        <form role="form" class="edit_lock_qty">
+            <label><b>锁定库存数量:</b><input name="lock_qty" type="number" value=0/></label>
+        </form>
+    </div>
+    <div id="edit_no_sale_qty" class="col-md-12 column hidden">
+        <style>
+            .edit_lock_qty label {
+                border-bottom: 0px !important;
+            }
+            .edit_lock_qty input {
+                line-height: 32px;
+                padding:0 0 0 10px;
+                margin-left: 20px;
+            }
+        </style>
+        <form role="form" class="edit_no_sale_qty">
+            <label><b>不可售数量:</b><input name="lock_qty" type="number" value=0/></label>
+        </form>
+    </div>
+    <div id="edit_rp_date" class="col-md-12 column hidden">
+        <div id='datetimepicker1'>
+            <input type='text' class="form-control" id="date_input" />
+        </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script src="{% static "js/json2csv.js" %}"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+            if (sku == '' || sku == null) {
+                layer.msg('Please enter a sku', {time: 3000, icon: 7});
+            }
+            else {
+                url = '{% url "wms_product_management" %}';
+                location.href = url+'?sku=' + sku;
+            }
+        });
+        var edit_dis_quantity = $("#edit_dis_quantity")
+        var dis_quantity = $(".dis_quantity");
+        dis_quantity.click(function () {
+            let _self = $(this);
+            let data_al_quantity = _self.parent().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().text()
+            let data_ch_quantity = _self.parent().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().text()
+            $("#al_quantity").html(data_al_quantity)
+            $("#ch_quantity").html(data_ch_quantity)
+            let flag = _self.attr('data');
+            $(".al_ch_quantity").hide();
+            if(flag == "distribution"){
+                $(".al_quantity").show();
+            }else{
+                $(".ch_quantity").show();
+            }
+
+            let idx = layer.open({
+                title: "",
+                area: "25%",
+                shadeClose: true,
+                content: edit_dis_quantity.html(),
+                success: function (layero, index) {
+                },
+                yes: function (i, e) {
+                    layer.close(idx);
+                    let quantity = $.trim(e.find("#quantity").val());
+                    let sku = _self.attr('data_sku')
+                    let channel_code = $("#channel_code").text()
+                    if(quantity == ""){
+                        layer.msg("数量不能为空");
+                        return false;
+                    }
+                    if(isNaN(quantity)){
+                        layer.msg("请输入正确的数量格式");
+                        return false;
+                    }
+                    if(flag == "distribution"){
+                        if(parseInt(quantity) > parseInt(data_al_quantity)){
+                            layer.msg("分配数量不能多于可分配数量");
+                            return false;
+                        }
+                    }else {
+                        if(parseInt(quantity) > parseInt(data_ch_quantity)){
+                            layer.msg("撤回数量不能多于已分配数量");
+                            return false;
+                        }
+                    }
+
+                    $.post("{% url 'wms_inventory_dis_quantity' %}", {
+                        'quantity': quantity,
+                        'flag': flag,
+                        'sku': sku,
+                        'channel_code': channel_code,
+                    }, function (res) {
+                        if (res.code == 0) {
+                            if(flag == "distribution"){
+                                new_data_al_quantity = parseInt(data_al_quantity) - parseInt(quantity)
+                                new_data_ch_quantity = parseInt(data_ch_quantity) + parseInt(quantity)
+                            }else{
+                                new_data_al_quantity = parseInt(data_al_quantity) + parseInt(quantity)
+                                new_data_ch_quantity = parseInt(data_ch_quantity) - parseInt(quantity)
+                            }
+                            //_self.parent().prev().prev().prev().prev().prev().prev().prev().prev().prev().text(new_data_al_quantity)
+                            //_self.parent().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().text(new_data_ch_quantity)
+                            //layer.msg("执行成功",);
+                            layer.msg('执行成功！', {time: 3000, icon: 6}, function(){
+                                window.location.reload();
+                            });
+                            return true;
+                        }else{
+                            alert(res.message);
+                            nurl = '{% url "wms_distribution_withdrawal_list" %}';
+                            location.href = nurl+'?sku=' + sku;
+                        }
+
+                    });
+                }
+            });
+
+    });
+
+    var stock = $("#edit_stock")
+    var edit_stock = $(".edit_stock");
+    edit_stock.click(function () {
+        let _self = $(this);
+        let idx = layer.open({
+            title: "上",
+            area: "25%",
+            shadeClose: true,
+            content: stock.html(),
+            success: function (layero, index) {
+                if(_self.attr('data-isr') == "IN_STOCK"){
+                    $(".layui-layer-title").html('上架')
+                }else if(_self.attr('data-isr') == "OUT_OF_STOCK"){
+                    $(".layui-layer-title").html('下架')
+                }else if(_self.attr('data-isr') == "SIGN"){
+                     $(".layui-layer-title").html('添加备注')
+                }
+            },
+            yes: function (i, e) {
+                layer.close(idx);
+                let reason = $.trim(e.find("textarea").val());
+                let stock = _self.attr('data-isr');
+                if(stock == "OUT_OF_STOCK" && reason == ""){
+                    layer.msg("原因不能为空");
+                    return false;
+                }
+                $.post("{% url 'edit_stock' %}", {
+                    'frame': _self.attr('data-info'),
+                    'stock': stock,
+                    'reason': reason
+                }, function (res) {
+                    if (res.code == '0') {
+                        if(res.message == 'OUT_OF_STOCK'){
+                            //layer.msg("下架成功",);
+                            layer.msg('下架成功！', {time: 3000, icon: 6}, function(){
+                                window.location.reload();
+                            });
+                             //_self.parent().prev().prev().prev().prev().prev().prev().text("OUT_OF_STOCK")
+                             //_self.parent().prev().prev().prev().text(reason)
+                             //_self.parent().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().text("OUT_OF_STOCK")
+                        }else if(res.message == 'IN_STOCK'){
+                            //layer.msg("上架成功");
+                            layer.msg('上架成功！', {time: 3000, icon: 6}, function(){
+                                window.location.reload();
+                            });
+                             //_self.parent().prev().prev().prev().prev().prev().prev().text("IN_STOCK")
+                             //_self.parent().prev().prev().text(reason)
+                             //_self.parent().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().prev().text("IN_STOCK")
+                        }else if(res.message == 'SIGN'){
+                             layer.msg('添加备注成功！', {time: 3000, icon: 6}, function(){
+                                window.location.reload();
+                            });
+                        }
+                        return true;
+                    }
+                    layer.msg(res.message);
+                });
+            }
+        });
+    });
+
+    var cont = $("#edit_ret");
+    var edit_retired = $(".edit_retired");
+    edit_retired.click(function () {
+        let _self = $(this);
+        let idx = layer.open({
+            title: "状态修改为",
+            area: "25%",
+            shadeClose: true,
+            content: cont.html(),
+            success: function (e) {
+                let sir = _self.attr('data-isr');
+                let ele = e.find("input[value='true']");
+                if (sir == "True") {
+                    e.find("input[value='true']").attr("checked", "checked");
+                    e.find("input[value='false']").removeAttr('checked');
+                } else if (sir == "False") {
+                    e.find("input[value='false']").attr("checked", "checked");
+                    e.find("input[value='true']").removeAttr('checked');
+                }
+            },
+            yes: function (i, e) {
+                layer.close(idx);
+                let reason = $.trim(e.find("textarea").val());
+                if (reason == "") {
+                    layer.msg("原因不能为空");
+                    return false;
+                }
+                $.post("{% url 'edit_retired' %}", {
+                    'frame': _self.attr('data-info'),
+                    'is_ret': e.find('input[name="is_ret"]:checked').val(),
+                    'reason': reason
+                }, function (res) {
+                    if (res.code == '0') {
+                        console.log(res.message)
+                        //_self.attr('data-isr', res.message);
+                        //_self.parent().prev().prev().prev().prev().prev().prev().prev().text(res.message)
+                        //_self.parent().prev().text(reason)
+                        //layer.msg("修改成功");
+                        layer.msg('修改成功！', {time: 3000, icon: 6}, function(){
+                            window.location.reload();
+                        });
+                        return true;
+                    }
+                    layer.msg(res.message);
+                });
+            }
+        });
+    });
+    //设置安全库存
+    var lock_qty = $("#edit_lock_qty");
+    var edit_lock_quantity = $(".edit_lock_quantity");
+    edit_lock_quantity.click(function () {
+        let _self = $(this);
+        let idx = layer.open({
+            title: "修改库存锁定数量",
+            area: "25%",
+            shadeClose: true,
+            content: lock_qty.html(),
+            success: function (e) {
+            },
+            yes: function (i, e) {
+                let lock_quantity = e.find("input[name='lock_qty']").val()
+                if(lock_quantity == ''){
+                    layer.msg('请添写锁定数量');
+                    return false
+                }
+                $.post("{% url 'edit_lock_quantity' %}", {
+                    'frame': _self.attr('data-info'),
+                    'lock_quantity': lock_quantity
+                },function (res) {
+                    if (res.code == '0') {
+                        layer.msg('执行成功！', {time: 3000, icon: 6}, function(){
+                            window.location.reload();
+                        });
+                    }else{
+                        layer.msg(res.message);
+                    }
+                });
+            }
+        });
+    });
+    var edit_no_sale_qty = $("#edit_no_sale_qty");
+    var edit_no_sale_quantity = $(".edit_no_sale_quantity");
+    edit_no_sale_quantity.click(function () {
+        let _self = $(this);
+        let idx = layer.open({
+            title: "修改不可售数量",
+            area: "25%",
+            shadeClose: true,
+            content: edit_no_sale_qty.html(),
+            success: function (e) {
+            },
+            yes: function (i, e) {
+                let lock_quantity = e.find("input[name='lock_qty']").val();
+                if(lock_quantity == ''){
+                    layer.msg('请添写不可售数量');
+                    return false
+                }
+                $.post("{% url 'edit_no_sale_quantity' %}", {
+                    'frame': _self.attr('data-info'),
+                    'no_sale_quantity': lock_quantity
+                },function (res) {
+                    if (res.code == '0') {
+                        layer.msg('执行成功！', {time: 3000, icon: 6}, function(){
+                            window.location.reload();
+                        });
+                    }else{
+                        layer.msg(res.message);
+                    }
+                });
+            }
+        });
+    });
+
+    //设置预计到货时间
+    {% if perms.wms.REPLENISHMENT %}
+        // 为十月下的的月份加0
+        function ad_0(s) {
+            return s < 10 ? '0' + s : s;
+        }
+        // 日期需要的变量
+        var m_dt = new Date();
+        var sdate = m_dt.getFullYear() + '-' + ad_0(m_dt.getMonth() + 1) + '-' + ad_0(m_dt.getDate());
+        var edate = (m_dt.getFullYear() + 1) + '-' + ad_0(m_dt.getMonth() + 1) + '-' + ad_0(m_dt.getDate());
+        var date_li = $('.date_li');
+
+        // 初始化开始时间的日历框
+        date_li.datetimepicker({
+            language: 'zdy', weekStart: 1, autoclose: 1,
+            startDate: sdate, endDate: edate, minView: 2, maxView: 3
+        }).on('changeDate', function (ev) {
+            let time_str = ev.date.getFullYear() + "-" + ad_0(ev.date.getMonth() + 1) + "-" + ad_0(ev.date.getDate());
+            console.log(time_str)
+            console.log($(this).attr('data-item-id'))
+            $.post("{% url 'update_replenishment_date' %}", {
+                "item_id": $(this).attr('data-item-id'),
+                "tar_time": time_str
+            }, function (res) {
+                if (res.code == 0) {
+                    layer.msg('执行成功！', {time: 3000, icon: 6}, function(){
+                        window.location.reload();
+                    });
+                } else {
+                    layer.msg("更新时间失败: " + res.message, {time: 3000, icon: 7, shadeClose: true});
+                }
+            });
+        });
+    {% endif %}
+
+    $(".sync_web_data").click(function () {
+        layer.load(2);
+        sku = $(this).attr("data-info");
+
+        // 2019.12.27 by guof. OMS-561
+
+        $.ajax({
+            url: "{% url 'wms_inventory_sync_web_data' %}",
+            type: "POST",
+            data: {
+                "sku": sku,
+            },
+            success: function (res) {
+                console.log(res);
+                console.log(res.code);
+                if (res.code != 0) {
+                    layer.msg(res.message);
+                } else {
+                    layer.msg('此操作已成功！', {time: 3000, icon: 6}, function () {
+                        window.location.reload();
+                    });
+                }
+            }
+        });
+    });
+
+    $(".sync_reserve_quantity").click(function () {
+        layer.load(2);
+        sku = $(this).attr("data-info")
+        url = '{% url "wms_inventory_sync_reserve_quantity" %}';
+        $.get(url, { sku: sku },function(data){
+            $('#loading').modal('hide');
+            if(data['code'] == 0){
+                layer.msg('执行成功！', {time: 3000, icon: 6}, function(){
+                    window.location.reload();
+                });
+            }
+        });
+    });
+    // 生成csv
+    $(".exported_data").click(function () {
+        var url = "{% url 'wms_product_management_excel' %}";
+        sku = getQueryString('sku');
+        filter = getQueryString('filter');
+        sort_filter = getQueryString('sort_filter');
+        status_filter = getQueryString('status_filter');
+        if(filter == ''){
+            filter = 'all'
+        };
+        if(sort_filter == ''){
+            sort_filter = 'all'
+        };
+        if(status_filter == ''){
+            status_filter = 'all'
+        };
+        window.location.href = url +"?sku="+sku+"&filter="+filter+"&sort_filter="+sort_filter+"&status_filter="+status_filter
+    });
+      function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+            if( r != null ) return decodeURI( r[2] ); return '';
+        }
+    {#$(".exported_data").click(function () {#}
+    {#    var list_dict = [#}
+    {#        {% for item in all_list %}#}
+    {#            {#}
+    {#                "sku":'{{ item.sku }}',#}
+    {#                "quantity": '{{ item.quantity }}',#}
+    {#                "lock_quantity":'{{ item.lock_quantity }}',#}
+    {#                "reserve_quantity":'{{ item.reserve_quantity }}',#}
+    {#                "ch_quantity": '{{ item.ch_quantity }}',#}
+    {#                "al_quantity": '{{ item.al_quantity }}',#}
+    {#                "retired": '{{ item.retired }}',#}
+    {#                "status": '{{ item.status }}',#}
+    {#                "web_status": '{{ item.web_status }}',#}
+    {#                "web_quantity": '{{ item.web_quantity }}',#}
+    {#                "oms_web_diff": '{{ item.oms_web_diff }}',#}
+    {#                "last_in_stock": '{{ item.last_in_stock }}',#}
+    {#                "last_out_of_stock": '{{ item.last_out_of_stock }}',#}
+    {#                "last_retired": '{{ item.last_retired }}'#}
+    {#            },#}
+    {#        {% endfor %}#}
+    {#    ]#}
+    {#    headerdata = ["sku", "quantity", "lock_quantity", "reserve_quantity", "ch_quantity", "al_quantity", "retired","status", "web_status", "web_quantity", "oms_web_diff", "last_in_stock", "last_out_of_stock", "last_retired"]#}
+    {#    // json数据转csv格式#}
+    {#    var csv = json2csv({ data: list_dict, fields: headerdata });#}
+    {#    funDownload(csv, 'product_management.csv');#}
+    {#});#}
+    // 下载文件方法
+    function funDownload(content, filename) {
+        var eleLink = document.createElement('a');
+        eleLink.download = filename;
+        eleLink.style.display = 'none';
+        // 字符内容转变成blob地址
+        var blob = new Blob([content]);
+        eleLink.href = URL.createObjectURL(blob);
+        // 触发点击
+        document.body.appendChild(eleLink);
+        eleLink.click();
+        // 然后移除
+        document.body.removeChild(eleLink);
+    };
+    $(".sync_difference").click(function () {
+        var index = layer.load(2);
+        var sku = $(this).attr("data-info");
+        var diff_quantity = $(this).attr("data");
+        url = '{% url "wms_inventory_sync_difference" %}';
+        $.get(url, { sku: sku, diff_quantity: diff_quantity },function(data){
+            if (data['code'] == 0) {
+                layer.msg("操作成功", {time: 1000, icon: 6}, function () {
+                    window.location.reload();
+                });
+
+            }else{
+                layer.close(index);
+                layer.msg(data['message'], {time: 3000, icon: 7});
+
+            }
+        });
+    });
+    $(".sync_sku_reason").click(function () {
+        var index = layer.load(2); //换了种风格
+        var sku = $(this).attr("data-info");
+        url = '{% url "redirect_inventory_sync_reason" %}';
+        $("#tbody").html('');
+        $.ajax({
+                    url: url,
+                    type: 'GET',
+                    data: {
+                        'sku': sku
+                    },
+            success: function (data) {
+                var str = '';
+                obj = $.parseJSON(data);
+                for (var reason in obj) {
+                    var action = ""
+                    if (obj[reason].operation_type == 'OUT_OF_STOCK') {
+                        action = "下架"
+                    }
+                    if (obj[reason].operation_type == 'IN_STOCK') {
+                        action = "上架"
+                    }
+                    if (obj[reason].operation_type == 'retired') {
+                        action = "停售"
+                    }
+                    if (obj[reason].operation_type == 'SIGN') {
+                        action = "备注"
+                    }
+                    str += '<tr>';
+                    str += '<td>' + obj[reason].id + '</td>';
+                    str += '<td>' + obj[reason].user_name + '</td>';
+                    str += '<td>' + action + '</td>';
+                    str += '<td>' + obj[reason].reason + '</td>';
+                    str += '<td>' + eosFormatTime2(obj[reason].created_at) + '</td>';
+                    str += '</tr>';
+                }
+                $("#tbody").html(str);
+                layer.close(index);
+            }
+        })
+   })
+        $(".sync_sku_sign").click(function () {
+        var index = layer.load(2); //换了种风格
+        var sku = $(this).attr("data-info");
+        url = '{% url "redirect_inventory_sync_reason" %}';
+        $("#tbody").html('');
+        $.ajax({
+                    url: url,
+                    type: 'GET',
+                    data: {
+                        'sku': sku
+                    },
+            success: function (data) {
+                var str = '';
+                obj = $.parseJSON(data);
+                for (var reason in obj) {
+                    str += '<tr>';
+                    str += '<td>' + obj[reason].id + '</td>';
+                    str += '<td>' + obj[reason].user_name + '</td>';
+                    str += '<td>' + '备注' +'</td>';
+                    str += '<td>' + obj[reason].reason + '</td>';
+                    str += '<td>' + eosFormatTime2(obj[reason].created_at) + '</td>';
+                    str += '</tr>';
+                }
+                $("#tbody").html(str);
+                layer.close(index);
+            }
+        })
+   })
+    var eosFormatTime2 = function(oldTimes1) {
+        var time1 = oldTimes1.split(' ')[0];
+        var arrTime = oldTimes1.split(' ')[1].split(':');
+        var time2 = arrTime.slice(1, arrTime.length).join(':');
+        var h = parseInt(arrTime[0]) + 8;
+        var newH = ((h < 24) ? h : (h % 24)).toString();
+        return time1 + ' ' + newH + ':' + time2;
+    }
+
+    </script>
+
+{% endblock %}

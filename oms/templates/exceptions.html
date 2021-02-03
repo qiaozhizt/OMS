@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders {% if page_info.total %}<span class="label label-default">{{ page_info.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}{{ form_data.request_feature }}{% endblock %}
+{% block content %}
+
+    <div class="callout callout-default">
+            <h4>Exception</h4>
+
+            <p>{{ form_data.exceptions }}.</p>
+        </div>
+
+    <!--Actions-->
+    <div class="cl">
+        <div style="float: left;margin-right: 3px;margin-left:10px;">
+            <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" href="/oms/"
+               target='view_window'>OMS Home</a>
+        </div>
+
+    </div>
+
+    <div class="content-wrapper">
+        <div id="tableContent">
+            <div class="row">
+                <span class="label-default">Error Message: </span>
+                <span>{{ form_data.error_message }}</span>
+                <br/>
+                <span class="label-default">Exceptions: </span>
+                <span>{{ form_data.exceptions }}</span>
+            </div>
+        </div>
+    </div>
+    <!--Actions end-->
+
+    <!--paginator-->
+
+{% endblock %}
+

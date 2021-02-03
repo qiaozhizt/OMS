@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>出库申请单</title>
+    <link rel="stylesheet" href="{% static "css/print_template.css" %}">
+    <script src={% static "js/jquery-2.2.3.min.js" %}></script>
+</head>
+<script>
+    $.ajaxSetup({
+        data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+    });
+
+    $(document).ready(function () {
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]);
+            return null;
+        }
+
+        var post_data = {};
+        var page = getUrlParam("page");
+        var filter = getUrlParam("filter");
+        var warehouse = getUrlParam("warehouse");
+        var lines = getUrlParam("lines");
+        var entities = getUrlParam("entities");
+        var ship = getUrlParam("ship");
+        var overdue = getUrlParam("overdue");
+        if (page != null) post_data["page"] = page;
+        if (filter != null) post_data["filter"] = filter;
+        if (warehouse != null) post_data["warehouse"] = warehouse;
+        if (lines != null) post_data["lines"] = lines;
+        if (entities != null) post_data["entities"] = entities;
+        if (ship != null) post_data["ship"] = ship;
+        if (overdue != null) post_data["overdue"] = overdue;
+        console.log(post_data);
+        $.ajax({
+            url: "{% url 'laborder_request_notes_create' %}",
+            method: "POST",
+            data: post_data,
+            success: function (res) {
+                $("body").html(res);
+                window.print();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+
+        //$("#print_1").click(function () {
+        //    window.print();
+        //})
+    })
+</script>
+<body>
+</body>
+</html>

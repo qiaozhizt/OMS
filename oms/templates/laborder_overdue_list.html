@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .cl:after {
+            display: block;
+            clear: both;
+            content: "";
+        }
+
+        .cl {
+            zoom: 1
+        }
+
+        .trDetail div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .trDetail span {
+            margin-right: 10px;
+        }
+
+        .divDetail {
+            display: inline-block;
+            text-align: center !important;
+            width: 100%;
+            background: #fff;
+            margin-bottom: -1px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .positionBox {
+            display: inline-block;
+        }
+
+        .divDetail hr {
+            width: 100%;
+            border: 1px dashed #000;
+        }
+
+        tbody .ondetail {
+            cursor: pointer;
+        }
+
+        #tabDiv td {
+            padding-right: 5px;
+        }
+
+        #topbtn button:hover {
+            background-color: #d58512 !important;
+        }
+
+        #bottom button:hover {
+            background-color: #367fa9 !important;
+            border: 1px solid #3c8dbc;
+        }
+
+        .filterLab {
+            margin-bottom: 20px;
+        }
+
+        .filterLab div {
+            margin-right: 20px;
+        }
+
+        .ulStyle {
+            -webkit-padding-start: 0px !important;
+            padding: 0;
+
+        }
+
+        .liStyle {
+            float: left;
+            list-style: none;
+            margin-right: 10px;
+            border-radius: 3px;
+            color: #fff;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .ulStyle .labOrderLog {
+            list-style: none;
+            float: right;
+            cursor: pointer;
+        }
+
+        .estime {
+            margin-right: 30px;
+        }
+
+        .mixtable td {
+            text-align: center;
+        }
+
+        #lens_t {
+            display: none;
+        }
+
+        .tdContent {
+            position: relative;
+        }
+
+        .showContent {
+            width: 350px;
+            height: 200px;
+            overflow-y: auto;
+            background: #ccc;
+            border-radius: 5px;
+            position: absolute;
+            left: -370px;
+            top: -52px;
+            z-index: 11;
+            padding: 5px;
+        }
+
+        .qipao {
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-right: 20px solid #ccc;
+            border-bottom: 20px solid transparent;
+            position: absolute;
+            left: -20px;
+            top: 55px;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}Lab Orders<span class="label label-default">{{ form_data.total }}</span>{% endblock %}
+{% block small %}超期订单[旧版]{% endblock %}
+{% block content %}
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            Vendor <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href={{ requestUrl }}?vendor=all&filter={{ filter }}&status={{ status }}>
+                    {% ifequal vendor 'all' %}
+                        *{% endifequal %}All</a></li>
+            <li>&nbsp</li>
+
+            {% for vc in vendors_choices %}
+                <li>
+                    <a href={{ requestUrl }}?vendor={{ vc.key }}&filter={{ filter }}&status={{ status }}>
+                        {% ifequal vendor vc.key %}
+                            *
+                        {% endifequal %}
+                        {{ vc.value }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            当前状态 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href={{ requestUrl }}?vendor={{ vendor }}&filter={{ filter }}&status=all>
+                    {% ifequal vendor 'all' %}
+                        *{% endifequal %}All</a></li>
+            <li>&nbsp</li>
+
+            {% for st in status_choices %}
+                <li>
+                    <a href={{ requestUrl }}?vendor={{ vendor }}&filter={{ filter }}&status={{ st.key }}>
+                        {% ifequal status st.key %}
+                            *
+                        {% endifequal %}
+                        {{ st.value }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            是否处理过 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href={{ requestUrl }}?vendor={{ vendor }}&filter=all&status={{ status }}>
+                    {% ifequal filter 'all' %}
+                        *{% endifequal %}All</a></li>
+            <li>&nbsp</li>
+            <li>
+                <a href={{ requestUrl }}?vendor={{ vendor }}&filter=HANDLE&status={{ status }}>
+                    {% ifequal filter 'HANDLE' %}
+                        *
+                    {% endifequal %}
+                    处理过</a></li>
+            <li>
+                <a href={{ requestUrl }}?vendor={{ vendor }}&filter=UNTREATED&status={{ status }}>
+                    {% ifequal filter 'UNTREATED' %}
+                        *
+                    {% endifequal %}
+                    未处理</a></li>
+        </ul>
+    </div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button id="overdue_order_csv" class="btn btn-default btn dropdown-toggle" type="button">导出csv</button>
+    </div>
+    <div class="blockContented" id="blockContents">
+        <div id="tableContented">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th class="hid">#</th>
+                        <th>订单号</th>
+                        <th>实际发货</th>
+                        <th>镜架</th>
+                        <th>数量</th>
+                        <th>计划镜片</th>
+                        <th>镜片</th>
+                        <th>当前状态</th>
+                        <th>vendor</th>
+                        <th>创建日期</th>
+                        <th>下达日期</th>
+                        <th>更新时间</th>
+                        <th>目前进程</th>
+                        <th>生产天数</th>
+                        <th>预计完成</th>
+                        <th>内部备注</th>
+                        <th>超期原因</th>
+                        <th>超期时间(小时)</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in form_data.lbo_list %}
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td><a name="lbo_details"
+                           href="javascript:void(0)"
+                           id="{{ item.lab_number }}"
+                    >{{ item.lab_number }}</a></td>
+                            <td>{{ item.act_ship_direction_name }}</td>
+                            <td>{{ item.frame }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.lens_name }}</td>
+                            <td>{{ item.act_lens_name }}</td>
+                            <td>{{ item.status }}</td>
+                            <td>{{ item.vendor }}</td>
+                            <td>{{ item.create_at |date:"Y-m-d H:i:s"}}</td>
+                            <td>{{ item.delivery_date |date:"Y-m-d H:i:s"}}</td>
+                            <td>{{ item.update_at |date:"Y-m-d H:i:s"}}</td>
+                            <td>{{ item.cur_progress }}</td>
+                            <td>{{ item.days_of_production }}</td>
+                            <td>{{ item.estimated_date |date:"Y-m-d H:i:s"}}</td>
+                            <td>{{ item.comments_inner}}</td>
+                            <td>{{ item.overdue_reasons }}</td>
+                            <td style="background: #E74C3C;">{{ item.overdue_hours }}</td>
+                            <td><button type="button" class="btn btn-primary btn_done" data="{{ item.lab_number }}" data-toggle="modal" data-target="#myModal">处理</button></td>
+                        </tr>
+                        <tr class="lab_order_details" style="display:none">
+                            <td colspan="21">
+                                <div name="details">
+
+                                </div>
+                            </td>
+                        </tr>
+                        <tr style="display:none">
+                            <td colspan="20">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+            <!--paginator-->
+        <div style="width: 100%;text-align: center;">
+            {% include 'page_number.html' %}
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">处理</h4>
+                </div>
+                <div class="modal-body" style="height: 300px;">
+                    <div class="form-group" style="height: 60px;">
+                        <label for="cur_progress" class="col-sm-2 control-label">目前进程</label>
+                        <div class="col-sm-10">
+                            <textarea name="cur_progress" maxlength="128" class="form-control" id="cur_progress" placeholder="请输入目前进程"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;height: 60px;">
+                        <label for="overdue_reasons" class="col-sm-2 control-label">超期原因</label>
+                        <div class="col-sm-10">
+                            <textarea name="overdue_reasons" maxlength="128" class="form-control" id="overdue_reasons" placeholder="请输入超期原因"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;height: 60px;">
+                        <label for="comments" class="col-sm-2 control-label">时间</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="delay_time" id="delay_time" placeholder="请输入时间" style="width: 180px">
+                        </div>
+                    </div>
+                    <input type="hidden" value="" id="lab_number"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="sub_data">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        // 点击 行上的 Vendor List，更新 Vendor；无确认需求
+        $("a[name='lbo_details']").each(function () {
+            $(this).bind("click", function () {
+
+                var index = layer.load(2); //换了种风格
+                var item_content = this;
+                var id = $(this).attr('id');
+
+                //if ($(this).parents("tr").next().css('display') != 'none') {
+                //$(this).parents("tr").next().toggle(200);
+                //return true;
+                //}
+
+                var _html = [];
+                var url = "{% url 'laborder_detail_pspf' %}";
+                $.ajax({
+                    url: url,
+                    type: 'post',
+                    data: {
+                        "lab_number": id,
+                    },
+                    success: function (arg) {
+                        _html.push(arg);
+                        $(item_content).parents("tr").next().find("td").find("div[name='details']").html(_html.join(''));
+                        layer.close(index);
+                    }
+                });
+                //$(this).parents("tr").next().find("td").html(_html);
+                $(this).parents("tr").next().toggle(400);
+            });
+        });
+        var date = new Date();	 //获取当前的日期
+        var preDate = new Date(date.getTime() - 24*60*60*1000);  //一年以前的日期
+        laydate.render({
+            elem: '#delay_time', //指定元素
+            type:"datetime",
+            value: preDate
+        });
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                url = "{% url 'oms_overdue_orders' %}"
+                location.href = url+'?lab_number=' + order_number;
+            }
+        });
+        $(".btn_done").click(function () {
+            var lab_number = $(this).attr('data');
+            $("#lab_number").val(lab_number);
+        });
+        $("#sub_data").click(function () {
+            var cur_progress = $("#cur_progress").val();
+            var overdue_reasons = $("#overdue_reasons").val();
+            var delay_time = $("#delay_time").val();
+            var lab_number = $("#lab_number").val();
+            if(cur_progress == ''){
+                alert("请填写当前进度！");
+                return false
+            }
+            if(overdue_reasons == ''){
+                alert("请填写超期原因！");
+                return false
+            }
+            if(lab_number == ''){
+                alert("订单号为空！");
+                return false
+            }
+            data = {
+                "cur_progress":cur_progress,
+                "overdue_reasons":overdue_reasons,
+                "delay_time":delay_time,
+                "lab_number":lab_number
+            }
+            url = "{% url 'oms_sub_delay_data' %}"
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(data)
+                },
+                success: function (res) {
+                    if (res.code == -1) {
+                        layer.msg(res.message,{time: 5000, icon: 7});
+                    } else {
+                        $("#list_body").prepend(res);
+                        layer.msg("添加成功",{time: 5000, icon: 6});
+                        window.location.reload();
+                    }
+                }
+            });
+        });
+        $("#overdue_order_csv").click(function () {
+            window.location.href = "{% url 'oms_overdue_orders_csv' %}?lab_number={{ lab_number }}&vendor={{ vendor }}&filter={{ filter }}&status={{ status }}"
+        });
+    </script>
+{% endblock %}

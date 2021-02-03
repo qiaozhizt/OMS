@@ -1,0 +1,453 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders {% if form_data.total %}
+    <span class="label label-default" xmlns="http://www.w3.org/1999/html">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}仓位管理{% endblock %}
+{% block content %}
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <!--<div style="float: left;">
+        <div class="input-group input-group" style="width: 250px;">
+            <input type="text" class="form-control" id="order_number" placeholder="Please enter the order number"
+                   value="{{ order_number }}"
+                   autofocus="autofocus"
+                   {% if form_data.search_entity %}value="{{ form_data.search_entity }}"{% endif %}>
+        </div>
+    </div>-->
+    <a type="button" class="btn btn-default btn-flat" style="float: right;margin-left: 20px;" href="/wms/lockers_log">Locker
+        Log</a>
+    <div class="cl">
+        <div>
+    <span class="input-group-btn">
+                <!--<button type="button" class="btn btn-default btn-flat" id="btnSearch">Search</button>-->
+                    <button class="btn btn-default btn dropdown-toggle btn-flat"
+                            type="button"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false" style="margin-left: 20px">
+                            Filter <span class="caret"></span>
+                        </button>
+            <ul class="dropdown-menu">
+                            <li class="divider"></li>
+                {% for item in config_list %}
+                    <li><a href={{ requestUrl }}?location={{ item.storage_location }}&glass_max={{ item.glasses_max_limit }}&is_vender={{ item.is_vender }}>
+                                    {% ifequal location item.storage_location %}
+                                        *{% endifequal %}{{ item.storage_location }}</a></li>
+                {% endfor %}
+                        </ul>
+        {% if lb_list_count == 1 %}
+            <h3 style="position: absolute;top:-16px;left: 94px; width: 80px; color: #e3311b;">{{ storage_location_locker_num }}</h3>
+        {% endif %}
+
+        {% if perms.wms.LOCKERS_INIT %}
+            <button type="button" class="btn btn-default btn-flat" style="float: right" data-toggle="modal"
+                    data-target="#myModal">Init</button>
+        {% endif %}
+    </span>
+            </span>
+        </div>
+    </div>
+    <!--model模态框弹出，初始化仓位-->
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="margin-top:150px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">初始化仓位</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label class="form-inline">&nbsp;仓&nbsp;位&nbsp;位&nbsp;置: <input type="text" class="form-control"
+                                                                                        id="storage_location"/></label>
+                    </div>
+                    <br/>
+                    <div>
+                        <label class="form-inline">&nbsp;类&nbsp;&nbsp;型&nbsp;仓&nbsp;位:
+                            <select id="ship_direction">
+                                <option value="EXPRESS">加急</option>
+                                <option value="STANDARD">普通</option>
+                                <option value="CA_EXPRESS">加急-加拿大</option>
+                               <option  value="OM_EXPRESS">加急-订单配对</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div style="margin-top: 12px">
+                        <label class="form-inline">最大存储量:<input type="text" class="form-control" id="glasses_max_limit"
+                                                                οninput="value=value.replace(/[^\d]/g,'')"/></label>
+                    </div>
+                    <div style="margin-top: 12px">
+                        <label class="form-inline">&nbsp;仓位开始数: <input type="text" class="form-control"
+                                                                       id="lockers_min_limit"
+                                                                       οninput="value=value.replace(/[^\d]/g,'')"/></label>
+                    </div>
+                    <div style="margin-top: 12px">
+                        <label class="form-inline">&nbsp;仓位结束数: <input type="text" class="form-control"
+                                                                       id="lockers_max_limit"
+                                                                       οninput="value=value.replace(/[^\d]/g,'')"/></label>
+                    </div>
+                    <div style="margin-top: 12px">
+                        <label class="form-inline">是否启用VD管理:</label>
+                        <div class="radio-custom radio-primary">
+                            <input type="radio" id="is_vender_1" name="is_vender_radio" value="1">
+                            <label style="width:70px;">启用</label>
+                            <input type="radio" id="is_vender_0" name="is_vender_radio" value="0" checked="checked">
+                            <label>禁用</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary " id="init_locker">初始化</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+
+    <!--Actions-->
+    <div class="cl">
+        <div style="float: left;margin-right: 3px;margin-left:10px;display: none;">
+            <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+        <!-- /btn-group -->
+    </div>
+
+    <br/>
+
+    <!--Actions end-->
+
+    <div class="row">
+    {% for item in new_lists %}
+        <div class="col-md-3">
+        <div class="box box-solid">
+        <div class="box-header with-border">
+            <i class="fa fa-building"></i>
+            <h3 class="box-title">{{ item.storage_location }} - {{ item.locker_num }}</h3>
+            <input type='hidden' id='vendor_hid'>
+            {% if is_vender == '1' %}
+                {% if perms.wms.LOCKERS_INIT %}
+                    <a name="vd_set"
+                       href="javascript:void(0)"
+                       id="{{ item.id }}"
+                       vendor="{{ item.vender }}"><span class="fa fa-gear" style="float: right"></span>
+                        <span style="float: right;margin-right: 10px;color:red;"><h1 class="box-title"
+                                                                                     id="btn_cur_vd"><strong>{{ item.vender }}</strong></h1></span>
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body box-main" style="height:312px">
+            {% if item.class == 'red' %}
+                {% for items in item.item %}
+                    {% if items.storage_location == 'OM' or items.storage_location == 'OM-EPS' %}
+                        {% if items.status == '暂停' or items.status == '取消' or items.status == '关闭' %}
+                            <div class="panel panel-danger po_content" rel="drevil"
+                                 lab_number="{{ items.lab_number }}" style="margin-bottom:5px;">
+                        {% else %}
+                            <div class="panel panel-danger" rel="drevil"
+                                 lab_number="{{ items.lab_number }}" style="margin-bottom:5px;">
+                        {% endif %}
+                    {% else %}
+                        <div class="panel panel-danger po_content" rel="drevil"
+                             lab_number="{{ items.lab_number }}" style="margin-bottom:5px;">
+                    {% endif %}
+                <div class="panel-heading">
+                    {{ items.lab_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ items.vendor }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ items.status }}
+                </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% if item.class == 'green' %}
+                {% for items in item.item %}
+                     {% if items.storage_location == 'OM' or items.storage_location == 'OM-EPS' %}
+                          {% if items.status == '暂停' or items.status == '取消' or items.status == '关闭' %}
+                              <div class="panel panel-success po_content" rel="drevil" lab_number="{{ items.lab_number }}" style="margin-bottom:5px;">
+                          {% else %}
+                            <div class="panel panel-success" rel="drevil" lab_number="{{ items.lab_number }}" style="margin-bottom:5px;">
+                          {% endif %}
+                     {% else %}
+                         <div class="panel panel-success po_content" rel="drevil" lab_number="{{ items.lab_number }}" style="margin-bottom:5px;">
+                     {% endif %}
+                        <div class="panel-heading">
+                            {{ items.lab_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ items.vendor }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ items.status }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% if item.class == 'gray' %}
+                {% for items in item.item %}
+                     {% if items.storage_location == 'OM' or items.storage_location == 'OM-EPS' %}
+                          {% if items.status == '暂停' or items.status == '取消' or items.status == '关闭' %}
+                              <div class="panel panel-default po_content" rel="drevil" lab_number="{{ items.lab_number }}" style="margin-bottom:5px">
+                          {% else %}
+                             <div class="panel panel-default" rel="drevil" lab_number="{{ items.lab_number }}" style="margin-bottom:5px;">
+                          {% endif %}
+                    {% else %}
+                     <div class="panel panel-default po_content" rel="drevil" lab_number="{{ items.lab_number }}" style="margin-bottom:5px">
+                      {% endif %}
+                        <div class="panel-heading">
+                            {{ items.lab_number }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ items.vendor }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ items.status }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            </div>
+            <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!-- ./col -->
+    {% endfor %}
+</div>
+
+    <div id="div_locker_vendor_manual" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            仓位原VD:<input class="form-control" name="txt_vendor" id="txt_vendor" readonly="true"></input>
+            请选择新VD:<select class="form-control" name="new_vendor" id="new_vendor"></select>
+        </div>
+    </div>
+
+    {% if location == '' %}
+        <div id="tableContent">
+            <table class="table table-hover table-striped">
+                <thead>
+                <tr>
+                    <th>订单号</th>
+                    <th>仓位位置</th>
+                    <th>仓位号</th>
+                    <th>镜片</th>
+                    <th>VD</th>
+                    <th>操作</th>
+                    <!--<th class="hid">Actions</th>-->
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for item in lb_list %}
+                    <tr>
+                        <td> {{ item.lab_number }}</td>
+                        <td>{{ item.storage_location }}</td>
+                        <td style="font-size: 20px;padding-left: 20px"><strong>{{ item.locker_num }}</strong></td>
+                        <td>{{ item.act_lens_name }}</td>
+                        <td class="vendor">{{ item.vendor }}</td>
+                        <td>
+                            <button id="remove_locker" lab_number="{{ item.lab_number }}"
+                                    class="btn btn-default btn-flat" style="padding:1px">移除仓位
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order_number', {time: 3000, icon: 7});
+            } else {
+                url = '{% url "wms_lockers_list" %}';
+                location.href = url + '?order_number=' + order_number;
+                $(".row").css('display', 'none')
+                $("#tableContent").css('display', 'block')
+            }
+        });
+        $("#init_locker").on("click", function () {
+                var url = "{% url 'init_lockers' %}";
+                var radio = document.getElementsByName("is_vender_radio");
+                var is_vender = ''
+                for (i = 0; i < radio.length; i++) {
+                    if (radio[i].checked) {
+                        is_vender = radio[i].value
+                    }
+                }
+                console.log(is_vender)
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        storage_location: $("#storage_location").val(),
+                        glasses_max_limit: $("#glasses_max_limit").val(),
+                        lockers_max_limit: $("#lockers_max_limit").val(),
+                        lockers_min_limit: $("#lockers_min_limit").val(),
+                        is_vender: is_vender,
+                        ship_direction: $("#ship_direction").val()
+                    },
+                    async: true
+                }).done(function (response) {
+                    if (response.code == '200') {
+                        alert("初始化成功")
+                    } else {
+                        alert(response.message)
+                    }
+                });
+            }
+        )
+
+        $("#remove_locker").on("click", function () {
+            var url = "{% url 'remove_locker' %}";
+            var lab_number = $(this).attr('lab_number');
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    lab_number: lab_number,
+                },
+                async: true
+            }).done(function (response) {
+                if (response.code == '200') {
+                    layer.msg('仓位移除成功');
+                    location.href = '/wms/wms_lockers_list/?order_number=' + lab_number
+                } else {
+                    layer.msg(response.message);
+                }
+            });
+        })
+        $("a[name='vd_set']").each(function () {
+            $(this).bind("click", function () {
+                var obj = $(this);
+                var id = obj.attr('id');
+                var vendor_set = $("#vendor_hid").val()
+                var vendor = ''
+                if (vendor_set == "") {
+                    vendor = obj.attr('vendor');
+                } else {
+                    vendor = vendor_set
+                }
+                $("#txt_vendor").val(vendor);
+
+                var s_vendors = $("#new_vendor");
+                s_vendors.empty();
+                s_vendors.append("<option value='" + '0' + "'>" + '0' + "</option>");
+                s_vendors.append("<option value='" + '2' + "'>" + '2' + "</option>");
+                s_vendors.append("<option value='" + '4' + "'>" + '4' + "</option>");
+                s_vendors.append("<option value='" + '5' + "'>" + '5' + "</option>");
+                s_vendors.append("<option value='" + '6' + "'>" + '6' + "</option>");
+                s_vendors.append("<option value='" + '7' + "'>" + '7' + "</option>");
+                s_vendors.append("<option value='" + '8' + "'>" + '8' + "</option>");
+                s_vendors.append("<option value='" + '9' + "'>" + '9' + "</option>");
+                s_vendors.append("<option value='" + '10' + "'>" + '10' + "</option>");
+                s_vendors.append("<option value='" + '1000' + "'>" + '1000' + "</option>");
+
+                var index = top.layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '600px',
+                        height: '400px'
+                    },
+                    title: '仓位Vendor设置', //不显示标题
+                    content: $('#div_locker_vendor_manual'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['设置', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        distribute_vendor(obj)
+                    }
+                });
+            })
+        })
+
+        function distribute_vendor(obj) {
+
+            var id = obj.attr('id');
+            var s_vendors = $("#new_vendor");
+            var vendor = s_vendors.val();
+            var url = "{% url 'locker_vender_set' %}";
+            var lens_index = layer.load();
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    'id': id,
+                    'vendor': vendor
+                },
+                success: function (arg) {
+                    if (arg.code != '200') {
+                        layer.msg('操作失败: ' + arg.message);
+                        layer.close(lens_index);
+                    } else {
+                        layer.closeAll();
+                        obj.find("span").find('#btn_cur_vd').html(vendor);
+                        document.getElementById('vendor_hid').value = vendor;
+                        layer.alert("此操作已成功.");
+                    }
+
+                },
+                error: function (arg) {
+                    layer.msg('操作失败: ' + arg.message);
+                    layer.close(lens_index);
+                }
+            })
+        }
+
+    </script>
+    <script>
+        $('.po_content').each(function (index) {
+            var $pElem = $(this);
+            var lab_number = $(this).attr('lab_number');
+            $pElem.popover({
+                trigger: 'manual',
+                placement: 'bottom',
+                title: '<a style="text-align:center; color:red; text-decoration:underline; font-size:14px;margin-left:30px" id="pop_remove" lab_number="' + lab_number + '" onclick="openEdit(\'' + lab_number + '\');"> 移除仓位</a>',
+                html: 'true',
+                content: lab_number,
+                animation: false
+            }).on("mouseenter", function () {
+                var _this = this;
+                $(this).popover("show");
+                $(this).siblings(".popover").on("mouseleave", function () {
+                    $(_this).popover("hide")
+                });
+            }).on("mouseleave", function () {
+                var _this = this;
+                setTimeout(function () {
+                    if (!$(".popover:hover").length) {
+                        $(_this).popover("hide")
+                    }
+                }, 100);
+            });
+        });
+
+        function openEdit(lab_number) {
+            var url = "{% url 'remove_locker' %}";
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    lab_number: lab_number,
+                },
+                async: true
+            }).done(function (response) {
+                if (response.code == '200') {
+                    layer.msg('仓位移除成功');
+                    window.location.reload();
+                } else {
+                    layer.msg(response.message);
+                }
+            });
+        }
+
+
+    </script>
+{% endblock %}

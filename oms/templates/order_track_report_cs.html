@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block style %}
+    <style>
+        #tab th,#tabs tr{
+            text-align: center;
+        }
+        #tab td{
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}OrderTrackingReportCS{% endblock %}
+{% block small %}Order Tracking Report CS{% endblock %}
+{% block content %}
+    <div>
+    {% include 'search.html' %}
+        <div>
+            <table class="table table-striped" id="tab">
+
+            </table>
+        </div>
+    <div id="callBackPager" style="text-align: center;width: 100%"></div>
+
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $(function(){
+            var width = $(document).width();
+
+            $.ajaxSetup({
+                 data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+                });
+
+            var pageNum = {{ pageNum | safe }}
+            function formateTime(date){
+                var f =date.split('T');
+                var md = f[0].split('-');
+                var g = f[1].split('Z');
+                var xf = g[0].split(":");
+                var order_date = md[1]+'-'+md[2]+' '+xf[0]+':'+xf[1];
+                return order_date;
+            }
+
+
+            function createTables(data){
+                   var html = [];
+{#                        if(width > 800){#}
+                            html.push("<thead>");
+                            html.push("<tr>");
+                            html.push("<th>PGORDER_NUMBER</th>");
+                            html.push("<th>ORDER NUMBER</th>");
+                            html.push("<th>SKU</th>");
+                            html.push("<th>ORDER DATE</th>");
+                            html.push("<th>CS_STATUS</th>");
+                            html.push("<th>SHIPPING METHOD</th>");
+                            html.push("<th>ESTIMATED TIME</th>");
+                            html.push("<th>FINAL TIME</th>");
+                            html.push("<th>CARRIERS</th>");
+                            html.push("<th>SHIPPING NUMBER</th>");
+                            html.push("<th>REMARK</th>");
+                            html.push("</tr>");
+                            html.push("</thead>");
+                            if(data == ''){
+                                html.push("<tbody>");
+                                html.push("<tr>");
+                                html.push("<td colspan='9'>NO Data</td>")
+                                html.push("</tr>");
+                                html.push("</tbody>");
+                            }else{
+                                html.push("<tbody>");
+                                for(var i = 0;i < data.length;i++){
+                                    field = data[i].fields;
+                                    html.push("<tr>");
+                                    html.push("<td>"+field.pgorder_number+"</td>");
+                                    html.push("<td>"+field.order_number+"</td>");
+                                    html.push("<td>"+field.sku+"</td>");
+
+
+                                    order_date = formateTime(field.order_date);
+                                    html.push("<td>"+order_date+"</td>");
+
+                                    if(field.cs_status == 'CS_MANUFACTURING'){
+                                        html.push("<td>In Lab</td>");
+                                    }else if(field.cs_status == 'CS_PACKING'){
+                                        html.push("<td>Packing</td>");
+                                    }else if(field.cs_status == 'CS_SHIPPED'){
+                                        html.push("<td>Shipped</td>");
+                                    }else if(field.cs_status == 'CS_ONHOLD'){
+                                        html.push("<td>Onhold</td>");
+                                    }else if(field.cs_status == 'CS_PREPARE'){
+                                        html.push("<td>Prepare</td>");
+                                    }else if(field.cs_status == 'CS_CANCELLED'){
+                                        html.push("<td>Cancel</td>")
+                                    }else if(field.cs_status == 'CS_REDO'){
+                                        html.push("<td>Redo</td>")
+                                    }
+
+                                    html.push("<td>"+field.shipping_method+"</td>");
+                                    if(field.estimated_time == null || field.estimated_time == ''){
+                                        html.push("<td>-</td>");
+                                    }else{
+                                        estimated_time = formateTime(field.estimated_time);
+                                        html.push("<td>"+estimated_time+"</td>");
+                                    }
+
+                                    if(field.final_time == null ||field.final_time == ''){
+                                        html.push("<td>-</td>");
+                                    }else{
+                                        final_time = formateTime(field.final_time);
+                                        html.push("<td>"+final_time+"</td>");
+                                    }
+
+                                    if(field.carriers == null || field.carriers == ''){
+                                        html.push("<td>-</td>");
+                                    }else{
+                                        html.push("<td>"+field.carriers+"</td>");
+                                    }
+
+                                    if(field.shipping_number == null || field.shipping_number == ''){
+                                        html.push("<td>-</td>");
+                                    }else{
+                                        html.push("<td>"+field.shipping_number+"</td>");
+                                    }
+                                    if(field.remark == null || field.remark == ''){
+                                        html.push("<td>-</td>");
+                                    }else{
+                                        html.push("<td>"+field.remark+"</td>");
+                                    }
+
+                                    html.push("</tr>");
+                                }
+                                html.push("</tbody>");
+
+
+                            }
+                            var tab = $("#tab");
+                            tab.empty();
+                            tab.html(html.join(''));
+            }
+
+            function createTable(currPage){
+
+                $.ajax({
+                    url:"/oms/orderTrackingReportCsList/",
+                    type:"POST",
+                    data:{
+                        'currPage':currPage
+                    },
+                    success:function(arg){
+                        data = JSON.parse(arg);
+                        createTables(data);
+                    }
+                })
+            }
+ createTable(1);
+            callBackPagination();
+     function callBackPagination() {
+
+        var totalCount =pageNum;
+          var showPage = 10;
+               var limit = 20;
+
+        $('#callBackPager').extendPagination({
+
+            totalCount: totalCount,
+
+            showPage: showPage,
+
+            limit: limit,
+
+            callback: function (curr, limit, totalCount) {
+
+                createTable(curr);
+            }
+
+        });
+
+    }
+
+    //按照单号查询
+    $("#btnSearch").on("click",function(){
+        var order_number = $("#number").val();
+        if(order_number == '' || order_number == null){
+            layer.msg('Please enter a order number', {time:3000,icon: 7});
+        }else{
+            var url = "/oms/orderTrackingReportFilter/"
+            searchByNumber(order_number,url,2);
+            var arg = responseValue;
+            var data = JSON.parse(arg);
+            if(data.length == 0){
+                layer.msg('No order, please check the number.', {time:3000,icon: 7});
+            }else{
+                createTables(data);
+
+            }
+        }
+    })
+
+
+
+        })
+
+    </script>
+
+{% endblock %}

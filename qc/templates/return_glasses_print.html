@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>制镜光学有限公司--成镜返工单</title>
+    <link rel="stylesheet" href="{% static "css/print_template.css" %}">
+    <script src={% static "js/jquery-2.2.3.min.js" %}></script>
+</head>
+<script>
+    $(document).ready(function () {
+        window.print();
+        //$("#print_1").click(function () {
+        //    window.print();
+        //})
+    })
+</script>
+<body>
+<div id="print-content">
+    <div class="header clear">
+        <div class="titleArea;display:none">
+            <span style="font-size: large"><b>成镜返工单-{{ item.workshop }}</b></span>
+        </div>
+    </div>
+    <table class="tableTopBorder_3">
+        <thead>
+
+        </thead>
+        <tbody>
+        <tr>
+            <td>订单号</td>
+            <td><b>{{ item.lab_number }}</b></td>
+            <td colspan="2">打印时间</td>
+            <td colspan="2">{{ form_data.obj.created_at }}</td>
+            <td colspan="2">发货方式</td>
+            <td colspan="2">{{ item.get_ship_direction_display }}</td>
+        </tr>
+        <tr>
+            <td>设计</td>
+            <td><b>{{ item.pal_design_name }}</b></td>
+            <td>镜架</td>
+            <td>{{ item.frame }}</td>
+            <td>尺寸</td>
+            <td>{{ item.size }}</td>
+            <td>直径</td>
+            <td>{{ item.dia_1 }}</td>
+            <td>直径2</td>
+            <td>{{ item.dia_2 }}</td>
+        </tr>
+        <tr>
+
+        </tr>
+
+        </tbody>
+    </table>
+    <table class="tableTopBorder_3">
+        <thead>
+        <th>数量</th>
+        <th>镜片类型</th>
+        <th>R/L</th>
+        <th>产品名称</th>
+        <th>折射率</th>
+        <th>设计</th>
+        <th>工艺</th>
+        <th>染色</th>
+        </thead>
+        <tbody>
+
+        <tr>
+            <td>{{ item.quantity }}</td>
+
+            <td>{{ item.lens_type }}</td>
+            <td>R&L</td>
+            <td>{{ item.lens_name }}</td>
+            <td>{{ item.lens_index }}</td>
+            <td>{{ item.pal_design_name }}</td>
+
+            <td>
+                HMC
+                {% if item.coating_name %}
+                    {{ item.coating_name }}
+                {% endif %}
+            </td>
+
+            <td>
+
+                {% if item.tint_name %}
+                    {{ item.tint_name }}
+                {% endif %}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <table class="tableTopBorder_3">
+        <tr>
+            <th>#</th>
+            <th>SPH</th>
+            <th>CYL</th>
+            <th>AXIS</th>
+            <th>ADD</th>
+            <th>PD</th>
+            <th>PRISM-H</th>
+            <th>BASE-H</th>
+            <th>PRISM-H</th>
+            <th>BASE-H</th>
+        </tr>
+        <tr>
+            <td>OD</td>
+            {% ifequal form_data.right 1 %}
+                <td>{{ item.od_sph }}</td>
+                <td>{{ item.od_cyl }}</td>
+                <td>{{ item.od_axis }}</td>
+                <td>{{ item.od_add }}</td>
+                <td>
+                    {% ifequal item.is_singgle_pd 1 %}{{ item.pd }}{% endifequal %}
+                    {% ifequal item.is_singgle_pd 0 %}{{ item.od_pd }}{% endifequal %}
+                </td>
+                <td>{{ item.od_prism }}</td>
+                <td>{{ item.od_base }}</td>
+                <td>{{ item.od_prism1 }}</td>
+                <td>{{ item.od_base1 }}</td>
+            {% endifequal %}
+        </tr>
+        <tr>
+            <td>OS</td>
+            {% ifequal form_data.left 1 %}
+                <td>{{ item.os_sph }}</td>
+                <td>{{ item.os_cyl }}</td>
+                <td>{{ item.os_axis }}</td>
+                <td>{{ item.os_add }}</td>
+                <td>
+                    {% ifequal item.is_singgle_pd 0 %}{{ item.os_pd }}{% endifequal %}
+                </td>
+                <td>{{ item.os_prism }}</td>
+                <td>{{ item.os_base }}</td>
+                <td>{{ item.os_prism1 }}</td>
+                <td>{{ item.os_base1 }}</td>
+            {% endifequal %}
+        </tr>
+    </table>
+
+    <table class="tableTopBorder_3">
+        <tr>
+            <th>返工镜片</th>
+            <td>{{ form_data.obj.get_lens_return_display }}</td>
+            <th>返工原因</th>
+            <td>{{ form_data.obj.get_reason_code_display }}</td>
+        </tr>
+    </table>
+
+    <table class="tableTopBorder_3">
+        <thead>
+
+        </thead>
+        <tbody>
+        <tr>
+            <td>备注</td>
+            <td width="80%" style="text-align: left">{{ item.comments }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="pageBreak"><!--如果需要强制换页就在上一页的未尾出加上此代码--></div>
+</div>
+
+<button style="display:none" id="print_1">打印</button>
+</body>
+</html>

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}{{ form_data.request_module }}
+    <span id="spn_data_total" class="label label-primary"></span> {% endblock %}
+{% block small %}{{ form_data.request_feature }}{% endblock %}
+{% block content %}
+
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <form role="form" class="form-inline box" id="inventory_form" method="POST" style="padding:20px">
+                <div class="form-group">
+                    <input type="text" name="startDate" class="form-control" id="startDate" placeholder="请选择开始时间"
+                           readonly="readonly"/>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" name="endDate" class="form-control" id="endDate" placeholder="请选择结束时间"
+                           readonly="readonly"/>
+                </div>
+
+                <div class="form-group">
+                    <select name="sku_type" id="sku_type" class="form-control">
+                        <option class="parameter" selected="selected" value="all">全部SKU</option>
+                        <option class="parameter" value="frame">镜架SKU</option>
+                        <option class="parameter" value="other">附件SKU</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" name="sku" class="form-control" id="sku" placeholder="格式：0000X00"/>
+                </div>
+
+                <button id="s_submit" type="submit" class="btn btn-default">确认查询</button>
+                <div id="g_submit" class="btn btn-default">导出数据</div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="content" class="box" style="padding:30px">
+
+        <h4 style="text-align:center">请输入筛选条件......</h4>
+
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 为十月下的的月份加0
+        function ad_0(s) {
+            return s < 10 ? '0' + s : s;
+        }
+
+        // 获取表单数据
+        function getFormData(form) {
+            let data = form.serialize();
+            data = decodeURI(data);
+            let arr = data.split('&');
+            let item, key, value, newData = {};
+            for (let i = 0; i < arr.length; i++) {
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if (key.indexOf('[]') != -1) {
+                    key = key.replace('[]', '');
+                    if (!newData[key]) {
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                } else {
+                    newData[key] = value;
+                }
+            }
+            return newData;
+        }
+
+        $(document).ready(function () {
+            // 日期需要的变量
+            var m_dt = new Date();
+            var sdate = '2018-01-01'; // 开始时间
+            var edate = ad_0(m_dt.getFullYear()) + '-' + ad_0(m_dt.getMonth() + 1) + '-' + ad_0(m_dt.getDate());
+            var _date_end = $('#endDate'); // 结束时间文本框
+            var _date_start = $('#startDate'); // 开始时间文本框
+            var s_form = $('#inventory_form');
+
+            _date_end.click(function () {
+                $(this).val('');
+            });
+            _date_start.click(function () {
+                $(this).val('');
+                _date_end.datetimepicker('setStartDate',sdate);
+            });
+            $("#s_submit").click(function () {
+                s_form.attr('data-page', 1);
+            });
+            // 格式化日历显示
+            $.fn.datetimepicker.dates['zdy'] = {
+                days: ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"],
+                daysShort: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+                daysMin: ["日", "一", "二", "三", "四", "五", "六"],
+                months: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+                monthsShort: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+                today: "今天",
+                format: "yyyy-mm-dd",
+                meridiem: ["上午", "下午"]
+            };
+            // 初始化开始时间的日历框
+            _date_start.datetimepicker({
+                language: 'zdy', weekStart: 1, todayBtn: 1, autoclose: 1,
+                startDate: sdate, endDate: edate, minView: 2, maxView: 3
+            }).on('changeDate', function (ev) {
+                s_form.attr('data-page', 1);
+                _date_end.datetimepicker('setStartDate',ev.date);
+                _date_end.val('');
+            });
+            // 初始化结束时间的日历框
+            _date_end.datetimepicker({
+                language: 'zdy', weekStart: 1, todayBtn: 1, autoclose: 1,
+                startDate: sdate, endDate: edate, minView: 2, maxView: 3
+            }).on('changeDate', function () {
+                s_form.attr('data-page', 1);
+            });
+            // 提交表单
+            s_form.submit(function (e) {
+                e.preventDefault(); // 取消默认操作
+                var _self = $(this);
+                var reg = new RegExp("^[0-9][0-9][0-9][0-9][A-Z][A-Z0-9][0-9]$");
+                var form_data = getFormData(_self);
+
+                form_data["sku_type"] = form_data["sku_type"]
+                form_data["sku"] = form_data["sku"].toUpperCase();
+                layer.load(1);
+                $.ajax({
+                    url: "{% url 'shipments_index' %}",
+                    type: 'post',
+                    data: {
+                        "info": JSON.stringify(form_data),
+                        "page": _self.attr('data-page')
+                    },
+                    success: function (res) {
+                        var res_doc = $(res);
+                        $("#content").html(res_doc);
+                        $("#spn_data_total").text(res_doc.eq(0).text());
+                        layer.closeAll();
+                    }
+                });
+            });
+            // 生成csv
+            $("#g_submit").click(function () {
+                location.href = "{% url 'shipments_index_csv' %}?info=" + JSON.stringify(getFormData(s_form));
+            });
+            // 分页按钮
+            $(document).on("click", "#pagination a.pa", function () {
+                s_form.attr('data-page', $(this).attr("data-page"));
+                s_form.submit();
+            });
+        });
+
+    </script>
+{% endblock %}

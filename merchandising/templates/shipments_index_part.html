@@ -1,0 +1,49 @@
+<div class="hidden" id="page_info_count">{{ page_info.data_count }}</div>
+<div class="row clearfix">
+    <div class="col-md-12 column">
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th>产品SKU</th>
+                <th>出货数量</th>
+                <th>产品库存量</th>
+                <th>发售时间</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for invd in invds %}
+                <tr>
+                    <td>{{ invd.sku }}</td>
+                    <td>{{ invd.qty }}</td>
+                    <td>{{ invd.quantity }}</td>
+                    <td>{{ invd.web_created_at }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="row clearfix">
+    <div class="col-md-12 column" style="text-align:center">
+        <ul class="pagination" id="pagination">
+            <li {% ifequal page_info.cur_page 1 %}class="disabled"{% endifequal %}><a
+                    {% ifnotequal page_info.cur_page 1 %}class="pa"{% endifnotequal %} href="javascript:void(0);"
+                    data-page="{{ page_info.prev_page }}">Prev</a></li>
+            {% ifequal page_info.left_spnt 1 %}
+                <li><a>...</a></li>{% endifequal %}
+            {% for i in page_info.page_range %}
+                <li {% ifequal page_info.cur_page i %}class="active"{% endifequal %}><a class="pa"
+                                                                                        href="javascript:void(0);"
+                                                                                        data-page="{{ i }}">{{ i }}</a>
+                </li>
+            {% endfor %}
+            {% ifequal page_info.right_spnt 1 %}
+                <li><a>...</a></li>{% endifequal %}
+            <li {% ifequal page_info.cur_page page_info.page_count %}class="disabled"{% endifequal %}><a
+                    {% ifnotequal page_info.cur_page page_info.page_count %}class="pa"{% endifnotequal %}
+                    href="javascript:void(0);" data-page="{{ page_info.next_page }}">Next</a></li>
+            <li><a>共<b> {{ page_info.page_count }} </b>页</a></li>
+            <li><a>共<b> {{ page_info.data_count }} </b>条数据</a></li>
+        </ul>
+    </div>
+</div>

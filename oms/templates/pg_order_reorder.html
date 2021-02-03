@@ -1,0 +1,2980 @@
+{% extends "base.html" %}
+{% block dashboard %}
+{% endblock %}
+{% block style %}
+<style>
+    .btn_next {
+        margin-right: 20%;
+        /*margin-top: 10px;*/
+        margin-bottom: 30px;
+    }
+
+    .btn_close {
+        float: right;
+    }
+
+    .user_float {
+        float: left;
+    }
+
+    .btn-block {
+        width: 50%;
+        margin: 0 auto;
+        margin-bottom: 50px;
+    }
+
+    h3 {
+        text-align: center;
+    }
+    .lens_option_3001,.lens_option_3002{
+        display: none;
+    }
+    .add_all {
+        width: 100%;
+        height: 40px;
+        border: 1px solid #d2d6de;
+        border-bottom: none;
+    }
+
+    .add_all div {
+        font-size: 14px;
+        line-height: 40px;
+    }
+
+    .all_money {
+        color: orange;
+    }
+
+    .add_all2 {
+        width: 100%;
+        height: 40px;
+        border: 1px solid orange;
+    }
+
+    .add_all2 div {
+        font-size: 14px;
+        line-height: 40px;
+    }
+
+    .all_detail {
+        height: 150px;
+        border: 1px solid orange;
+        border-top: none;
+    }
+    .id_od_singgle_pd{
+        display: none;
+    }
+    .checkbox-inline, .radio-inline{
+        display: block;
+        margin-bottom: 20px;
+        font-size: 18px;
+    }
+    .h4 {
+        margin-top: 0;
+        font-weight: bold;
+        font-size: 22px;
+        color:  #333;
+        text-align: center;
+    }
+    .checkbox-inline+.checkbox-inline, .radio-inline+.radio-inline{
+        margin-left: 0px;
+    }
+    #next_3001,#next_3009{
+        display: none;
+    }
+    .radio-inline_Nai,.radio-inline_child{
+        display: none;
+    }
+    .mask_show{
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        right: 0;
+        background-color: rgba(0,0,0,.5);
+        z-index: 4444444444;
+    }
+    .hide{
+        display: none;
+    }
+    .mask_show>img{
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        margin: auto;
+    }
+    .bg-aqua, .callout.callout-info, .alert-info, .label-info, .modal-info .modal-body{
+        background-color: #ECF0F5!important;
+    }
+    .callout.callout-info{
+        border-color: #ECF0F5 !important;
+    }
+    .checkbox-inline, .radio-inline{
+        color: #333 !important;
+    }
+    .callout{
+        margin:15px 30px 15px 15px;
+    }
+    .radio-inline_child{
+        display: none;
+    }
+    .light_child{
+        position: relative;
+    }
+    .light_child_smok,.light_child_smok_3009{
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border:2px solid transparent;
+        background: transparent;
+        position: relative;
+    }
+    .light_child_smok_3009_parents{
+        display: none;
+        padding-left: 53px;
+        margin-top: 10px;
+    }
+    .light_child_smok_3009{
+        display: inline-block;
+    }
+    .light_child_smok_color{
+        border:2px solid #000;
+        background: #fff;
+    }
+    .child_none{
+        display: none;
+    }
+    .bx_kx{
+        display: none;
+    }
+    .box-body:before{
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: red;
+    }
+    .Methods{
+        margin: 10px;
+    }
+    .Methods p{
+        display: inline-block;
+        margin-right: 10px;
+        font-weight: bold;
+    }
+    .reorderNumber{
+        margin-left: 40px;
+    }
+    .layui-table-cell{
+        height:50px !important;
+        line-height: 50px !important;
+        text-align: center !important;
+    }
+    .layui-table-header th span{
+        font-weight: bold;
+    }
+
+    .Frame_box{
+        width: 100%;
+        height: auto;
+        display: flex;
+        /* background-color: #ccc; */
+        /* height: 400px; */
+        border: 1px solid #ccc;
+        justify-content: space-around;
+        padding: 20px;
+        position: relative;
+        padding-bottom: 80px;
+
+    }
+
+    .Frame_box img{
+        width: 400px;
+    }
+
+    .Frame_box ul{
+        list-style: none;
+        width: 500px;
+    }
+
+    .Frame_box ul li{
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .item__Prescription{
+        background: #fff;
+        padding: 10px;
+        box-shadow: 0 0 6px #a9a6a6;
+        margin-bottom: 30px;
+
+    }
+    .shopping-cart-profile-name{
+        padding-bottom: 13px;
+        text-align: left;
+        font-size: 17px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+    }
+    .shopping-cart-profile-name span{
+        border-bottom: 3px solid #f90;
+    }
+    .shopping-cart-profile-name a{
+        color: red;
+    }
+
+
+    .Frame_box .product{
+        position: absolute;
+        left: 10px;
+        bottom: 6px;
+        left: 20px;
+    }
+
+    .Frame_box .removeSub{
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        cursor: pointer;
+    }
+    .Frame_box .remove{
+        /* position: absolute; */
+        border: 1px solid #f90;
+        padding: 5px 15px;
+        font-size: 15px;
+        color: #f90;
+        background: #fff;
+        border-radius: 4px;
+        /* bottom: 10px; */
+        /* right: 10px; */
+        float: left;
+    }
+    .Frame_box .remove:hover{
+        color: #fff;
+        background-color: #f90;
+        
+    }
+    .Frame_box .submit_class{
+        border: 1px solid #f90;
+        font-size: 15px;
+        color: #fff;
+        border-radius: 4px;
+        float: left;
+        margin-left: 20px;
+        padding: 5px 15px;
+        background: #f90;
+    }
+    #next_3002{
+        display: none;
+    }
+
+    .quote-class{
+        background: #000 !important;
+        color: #fff;
+    }
+    .Subtotal_class{
+        margin-bottom: 15px;
+        font-size: 19px;
+    }
+    .layui-layer-btn .layui-layer-btn0 {
+        border-color: #f90 !important;
+        background-color: #f90 !important;
+        color: #fff;
+    }
+    #select_method{
+        position: absolute;
+        left: 20px;
+    }
+    #formEle{
+        width: 400px;
+        position: absolute;
+        top: 5px;
+        display: flex;
+        margin-bottom: 10px;
+    }
+    .jy_class{
+        background-color: #ccc!important;
+        color: #fff!important;
+    }
+    #ReOrder_list a{
+        text-decoration: underline;
+        color: blue;
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block h1 %}
+OMS
+{% endblock %}
+{% block small %}
+ALL PG Orders
+{% endblock %}
+{% block content %}
+<!-- Main content -->
+<section class="content">
+
+
+    <div class="mask_show hide">
+        <img src="https://static.payneglasses.com/static/version1577435936/frontend/Pg/payne/en_US/images/loader-1.gif" alt="">
+    </div>
+    <div class="layui-form">
+        <table class="layui-table">
+            <thead>
+            <tr>
+                <th>Order information</th>
+                <th>Order content</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Order Number</td>
+                <td>{{po.order_number}}</td>
+            </tr>
+            <tr>
+                <td>Order datetime</td>
+                <td>{{po.order_datetime}}</td>
+            </tr>
+            <tr>
+                <td>Status</td>
+                <td>{{po.status}}</td>
+            </tr>
+            <tr>
+                <td>Shipping Method</td>
+                <td>{{po.shipping_method}}</td>
+            </tr>
+            <tr>
+                <td>Customer Email</td>
+                <td>{{po.email}}</td>
+            </tr>
+            <tr>
+                <td>ReOrder Number</td>
+                <td id="ReOrder_list">
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-12 self_pspf" id="" style="padding: 0px">
+        <link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui/css/layui.css" />
+        <div id="test2" class="demo-tree">
+        </div>
+        <div class="layui-hide" id="demo" lay-filter="test"></div>
+        <script type="text/html" id="barDemo">
+            <a class="layui-btn  layui-btn-xs preview yi_order_btn" lay-event="preview" title="review">
+                <i class="layui-icon layui-icon-layer"></i>
+                <span class="layui-badge layui-badge yi_order"></span>
+            </a>
+            <a class="layui-btn  layui-btn-xs redone yi_order_btn2" lay-event="redone" title="Redone">
+                <i class="layui-icon layui-icon-template-1"></i>
+                <span class="layui-badge layui-badge wei_order yi_order2"></span>
+            </a>
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="detail" title="More">
+                <i class="layui-icon layui-icon-menu-fill"></i>
+            </a>
+            <a class="layui-btn  layui-btn-warm layui-btn-xs" lay-event="edit" title="Edit">
+                <i class="layui-icon layui-icon-edit"></i>
+            </a>
+        </script>
+
+        <script type="text/html" id="toolbarDemo">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-lg viewOrder_redone" lay-event="getCheckData">View orders not redone
+                    <span class="layui-badge layui-badge viewOrder_len"></span>
+                </button>
+                <button class="layui-btn layui-btn-lg viewOrder_redone2" lay-event="not_getCheckData">View redo orders
+                    <span class="layui-badge layui-badge viewOrder_len2">1</span>
+                </button>
+            </div>
+        </script>
+    </div>
+
+
+
+    <!-- Edit prescription -->
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box" id="next_3002">
+                <div class="box-header with-border ">
+                    <div class="user-blok user_float">
+                        <span class="user-name">
+                            <a>Edit prescription</a>
+                            <a style="color: #000;font-weight: bold;" id="prescription_name"></a>
+                        </span>
+                    </div>
+                    <!--<div class="user-blok user_float reorderNumber">-->
+                        <!--<span class="user-name" id="reorder_id">-->
+                            <!--<a>reorder Number : </a>-->
+                        <!--</span>-->
+                    <!--</div>-->
+                    <button type="button" class="close  btn_close" aria-label="Close"><span
+                        aria-hidden="true"></span></button>
+                </div>
+                <div class="box-body">
+                    <div class="smok_next"></div>
+                    <!--Edit prescription-->
+                    <table class="table table-hover">
+                        <tbody class="norx_class">
+                        <tr >
+                            <th>#</th>
+                            <th>SPH</th>
+                            <th>CYL</th>
+                            <th>AXIS</th>
+                            <th>ADD</th>
+                            <th>PD</th>
+                            <th>IS_SINGGLE_PD</th>
+                        </tr>
+                        <tr >
+                            <th>OD</th>
+                            <td>
+                                <select name="" class="id_od_sph select_change">
+                                </select>
+                            </td>
+                            <td>
+                                <select name="" class="id_od_cyl select_change"></select>
+                            </td>
+                            <td>
+                                <select name="" class="id_od_axis select_change" >
+                                </select>
+                            </td>
+                            <td>
+                                <select name="" class="id_od_add select_change"></select>
+                            </td>
+                            <td>
+                                <select name="" class="id_od_pd select_change"></select>
+                                <select name="" class="id_od_singgle_pd select_change"></select>
+                            </td>
+                            <td>
+                                <input class="input_singgle select_change" type="checkbox" value="false"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>OS</th>
+                            <td>
+                                <select name="" class="id_os_sph select_change"></select>
+                            </td>
+                            <td>
+                                <select name="" class="id_os_cyl select_change"></select>
+                            </td>
+                            <td>
+                                <select name="" class="id_os_axis select_change">
+                                </select>
+                            </td>
+                            <td>
+                                <select name="" class="id_os_add select_change">
+                                </select>
+                            </td>
+                            <td>
+                                <select name="" class="id_os_pd select_change">
+
+                                </select>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-hover">
+                        <tbody class="norx_class">
+                        <tr>
+                            <th>#</th>
+                            <th>Prism-H</th>
+                            <th>Base-H</th>
+                            <th>Prism-V</th>
+                            <th>Base-V</th>
+                        </tr>
+                        <tr>
+                            <th>OD</th>
+                            <td>
+                                <select name="" class="id_od_prism_h select_change"></select>
+                            </td>
+                            <td>
+                                <select name="" class="id_od_base_h select_change">
+                                    <option>Choose</option>
+                                    <option value="In">In</option>
+                                    <option value="Out">Out</option>
+                                    <option value="Up">Up</option>
+                                    <option value="Down">Down</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="" class="id_od_prism_v select_change"></select>
+                            </td>
+                            <td>
+                                <select name="" class="id_od_base_v select_change">
+                                    <option>Choose</option>
+                                    <option value="In">In</option>
+                                    <option value="Out">Out</option>
+                                    <option value="Up">Up</option>
+                                    <option value="Down">Down</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>OS</th>
+                            <td>
+                                <select name="" class="id_os_prism_h select_change"></select>
+                            </td>
+                            <td>
+                                <select name="" class="id_os_base_h select_change">
+                                    <option>Choose</option>
+                                    <option value="In">In</option>
+                                    <option value="Out">Out</option>
+                                    <option value="Up">Up</option>
+                                    <option value="Down">Down</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="" class="id_os_prism_v select_change">
+                                    <option value="">0</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="" class="id_os_base_v select_change">
+                                    <option >Choose</option>
+                                    <option value="In">In</option>
+                                    <option value="Out">Out</option>
+                                    <option value="Up">Up</option>
+                                    <option value="Down">Down</option>
+                                </select>
+                            </td>
+                        </tr>
+                        </tbody>
+                        <tbody>
+
+                        <tr>
+                            <th width="30px">Frame</th>
+                            <td colspan="1" width="40px" style="display: inline-block">
+                                <input type="text" class="frame_sku select_key" value=""/>
+                            </td>
+                            <th width="30px">Quantity</th>
+                            <td colspan="1" width="40px" style="display: inline-block">
+                                <input type="number" class="frame_qit select_key" value=""/>
+                            </td>
+                            <th width="30px">noRx</th>
+                            <td colspan="1" width="40px" style="display: inline-block">
+                                <input type="checkbox"   name="norx" class="norx"/>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-block btn-primary btn-lg btn_next">NEXT</button>
+                </div>
+            </div>
+            <!--lens_options-->
+            <div class="box lens_option_3002">
+                <div class="box-body">
+                    <div class="row">
+                        <div class="lens_option_3002">
+                            <h4 class="h4">Lens Option</h4>
+                            <div class="callout callout-info">
+                                <div class="label_first label_firstA"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="box" id="next_3001">
+                <!--options-->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="lens_option_3001">
+                            <h4 class="h4">Lens Type</h4>
+                            <div class="callout callout-info">
+                                <div class="label_firstB"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-block btn-primary btn-lg btn_Submit hide">Submit</button>
+            </div>
+            <div class="box" id="next_3009">
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3>ALL AVAILABLE LENSES</h3>
+                            <div class="add_all">
+                                <div class="col-md-11">1.61</div>
+                                <div class="col-md-1 all_money">+$</div>
+                            </div>
+                            <div class="add_all_lenses">
+                                <div class="add_all2">
+                                    <div class="col-md-11">1.61</div>
+                                    <div class="col-md-1 all_money">+$</div>
+                                </div>
+                                <div class="all_detail">
+                                    <div class="col-md-6">
+                                        <label><input type="checkbox" checked="checked" value="" disabled>Clear</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label><input type="checkbox" checked="checked" value="" disabled>Clear</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label><input type="checkbox" checked="checked" value="" disabled>Clear</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label><input type="checkbox" checked="checked" value="">Clear</label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label><input type="checkbox" checked="checked" value="" disabled>Light
+                                            responsive</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</section>
+<!-- /.content -->
+{% endblock %}
+{% block jquery %}
+
+<script src="https://www.layuicdn.com/layui/layui.js"></script>
+<script>
+//    $ (function () {
+
+        layui.config({
+            version: '1586046995289' //为了更新 js 缓存，可忽略
+        });
+
+        layui.use(['laydate', 'laypage', 'layer', 'table', 'carousel', 'upload', 'element', 'slider'], function() {
+            var laydate = layui.laydate //日期
+                , laypage = layui.laypage //分页
+                , layer = layui.layer //弹层
+                , table = layui.table //表格
+                , carousel = layui.carousel //轮播
+                , upload = layui.upload //上传
+                , element = layui.element //元素操作
+                , slider = layui.slider //滑块,
+                , form = layui.form;
+
+            //全部的运输方式
+            var sel_shipping_methods ={{ sel_shipping_methods | safe}};
+            var items = {{items | safe}};
+            var po = '{{po.shipping_method}}';
+            var data_one = [];
+            var ordered_remake_cart_list_all = [];
+            if (items) {
+                items.forEach(function (val, idx) {
+                    if(val.ordered_remake_cart_list!="[]"){
+                        var new_ordered = JSON.parse(val.ordered_remake_cart_list);
+                        new_ordered.forEach(function(val){
+                            ordered_remake_cart_list_all.push(val);
+                        });
+                    }
+//                previewpreview
+                    var obj_one = {
+                        "wx_headimg": '{{prd_img_pre}}/cache/230x115' + val.image,
+                        "attribute_set_name": val.attribute_set_name,
+                        "vip": val.is_vip ? "Yes" : "No",
+                        "website_item_id": val.item_id,
+                        "frame": val.frame,
+                        "quantity": val.quantity,
+                        "lens_name": val.lens_name,
+                        "lens_sku": val.lens_sku,
+                        "origin_prescription": val.origin_prescription
+                        , "is_nonRx": val.is_nonPrescription,
+                        "shipping_method": val.shipping_method,
+                        "remake_cart_list": val.remake_cart_list,
+                        "ordered_remake_cart_list":val.ordered_remake_cart_list,
+                        "data_two": {
+                            "profile_id": val.profile_id,
+                            "profile_name": val.profile_name
+                            , "is_nonRx": val.is_nonPrescription
+                            , "prescription_id": val.profile_prescription_id
+                            , "name": val.prescription_name
+                            , "type": val.prescription_type
+                            , "used_for": val.used_for
+                        },
+                        "obj_three_od": {
+                            "no": "OD",
+                            "sph": val.od_sph ? (val.od_sph>0?"+"+val.od_sph.toFixed(2):val.od_sph.toFixed(2)): "0.00"
+                            , "cyl": val.od_cyl ? (val.od_cyl>0?"+"+val.od_cyl.toFixed(2):val.od_cyl.toFixed(2)): "0.00"
+                            , "axis": val.od_axis ? (val.od_axis >= 10 ? "0" + val.od_axis :(val.od_axis>=1 && val.od_axis<=9 ? "00" + val.od_axis:(val.od_axis>=100?val.od_axis:val.od_axis))): "000"
+                            , "add": val.od_add ? (val.od_add >= 1 ? "+" + val.od_add:val.od_add) : "0.00"
+                            , "pd": val.is_singgle_pd ? val.pd : val.od_pd
+                            , "prism_h": val.od_prism ? val.od_prism.toFixed(2) : "0.00"
+                            , "base_h": val.od_base ? val.od_base : "Choose"
+                            , "prism_v": val.od_prism1 ? val.od_prism1.toFixed(2) : "0.00"
+                            , "base_v": val.od_base1 ? val.od_base1 : "Choose"
+                        },
+                        "obj_three_os": {
+                            "no": "OS",
+                            "sph":val.os_sph ? (val.os_sph>0?"+"+val.os_sph.toFixed(2):val.os_sph.toFixed(2)): "0.00"
+                            , "cyl": val.os_cyl ? (val.os_cyl>0?"+"+val.os_cyl.toFixed(2):val.os_cyl.toFixed(2)): "0.00"
+                            , "axis": val.os_axis ? (val.os_axis >= 10 && val.os_axis <= 99? "0" + val.os_axis :(val.os_axis>=1 && val.os_axis<=9 ? "00" + val.os_axis: val.os_axis)): "000"
+                            , "add": val.os_add ? (val.os_add >= 1 ? "+" + val.os_add:val.os_add) : "0.00"
+                            ,"pd": val.is_singgle_pd?"":val.os_pd
+                            , "prism_h": val.os_prism ? val.os_prism.toFixed(2) : "0.00"
+                            , "base_h": val.os_base ? val.os_base : "Choose"
+                            , "prism_v": val.os_prism1 ? val.os_prism1.toFixed(2) : "0.00"
+                            , "base_v": val.os_base1 ? val.os_base1 : "Choose"
+                        },
+                        "obj_four": {
+                            "lens_sku": val.lens_sku,
+                            "lens_name": val.lens_name
+                            , "coating_sku": val.coating_sku
+                            , "coating_name": val.coating_name
+                            , "tint_sku": val.tint_sku
+                            , "tint_name": val.tint_name
+
+                        },
+                        "obj_five": {
+                            "pal_design_sku": val.pal_design_sku
+                            , "pal_design_name": val.pal_design_name
+                            , "pupils_position": val.pupils_position
+                            , "pupils_position_name": val.pupils_position_name
+                            , "channel": val.channel
+                        }
+                    };
+                    data_one.push(obj_one);
+                })
+            }
+
+
+
+
+            if(ordered_remake_cart_list_all.length>=1){
+                var ordered_html = "";
+                ordered_remake_cart_list_all.forEach(function(val){
+                    var new_val = JSON.stringify(val);
+                    ordered_html+='<a style="cursor: pointer" ordered_obj='+encodeURI(new_val)+'>'+val.remake_order+'</a>'
+                });
+                $("#ReOrder_list").html(ordered_html);
+            }
+
+
+            $("#ReOrder_list a").on("click",function(){
+                var new_ordered_Arr = [];
+                var ordered_remake_cart_list = $(this).attr("ordered_obj");
+                if(ordered_remake_cart_list){
+                    ordered_remake_cart_list = decodeURI(ordered_remake_cart_list)
+                    ordered_remake_cart_list = JSON.parse(ordered_remake_cart_list);
+                    new_ordered_Arr.push(ordered_remake_cart_list);
+                }
+                remake_cart_fn(new_ordered_Arr,false,form,"Redone");
+            });
+
+            //监听Tab切换
+            element.on('tab(demo)', function (data) {
+                layer.tips('切换了 ' + data.index + '：' + this.innerHTML, this, {
+                    tips: 1
+                });
+            });
+
+            //执行一个 table 实例
+            table.render({
+                elem: '#demo'
+                , title: '用户表'
+                , toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+                , cols: [[ //表头
+                    {type: 'checkbox',LAY_CHECKED:true,LAY_DISABLED:"disabled", sort: true, fixed: 'left',}
+                    , {
+                        field: 'wx_headimg', title: 'img', width: 150, fixed: 'left',
+                        templet: function (d) {
+                            return '<div><img src=' + d.wx_headimg + ' style="width: 100%;margin: 0 auto;display: block;"></div>'
+                        }
+                    }
+                    , {field: 'attribute_set_name', width: 150, title: 'Attribute Set Name'}
+                    , {field: 'vip', width: 70, title: 'VIP'}
+                    , {field: 'website_item_id', width: 150, title: 'WEBSITE ITEM ID'}
+                    , {field: 'frame', title: 'FRAME', width: 100}
+                    , {field: 'quantity', title: 'QUANTITY', width: 120}
+                    , {field: 'lens_name', title: 'LENS NAME', width: 370}
+                    , {field: 'lens_sku', title: 'LENS SKU', width: 150}
+                    , {fixed: 'right',   align: 'center', toolbar: '#barDemo'}
+                ]]
+                , data: data_one
+//                ,skin: 'line' //表格风格
+                , even: true,
+                done:function(res){
+                    var data_list = res.data;
+                    if(data_list){
+                        var all_remake_cart_list = [];
+                        var all_ordered_remake_cart_list = [];
+                        data_list.forEach(function(val,idx){
+                            //获取每个item当前的未重做单的个数
+                            var yi_order_list = JSON.parse(val.remake_cart_list);
+                            $(".yi_order").eq(idx).text(yi_order_list.length);
+                            if(yi_order_list.length==0){
+                                $(".yi_order_btn").eq(idx).addClass("layui-btn-disabled jy_class");
+                            }
+                            //获取每个item当前的已重做的个数
+                            var ordered_remake_cart_list = JSON.parse(val.ordered_remake_cart_list);
+                            $(".yi_order2").eq(idx).text(ordered_remake_cart_list.length);
+                            if(ordered_remake_cart_list.length==0){
+                                $(".yi_order_btn2").eq(idx).addClass("layui-btn-disabled jy_class");
+                            }
+                            if(val.remake_cart_list){
+                                remake_cart_list = JSON.parse(val.remake_cart_list);
+                                remake_cart_list.forEach(function(cart_data){
+                                    all_remake_cart_list.push(cart_data);
+                                });
+                            }
+                            if(val.ordered_remake_cart_list){
+                                ordered_remake_cart_list = JSON.parse(val.ordered_remake_cart_list);
+                                ordered_remake_cart_list.forEach(function(cart_data){
+                                    all_ordered_remake_cart_list.push(cart_data);
+                                });
+                            }
+                        });
+
+                        //获取当前未重做单的个数
+                        $(".viewOrder_len").text(all_remake_cart_list.length);
+                        if(all_remake_cart_list.length<=0){
+                            $(".viewOrder_redone").addClass("layui-btn-disabled jy_class");
+                        }
+
+                        //获取当前已重做单的个数
+                        $(".viewOrder_len2").text(all_ordered_remake_cart_list.length);
+                        if(all_ordered_remake_cart_list.length<=0){
+                            $(".viewOrder_redone2").addClass("layui-btn-disabled jy_class");
+                        }
+
+                    }
+                    $('.layui-table-box input[type="checkbox"]').prop('disabled', true);
+                }
+                //,page: true //是否显示分页
+                //,limits: [5, 7, 10]
+                //,limit: 10 //每页默认显示的数量
+            });
+
+            //监听头工具栏事件
+            table.on('toolbar(test)', function (obj) {
+                var checkStatus = table.checkStatus(obj.config.id)
+                    , data = checkStatus.data; //获取选中的数据
+                switch (obj.event) {
+                    case 'add':
+                        layer.msg('添加');
+                        break;
+                    case 'update':
+                        if (data.length === 0) {
+                            layer.msg('请选择一行');
+                        } else if (data.length > 1) {
+                            layer.msg('只能同时编辑一个');
+                        } else {
+                            layer.alert('编辑 [id]：' + checkStatus.data[0].id);
+                        }
+                        break;
+                    case 'delete':
+                        if (data.length === 0) {
+                            layer.msg('请选择一行');
+                        } else {
+                            layer.msg('删除');
+                        }
+                        break;
+                }
+                ;
+            });
+
+
+//            var origin_prescription = "";
+
+//            $("#next_3002").hide();
+
+
+            function remake_cart_fn(remake_cart_list,flag,form,is_redo) {
+                var shoppingCart = "";
+                remake_cart_list.forEach(function (val, idx) {
+                    var id = val.id;
+                    var order_number = val.remake_order;
+                    var Prescription_class = "Prescription_class" + idx;
+                    var Prism_value = "Prism_value" + idx;
+                    var item_options = val.item_options;
+                    var glasses_prescription_options = val.glasses_prescription_options;
+                    var item_options_html = "";
+                    var attributes_color = "";
+                    var simple_name = "";
+                    var simple_sku = "";
+                    var qty_ordered = "";
+                    var simple_img = "";
+                    if (item_options) {
+                        item_options_obj = JSON.parse(item_options);
+                        var product_options = item_options_obj["0"]["product_options"];
+                        qty_ordered = item_options_obj["0"]["qty_ordered"];
+                        if (product_options.attributes_info) {
+                            product_options.attributes_info.forEach(function (val) {
+                                attributes_color = val.value;
+                            })
+                        }
+                        simple_name = product_options["simple_name"];
+                        simple_sku = product_options["simple_sku"];
+                        for (var key in item_options_obj) {
+                            var Subtotal = "";
+                            var original_price = "";
+                            if(item_options_obj[key]["product_type"]=="configurable"){
+                                Subtotal=item_options_obj[key]["row_total"];
+                                item_options_html+="<div class='Subtotal_class'><b>Subtotal: $"+Subtotal+"</b></div>";
+                            }
+                            if(item_options_obj[key]["product_type"]!="configurable"){
+                                var item_name = item_options_obj[key]["name"];
+                                if(item_options_obj[key]["name"]==simple_name){
+                                    item_name="Frame"
+                                }
+                                if(!parseFloat(item_options_obj[key]["original_price"])){
+                                    original_price="included"
+                                }else{
+                                    original_price="$"+(parseFloat(item_options_obj[key]["original_price"]).toFixed(2));
+                                }
+                                item_options_html += "<li><span>" + item_name + "</span><span>" +original_price+ "</span></li>";
+                            }
+                            if(item_options_obj[key]["product_type"]=="simple"){
+                                var img_url = item_options_obj[key]["img_host"]+"/media/catalog/product/cache/600x300"+item_options_obj[key]["img_url"];
+                                simple_img =  "<img src="+img_url+" >";
+                            }
+                        }
+                    }
+                    //验光单var prescription_name
+                    var prescription_name = "";
+                    var For_html = "";
+                    if (glasses_prescription_options) {
+                        glasses_prescription_options = JSON.parse(glasses_prescription_options);
+                        if(glasses_prescription_options){
+                            prescription_name = glasses_prescription_options.prescription_name;
+                            if(is_redo=="Redone"){
+                                var order_number_html=""
+                                if(order_number){
+                                    order_number_html="<span>order_number: <a>"+order_number+"</a></span>"
+                                }else{
+                                    order_number_html="";
+                                }
+
+                                For_html = "<span>For:  " + prescription_name + "</span>"+order_number_html+"</h2>";
+                            }else{
+                                For_html = "<span>For:  " + prescription_name + "</span></h2>";
+                            }
+                        }else{
+//                          var profile_name = data.data_two.profile_name;
+                            prescription_name = "Non";
+                            For_html = "<span>For NEW_NAME</span></h2>";
+                        }
+                    }
+                    var PrismValue_html = "";
+                    if(glasses_prescription_options){
+                        if(glasses_prescription_options.is_prism){
+                            PrismValue_html="<blockquote class='layui-elem-quote quote-class'>Prism Value</blockquote>"
+                        }
+                    }
+                    var is_remove = "";
+                    if(is_redo=="Redone"){
+                        is_remove = "";
+                    }else{
+                        is_remove = "<div class='removeSub'><div class='remove' id="+id+">Remove</div></div>"
+                    }
+                    var Frame_html = "<div class='Frame_box'>"
+                        +simple_img+
+                        "<ul>"
+                        + item_options_html +
+                        "</ul>" +
+                        "<div class='product'>" +
+                        "<p>" + simple_name + "(<span>" + simple_sku + "</span>)</p>" +
+                        "<p>Quantity (<span>" + qty_ordered + "</span>)</p><p>" + attributes_color + "</p>" +
+                        "</div>" + is_remove +
+                        "</div>";
+                    shoppingCart += '<div id="" class="item__Prescription">' +
+                        '<h2 class="shopping-cart-profile-name">'
+                        +For_html+
+                        '<blockquote class="layui-elem-quote quote-class">Prescription: ' + prescription_name + ' RX</blockquote>' +
+                        '<div class="layui-hide Prescription_class" id=' + Prescription_class + ' lay-filter="test"></div>' +
+                        PrismValue_html+
+                        '<div class="layui-hide Prism_value" id=' + Prism_value + ' lay-filter="test"></div>' +
+                        Frame_html + '' +
+                        '</div>';
+                });
+                var btn_ele = ['Submit','Close'];
+                if(is_redo=="Redone"){
+                    btn_ele = ['',"Close"];
+                }else{
+                    if(flag){
+                        btn_ele = ['Submit','Close'];
+                    }else{
+                        btn_ele = ['','Close'];
+                    }
+                }
+                layer.open({
+                    type: 0,
+                    id: 'Layer',
+                    title: 'SHOPPING CART',
+                    shade: 0.8,
+                    maxmin: false,
+                    area: ['1400px', '700px'],
+                    move: false,
+                    btn: btn_ele,
+                    shadeClose: true,
+                    content: shoppingCart,
+                    success: function (layero, index) {
+                        if($(".layui-layer-btn0").text()){
+                            $(".layui-layer-btn0").css({
+                                display: "blcok"
+                            });
+                        }else{
+                            $(".layui-layer-btn0").css({
+                                display: "none"
+                            });
+                        }
+                        if(flag){
+                            var option_str = "";
+                            sel_shipping_methods.forEach(function(val){
+                                option_str+="<option value="+val.id+">"+val.description+"</option>";
+                            });
+
+                            var html = "";
+                            if(is_redo=="Redone"){
+                                html = "";
+                            }else{
+                                html = "<form class='layui-form'  id='formEle' action=''><b style='line-height: 40px;margin-right: 10px;'>Shipping Methods:</b><select name='quiz1'  lay-filter='business' id='business_box'>"+option_str+"</select></form>";
+                            }
+                            var par_div = layero.find('.layui-layer-btn');
+                            par_div.css({
+                                borderTop:"1px solid #ccc",
+                                position: "relative"
+                            });
+                            par_div.append(html);
+                            form.render();
+                            function mr_options(ele,select_val){
+                                var opt = document.querySelectorAll(ele);
+                                for(var i=0; i<opt.length; i++){
+                                    if(opt[i].value==select_val){
+                                        opt[i].setAttribute("selected","selected");
+                                    }
+                                }
+                            };
+                            mr_options("#business_box option",po);
+                            sel_shipping_methods.forEach(function(val){
+                                if(val.id==po){
+                                    $("#formEle input").val(val.description)
+                                }
+                            });
+                        }
+//                        var remake_cart_list = data.remake_cart_list;
+                        var shoppingCart = "";
+                        if (remake_cart_list) {
+//                            remake_cart_list = JSON.parse(remake_cart_list);
+                            remake_cart_list.forEach(function (val, idx) {
+                                var glasses_prescription_options = val.glasses_prescription_options;
+                                var Prescription_class = "Prescription_class" + idx;
+                                var Prism_value = "Prism_value" + idx;
+                                var os_obj = {};
+                                var os_prismValue_obj = {};
+                                var od_obj = {};
+                                var od_prismValue_obj = {};
+                                if (glasses_prescription_options) {
+                                    glasses_prescription_options = JSON.parse(glasses_prescription_options);
+                                    if(glasses_prescription_options){
+                                        os_obj = {
+                                            "os_od": "OD(Right Eye)",
+                                            "sph":glasses_prescription_options.rsph ? (glasses_prescription_options.rsph>0?"+"+glasses_prescription_options.rsph.toFixed(2):glasses_prescription_options.rsph.toFixed(2)): "0.00",
+                                            "cyl": glasses_prescription_options.rcyl ? (glasses_prescription_options.rcyl>0?"+"+glasses_prescription_options.rcyl.toFixed(2):glasses_prescription_options.rcyl.toFixed(2)): "0.00",
+                                            "axis": glasses_prescription_options.rax ? (glasses_prescription_options.rax >= 10 && glasses_prescription_options.rax <= 99? "0" + glasses_prescription_options.rax :(glasses_prescription_options.rax>=1 && glasses_prescription_options.rax<=9 ? "00" + glasses_prescription_options.rax:glasses_prescription_options.rax)): "000",
+                                            "add":glasses_prescription_options.radd ? (glasses_prescription_options.radd>0?"+"+glasses_prescription_options.radd.toFixed(2):"000"):"000",
+                                            "pd": glasses_prescription_options.single_pd == "1" ? ("single (" + glasses_prescription_options.pd+")") : "double ("+glasses_prescription_options.rpd+")"
+                                        };
+                                        od_obj = {
+                                            "os_od": "OS(Left Eye)",
+                                            "sph": glasses_prescription_options.lsph ? (glasses_prescription_options.lsph>0?"+"+glasses_prescription_options.lsph.toFixed(2):glasses_prescription_options.lsph.toFixed(2)): "0.00",
+                                            "cyl":glasses_prescription_options.lcyl ?(glasses_prescription_options.lcyl>0?"+"+glasses_prescription_options.lcyl.toFixed(2):glasses_prescription_options.lcyl.toFixed(2)): "0.00",
+                                            "axis": glasses_prescription_options.lax ? (glasses_prescription_options.lax >= 10 && glasses_prescription_options.lax <= 99 ? "0" + glasses_prescription_options.lax :(glasses_prescription_options.lax>=1 && glasses_prescription_options.lax<=9 ? "00" + glasses_prescription_options.lax:glasses_prescription_options.lax)): "000",
+                                            "add":glasses_prescription_options.ladd ? (glasses_prescription_options.ladd>0?"+"+glasses_prescription_options.ladd.toFixed(2):"000"):"000",
+                                            "pd": glasses_prescription_options.single_pd == "1" ? "" : "double ("+glasses_prescription_options.lpd+")"
+                                        };
+
+                                        od_prismValue_obj = {
+                                            "os_od": "OD(Right Eye)",
+                                            "prism_value": glasses_prescription_options.rpri ? (glasses_prescription_options.rpri>0?"+"+parseFloat(glasses_prescription_options.rpri).toFixed(2):parseFloat(glasses_prescription_options.rpri).toFixed(2)): "0.00",
+                                            "base_direction": glasses_prescription_options.rbase ? glasses_prescription_options.rbase : "Choose",
+                                            "Prismv_value1": glasses_prescription_options.rpri_1 ? (glasses_prescription_options.rpri_1>0?"+"+parseFloat(glasses_prescription_options.rpri_1).toFixed(2):parseFloat(glasses_prescription_options.rpri_1).toFixed(2)): "0.00",
+                                            "base_direction1": glasses_prescription_options.rbase_1 ? glasses_prescription_options.rbase_1 : "Choose",
+                                        };
+                                        os_prismValue_obj = {
+                                            "os_od": "OS(Left Eye)",
+                                            "prism_value": glasses_prescription_options.lpri ? (glasses_prescription_options.lpri>0?"+"+parseFloat(glasses_prescription_options.lpri).toFixed(2):parseFloat(glasses_prescription_options.lpri).toFixed(2)): "0.00",
+                                            "base_direction": glasses_prescription_options.lbase ? glasses_prescription_options.lbase : "Choose",
+                                            "Prismv_value1": glasses_prescription_options.lpri_1 ?  (glasses_prescription_options.lpri_1>0?"+"+parseFloat(glasses_prescription_options.lpri_1).toFixed(2):parseFloat(glasses_prescription_options.lpri_1).toFixed(2)): "0.00",
+                                            "base_direction1": glasses_prescription_options.lbase_1 ? glasses_prescription_options.lbase_1 : "Choose",
+                                        };
+
+                                        table.render({
+                                            elem: layero.find('#' + Prescription_class)
+                                            , height: 204
+                                            , title: '用户表'
+                                            , cols: [[ //表头
+                                                {type: 'checkbox', sort: false, fixed: 'left',}
+                                                , {field: 'os_od', title: ''}
+                                                , {field: 'sph', title: 'SPH(Sphere)'}
+                                                , {field: 'cyl', title: 'CYL(Cylinder)'}
+                                                , {field: 'axis', title: 'AXIS'}
+                                                , {field: 'add', title: 'ADD(NV-ADD)'}
+                                                , {field: 'pd', title: 'PD(Pupillary Distance)'}
+                                            ]]
+                                            , data: [os_obj, od_obj]
+                                            //,skin: 'line' //表格风格
+                                            , even: true
+
+                                        });
+                                    }else{
+                                    }
+
+                                }else{
+
+                                }
+
+                                //判断是否有棱镜展示
+                                if(glasses_prescription_options){
+                                    if(glasses_prescription_options.is_prism){
+                                        table.render({
+                                            elem: layero.find('#' + Prism_value)
+                                            , height: 186
+                                            , title: '用户表'
+                                            , cols: [[ //表头
+                                                {type: 'checkbox', fixed: 'left'}
+                                                , {field: 'os_od', title: ''}
+                                                , {field: 'prism_value', title: 'Prism Value'}
+                                                , {field: 'base_direction', title: 'Base Direction'}
+                                                , {field: 'Prismv_value1', title: 'Prism Value'}
+                                                , {field: 'base_direction1', title: 'Base Direction'}
+                                            ]]
+                                            , data: [od_prismValue_obj, os_prismValue_obj]
+                                            , skin: 'line' //表格风格
+                                            , even: true
+
+                                        });
+                                    }
+                                }
+
+                            })
+                        }
+                        form.on('select(business)', function(data){
+                            var val_method = data.value;
+                            window.methods = val_method;
+                        });
+
+                        $(".remove").on("click",function(){
+                            var id = $(this).attr("id");
+                            var url = "/api/reorder/del_cart/";
+                            var data = {
+                                cart_id:id
+                            };
+                            PostAjax(url,JSON.stringify(data),function(res){
+                                if(res.status>=0){
+                                    layer.open({
+                                        title:"success",
+                                        content:res.msg,
+                                        scrollbar: false,
+                                        yes: function () {
+                                            layer.closeAll();
+                                            window.location.reload();
+                                        }
+                                    });
+                                    $(".mask_show").addClass("hide");
+                                }else{
+
+                                }
+                            },function(){
+                                $(".mask_show").removeClass("hide");
+                            },function(){
+                                $(".mask_show").removeClass("hide");
+                            });
+                        });
+                    },
+                    //点击submit全部提交
+                    btn1:function(ele,val){
+                        $(".mask_show").removeClass("hide");
+                        var url = "/api/reorder/gennerate_web_order/";
+                        var orderNumber = getParam("order_number");
+                        var data = {
+                            order_number:orderNumber,
+                            shipping_method: window.methods
+
+                        };
+                        PostAjax(url,JSON.stringify(data),function(res){
+                            if(res.status>=0){
+                                $(".mask_show").addClass("hide");
+                                layer.open({
+                                    title:res.message,
+                                    content:"<a href="+res.url+" style='text-decoration: underline;color:blue'>You have joined the shopping cart, please click to check</a>",
+                                    scrollbar: false,
+                                    yes: function () {
+                                        layer.closeAll();
+                                        window.location.reload();
+                                    }
+                                });
+                            }else{
+                                layer.open({
+                                    title:"Error",
+                                    content:res.message,
+                                    scrollbar: false,
+                                    yes: function () {
+                                        layer.closeAll();
+                                        window.location.reload();
+                                    }
+                                });
+                            }
+                        },function(){
+                            $(".mask_show").removeClass("hide");
+                        },function(){
+                            $(".mask_show").removeClass("hide");
+                        });
+                    }
+                })
+            }
+
+            //监听行工具事件
+            table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+                var data = obj.data //获得当前行数据
+                    ,layEvent = obj.event; //获得 lay-event 对应的值
+                if(layEvent === 'detail'){
+                    layer.open({
+                        type: 0,
+                        id: 'Layer',
+                        title: 'Original_Prescription',
+                        shade: 0.8,
+                        maxmin: false,
+                        area: ['1400px', '700px'],
+                        move:false,
+                        btn: ['close'],
+                        shadeClose: true,
+                        content: '<div><blockquote class="layui-elem-quote quote-class">Prescription</blockquote><div class="layui-hide" id="demo_one" lay-filter="test"></div></div>' +
+                        '<div class="layui-hide" id="demo_two" lay-filter="test"></div>' +
+                        '<div><blockquote class="layui-elem-quote quote-class">Texture of material</blockquote><div class="layui-hide" id="demo_three" lay-filter="test"></div></div>'+
+                        '<div class="layui-hide" id="demo_four" lay-filter="test"></div>',
+                        success: function(layero, index) {
+                            table.render({
+                                elem: layero.find('#demo_one')
+                                ,height: 124
+                                ,title: '用户表'
+                                ,cols: [[ //表头
+                                    {type: 'checkbox',sort: false, fixed: 'left',}
+                                    ,{field: 'profile_id',  title: 'Profile ID'}
+                                    ,{field: 'profile_name', title: 'Profile Name'}
+                                    ,{field: 'is_nonRx',title: 'Is NonRx'}
+                                    ,{field: 'prescription_id',title: 'Prescription ID'}
+                                    ,{field: 'name', title: 'Name'}
+                                    ,{field: 'type', title: 'Type'}
+                                    ,{field: 'used_for', title: 'Used For'},
+                                ]]
+                                ,data:[data.data_two]
+                                //,skin: 'line' //表格风格
+                                ,even: true
+
+                            });
+                            table.render({
+                                elem: layero.find('#demo_two')
+                                ,height: 186
+                                ,title: '用户表'
+
+                                ,cols: [[ //表头
+                                    {type: 'checkbox', fixed: 'left'}
+                                    ,{field: 'no', title: '#'}
+                                    ,{field: 'sph', title: 'SPH'}
+                                    ,{field: 'cyl', title: 'CYL'}
+                                    ,{field: 'axis', title: 'AXIS'}
+                                    ,{field: 'add', title: 'ADD'}
+                                    ,{field: 'pd',title: 'PD'}
+                                    ,{field: 'prism_h', title: 'Prism-H'}
+                                    ,{field: 'base_h', title: 'Base-H'}
+                                    ,{field: 'prism_v', title: 'Prism-V'}
+                                    ,{field: 'base_v', title: 'Base-V'}
+                                ]]
+                                ,data:[data.obj_three_od,data.obj_three_os]
+                                ,even: true,
+                                done: function (res, curr, count) {
+
+                                }
+
+                            });
+
+                            table.render({
+                                elem: layero.find('#demo_three')
+                                ,height: 124
+                                ,title: '用户表'
+                                ,cols: [[ //表头
+                                    {type: 'checkbox', fixed: 'left'}
+                                    ,{field: 'lens_sku', title: 'Lens Sku'}
+                                    ,{field: 'lens_name', title: 'Lens Name'}
+                                    ,{field: 'coating_sku', title: 'Coating Sku'}
+                                    ,{field: 'coating_name', title: 'Coating Name'}
+                                    ,{field: 'tint_sku', title: 'Tint Sku'}
+                                    ,{field: 'tint_name', title: 'Tint Name'}
+                                ]]
+                                ,data:[data.obj_four]
+//                                ,skin: 'line' //表格风格
+                                ,even: true
+
+                            });
+                            table.render({
+                                elem: layero.find('#demo_four')
+                                ,height: 144
+                                ,title: '用户表'
+                                ,cols: [[ //表头
+                                    {type: 'checkbox', fixed: 'left'}
+                                    ,{field: 'pal_design_sku', title: 'PAL Design Sku'}
+                                    ,{field: 'pal_design_name', title: 'PAL Design Name'}
+                                    ,{field: 'pupils_position', title: 'Pupils Position'}
+                                    ,{field: 'pupils_position_name', title: 'Pupils Position Name'}
+                                    ,{field: 'channel', title: 'Channel'}
+                                ]]
+                                ,data:[data.obj_five]
+//                                ,skin: 'line' //表格风格
+                                ,even: true
+
+                            });
+                        }
+                    });
+                } else if(layEvent === 'del'){
+                    layer.confirm(
+                        'Are you sure you want to delete the line',
+                        {
+                            title:'Tips',
+                            btn:['Confiram','Cancel']
+                        },
+                        function(index){
+                            obj.del(); //删除对应行（tr）的DOM结构
+                            layer.close(index);
+                            //向服务端发送删除指令
+                        });
+                }
+                else if(layEvent === 'preview' || layEvent === 'redone'){
+                    if(layEvent === 'preview'){
+                        var remake_cart_list  = data.remake_cart_list;
+                        if(remake_cart_list && remake_cart_list.length>=1 && remake_cart_list!="[]") {
+                            remake_cart_list = JSON.parse(remake_cart_list);
+                            remake_cart_fn(remake_cart_list,false,form);
+                        }else{
+                            layer.msg('At present, you have no redo list!', {time: 3000, icon: 7});
+                            return false;
+                        }
+                    }else{
+                        var ordered_remake_cart_list  = data.ordered_remake_cart_list;
+                        if(ordered_remake_cart_list && ordered_remake_cart_list.length>=1 && ordered_remake_cart_list!="[]") {
+                            ordered_remake_cart_list = JSON.parse(ordered_remake_cart_list);
+                            remake_cart_fn(ordered_remake_cart_list,false,form,"Redone");
+                        }else{
+                            layer.msg('At present, you have no redo list!', {time: 3000, icon: 7});
+                            return false;
+                        }
+                    }
+                }else if(layEvent === 'submit'){
+                    layer.confirm(
+                        'Are you sure you want to submit',
+                        {
+                            title:'Tips',
+                            btn:['Confiram','Cancel']
+                        },
+                        function(index){
+                            layer.close(index);
+                            //向服务端发送删除指令
+                        });
+                }
+                else if(layEvent === 'edit'){
+                    $("#next_3001,.lens_option_3001,.next_3002,.lens_option_3002").hide();
+                    var h = $(document).height()-$(window).height();
+                    $('body,html').animate({'scrollTop':h+500},500);
+                    $("#next_3002").show();
+                    $(".frame_sku").val(data.frame);
+                    $(".frame_qit").val(data.quantity);
+                      if(data.is_nonRx){
+                          $(".norx").attr("checked","checked");
+                          var origin_prescription={
+                            rsph:0,lsph:0,rcyl:0,lcyl:0,radd:0,ladd:0,rax:0,lax:0,rpri:0,lpri:0,rbase:"",lbase:"",rpri_1:0,lpri_1:0,rbase_1:"",lbase_1:"",
+                            pd:0,rpd:0,lpd:0,exam_date:"",expire_date:"",prescription_name:"",old_prescription_id:"",parent_id:"",is_default:0,
+                            prescription_img:"",prescription_type:"",progressive_code:"",use_for:"",norx:1
+                          };
+                          data.origin_prescription = origin_prescription;
+                      }else{
+                          data.origin_prescription.norx=0;
+                          $(".norx").removeAttr("checked");
+                      }
+
+
+
+                    // 替换当前url参数的函数
+                    function changeURLArg(url,arg,arg_val){
+                        var pattern=arg+'=([^&]*)';
+                        var replaceText=arg+'='+arg_val;
+                        if(url.match(pattern)){
+                            var tmp='/('+ arg+'=)([^&]*)/gi';
+                            tmp=url.replace(eval(tmp),replaceText);
+                            return tmp;
+                        }else{
+                            if(url.match('[\?]')){
+                                return url+'&'+replaceText;
+                            }else{
+                                return url+'?'+replaceText;
+                            }
+                        }
+                        return url+'\n'+arg+'\n'+arg_val;
+                    }
+                    // End
+
+                    //获取指定url中的参数值
+                    function getvar(url,par) {
+                        var urlsearch = url.split('?');
+                        pstr = urlsearch[1].split('&');
+                        for (var i = pstr.length - 1; i >= 0; i--) {
+                            var tep = pstr[i].split("=");
+                            if (tep[0] == par) {
+                                return tep[1];
+                            }
+                        }
+                        return (false);
+                    }
+                    //end
+                    var  item_id = data.website_item_id;
+                    window.item_id = item_id;
+                    window.origin_prescription = data.origin_prescription;
+                    edit_data(data.origin_prescription);
+                }
+            });
+            //滑块
+            var sliderInst = slider.render({
+                elem: '#sliderDemo'
+                ,input: true //输入框
+            });
+
+
+            //头工具栏事件
+            table.on('toolbar(test)', function(obj){
+                var checkStatus = table.checkStatus(obj.config.id);
+                var data = obj.config.data;
+                if(obj.event=="getCheckData" || obj.event=="not_getCheckData"){
+                    var data_list = checkStatus.data;
+                    if(data_list.length<=0){
+                        layer.msg('The number of currently selected items is empty, please check again', {time: 3000, icon: 7});
+                    }else{
+                        if(data_list){
+                            var all_remake_cart_list = [];
+                            var all_ordered_remake_cart_list = [];
+                            data_list.forEach(function(val){
+                                if(obj.event=="getCheckData"){
+                                    if(val.remake_cart_list){
+                                        remake_cart_list = JSON.parse(val.remake_cart_list);
+                                        remake_cart_list.forEach(function(cart_data){
+                                            all_remake_cart_list.push(cart_data);
+                                        });
+                                    }
+                                }else{
+                                    if(val.ordered_remake_cart_list){
+                                        ordered_remake_cart_list = JSON.parse(val.ordered_remake_cart_list);
+                                        ordered_remake_cart_list.forEach(function(cart_data){
+                                            all_ordered_remake_cart_list.push(cart_data);
+                                        });
+                                    }
+                                }
+                            });
+                            if(obj.event=="getCheckData"){
+                                if(all_remake_cart_list.length<=0){
+                                    layer.msg('There is no rework list for your selected product. Please re select', {time: 3000, icon: 7});
+                                    return false;
+                                }else{
+                                    remake_cart_fn(all_remake_cart_list,true,form);
+                                }
+                            }else{
+                                if(all_ordered_remake_cart_list.length<=0){
+                                    layer.msg('There is no rework list for your selected product. Please re select', {time: 3000, icon: 7});
+                                    return false;
+                                }else{
+                                    remake_cart_fn(all_ordered_remake_cart_list,true,form,"Redone");
+                                }
+                            }
+
+                        }
+                    }
+                }
+            });
+
+        });
+         function edit_data(origin_prescription){
+        $(".select_key").on("keyup",function(){
+            $("#next_3001,.lens_option_3001,.next_3002,.lens_option_3002").hide();
+        });
+        $(".select_change,.select_key").on("change",function(){
+            $("#next_3001,.lens_option_3001,.next_3002,.lens_option_3002").hide();
+        });
+
+        function options(select, start, end, step) {
+            var str = '';
+            var len = Math.abs(start - end) / Math.abs(step)
+            var step = start < end ? step : -step;
+            for (var i = 0; i <= len; i++) {
+                start = start.toFixed(2)
+                str += '<option value="' + start + '">' + start + '</option>\n';
+                start = parseFloat(start) + step;
+            }
+            $(select).html(str)
+        }
+        options('.id_od_sph', -16.00, +12, 0.25);
+        options('.id_od_cyl', -6, +6, 0.25);
+        options('.id_os_sph', -16.00, +12, 0.25);
+        options('.id_os_cyl', -6, +6,  0.25);
+        options('.id_od_prism_h', 0,6, 0.25);
+        options('.id_od_prism_v',  0,6, 0.25);
+        options('.id_os_prism_h', 0,6, 0.25);
+        options('.id_os_prism_v', 0,6, 0.25);
+        $(".norx").on("click",function(){
+            if(!$(this).attr("checked")){
+                $(this).removeAttr("checked");
+                $(".norx_class").css({
+                    display:"table-row-group"
+                });
+                origin_prescription.norx=0;
+                $("#prescription_name").html(" ("+origin_prescription.prescription_name?origin_prescription.prescription_name:""+") ");
+            }else{
+                $(this).attr("checked","checked");
+                $(".norx_class").css({
+                    display:"none"
+                });
+                origin_prescription.norx=1;
+                $("#prescription_name").text("(noRx)");
+            }
+            select(origin_prescription);
+        });
+
+        if(origin_prescription.norx==1){
+            $(".norx_class").css({
+                display:"none"
+            });
+            $("#prescription_name").text("(noRx)");
+        }else{
+            $(".norx_class").css({
+                display:"table-row-group"
+            });
+            $("#prescription_name").html(" ("+origin_prescription.prescription_name?origin_prescription.prescription_name:""+") ");
+        }
+
+
+
+        function select(origin_prescription){
+            $(".id_od_sph").val(origin_prescription.norx!=1?((origin_prescription.rsph).toFixed(2)):0);
+            $(".id_os_sph").val(origin_prescription.norx!=1?((origin_prescription.lsph).toFixed(2)):0);
+
+            $(".id_od_cyl").val(origin_prescription.norx!=1?((origin_prescription.rcyl).toFixed(2)):0);
+            $(".id_os_cyl").val(origin_prescription.norx!=1?((origin_prescription.lcyl).toFixed(2)):0);
+
+            $(".id_od_prism_h").val(origin_prescription.norx!=1?((origin_prescription.rpri).toFixed(2)):0);
+            if(origin_prescription.rbase){
+                $(".id_od_base_h").val(origin_prescription.rbase);
+            }else{
+                $(".id_od_base_h").val('Choose');
+            }
+
+            $(".id_od_prism_v").val(origin_prescription.norx!=1?((origin_prescription.rpri_1).toFixed(2)):0);
+            if(origin_prescription.rbase_1){
+                $(".id_od_base_v").val(origin_prescription.rbase_1);
+            }else{
+                $(".id_od_base_v").val('Choose');
+            }
+            $(".id_os_prism_h").val(origin_prescription.norx!=1?((origin_prescription.lpri).toFixed(2)):0);
+
+            if(origin_prescription.lbase){
+                $(".id_os_base_h").val(origin_prescription.lbase);
+            }else{
+                $(".id_os_base_h").val('Choose');
+            }
+
+            $(".id_os_prism_v").val(origin_prescription.norx!=1?((origin_prescription.lpri_1).toFixed(2)):0);
+        }
+        select(origin_prescription);
+        if(origin_prescription.lbase_1){
+            $(".id_os_base_v").val(origin_prescription.lbase_1);
+        }else{
+            $(".id_os_base_v").val('Choose');
+        }
+
+        function option(select, start, end, step,mr) {
+            var str = '';
+            var len = Math.abs(start - end) / Math.abs(step)
+            var step = start < end ? step : -step;
+            str += '<option value='+mr+' selected="selected">' + mr + '</option>';
+            for (var i = 0; i <= len; i++) {
+                start = start.toFixed(2);
+                str += '<option value="' + start + '">' + start + '</option>';
+                start = parseFloat(start) + step;
+            }
+            $(select).html(str)
+        }
+        option('.id_os_pd', 17.5, 40, 0.5,"Select");
+        option('.id_od_pd', 17.5, 40, 0.5,"Select");
+        option('.id_od_singgle_pd', 35, 79, 0.5,"Select");
+        option('.id_os_add', +0.5, +3.75, 0.25,"0.00");
+        option('.id_od_add', +0.5, +3.75, 0.25,"0.00");
+        //选中默认值函数
+        function mr_options(ele,select_val){
+            var opt = document.querySelectorAll(ele);
+            for(var i=0; i<opt.length; i++){
+                if(opt[i].value==select_val){
+                    opt[i].setAttribute("selected","selected");
+                }
+            }
+        };
+        //当前选中的运输方式
+//        mr_options("#Methods option",order_shipping_methods);
+        mr_options(".id_od_singgle_pd option",origin_prescription.pd);
+        mr_options(".id_os_pd option",origin_prescription.lpd);
+        mr_options(".id_od_pd option",origin_prescription.rpd);
+
+        mr_options(".id_od_add option",origin_prescription.radd);
+        mr_options(".id_os_add option",origin_prescription.ladd);
+
+
+        function optiones(select, start, end, step,mr,type) {
+            var str = '';
+            var len = Math.abs(start - end) / Math.abs(step)
+            var step = start < end ? step : -step;
+            if(type=='axis'){
+                mr="000"
+            }
+            if(type=='axis'){
+                if(mr="000"){
+                    str += '<option value="0" selected="selected">' + mr + '</option>';
+                }else{
+                    str += '<option value='+mr+' selected="selected">' + mr + '</option>';
+                }
+            }else{
+                str += '<option value='+mr+' selected="selected">' + mr + '</option>';
+            }
+            if(type=='axis'){
+                var  stre_L= "00";
+                var  stre_S= "0";
+                for (var i = 0; i <= len; i++) {
+                    if(start<10){
+                        start = stre_L+start;
+                    }else if(start>=10 && start<100){
+                        start = stre_S+start;
+                    }
+                    str += '<option value="' + (i+1) + '">' + start + '</option>';
+                    start = parseFloat(start) + step;
+                }
+            }else{
+                for (var i = 0; i <= len; i++) {
+                    str += '<option value="' + start + '">' + start + '</option>';
+                    start = parseFloat(start) + step;
+                }
+            }
+            $(select).html(str)
+        }
+        optiones('.id_od_axis', 1, 180, 1,"000",'axis');
+        optiones('.id_os_axis', 1, 180, 1,"000",'axis');
+
+        mr_options(".id_od_axis option",origin_prescription.rax);
+        mr_options(".id_os_axis option",origin_prescription.lax);
+        if(parseInt($(".id_od_singgle_pd").val())){
+            singgle_pd(true);
+            $(".input_singgle").attr("checked","checked");
+        }else{
+            $(".input_singgle").removeAttr("checked");
+            singgle_pd(false);
+            }
+         }
+
+        //获取指定url参数
+            function getParam(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+                var r = location.search.substr(1).match(reg);
+                if (r != null) return unescape(decodeURI(r[2]));
+                return null;
+            }
+            var itemId = window.item_id;
+            var orderNumber = getParam("order_number");
+
+            //单双pd切换函数
+            function singgle_pd(ad){
+                if(ad){
+                    $('.id_od_pd,.id_os_pd').hide();
+                    $('.id_od_pd,.id_os_pd').val("Select");
+                    $('.id_od_pd').find("option:selected").val("Select");
+                    $('.id_os_pd').find("option:selected").val("Select");
+                    $('.id_od_singgle_pd').show();
+                }else{
+                    $('.id_od_pd,.id_os_pd').show();
+                    $('.id_od_singgle_pd').hide();
+                    $('.id_od_singgle_pd').val("Select");
+                    $('.id_od_singgle_pd').find("option:selected").val("Select");
+                }
+            }
+
+            $('.input_singgle').click(function(){
+                var checked = $(this).prop('checked');
+                singgle_pd(checked);
+            });
+
+        function data_list(useFor,prescriptionType,itemId,orderNumber){
+            var iqstr = {
+                parameters:{
+                    item_id:itemId,
+                    profile_id:"",
+                    prescription_id:"",
+                    customer_id:"",
+                    order_number:orderNumber,
+                    is_support_progressive: 1,
+                    prescription: {
+                        rsph:origin_prescription.norx!=1?($('.id_od_sph').val()==null?0:$('.id_od_sph').val()):0,
+                        lsph:origin_prescription.norx!=1?($('.id_os_sph').val()==null?0:$('.id_os_sph').val()):0,
+
+                        rcyl:origin_prescription.norx!=1?($('.id_od_cyl').val()==null?0:$('.id_od_cyl').val()):0,
+                        lcyl:origin_prescription.norx!=1?($('.id_os_cyl').val()==null?0:$('.id_os_cyl').val()):0,
+
+                        radd:origin_prescription.norx!=1?($('.id_od_add').val()==null?0:$('.id_od_add').val()):0,
+                        ladd:origin_prescription.norx!=1?($('.id_os_add').val()==null?0:$('.id_os_add').val()):0,
+
+                        rax:origin_prescription.norx!=1?($('.id_od_axis').val()==null?0:$('.id_od_axis').val()):0,
+                        lax:origin_prescription.norx!=1?($('.id_os_axis').val()==null?0:$('.id_os_axis').val()):0,
+
+                        rpri:origin_prescription.norx!=1?(($('.id_od_prism_h').val()==null?0:$('.id_od_prism_h').val())):0,
+                        lpri:origin_prescription.norx!=1?(($('.id_os_prism_h').val()==null?0:$('.id_os_prism_h').val())):0,
+
+
+                        rbase:origin_prescription.norx!=1?($('.id_od_base_h').val()==null||$('.id_od_base_h').val()=="Choose"?"":$('.id_od_base_h').val()):"",
+                        lbase:origin_prescription.norx!=1?($('.id_os_base_h').val()==null||$('.id_os_base_h').val()=="Choose"?"":$('.id_os_base_h').val()):"",
+
+                        rpri_1:origin_prescription.norx!=1?($('.id_od_prism_v').val()==null?0:$('.id_od_prism_v').val()):0,
+                        lpri_1:origin_prescription.norx!=1?($('.id_os_prism_v').val()==null?0:$('.id_os_prism_v').val()):0,
+
+                        rbase_1:origin_prescription.norx!=1?($('.id_od_base_v').val()==null||$('.id_od_base_v').val()=="Choose"?"":$('.id_od_base_v').val()):"",
+                        lbase_1:origin_prescription.norx!=1?($('.id_os_base_v').val()==null||$('.id_os_base_v').val()=="Choose"?"":$('.id_os_base_v').val()):"",
+
+                        pd:origin_prescription.norx!=1?($('.id_od_singgle_pd').val()==null||$('.id_od_singgle_pd').val()=="Select"?0:parseFloat($('.id_od_singgle_pd').val())):0,
+                        rpd:origin_prescription.norx!=1?($('.id_od_pd').val()==null||$('.id_od_pd').val()=="Select"?'':parseFloat($('.id_od_pd').val())):0,
+                        lpd:origin_prescription.norx!=1?($('.id_os_pd').val()==null || $('.id_os_pd').val()=="Select"?'':parseFloat($('.id_os_pd').val())):0,
+
+                        exam_date:origin_prescription.exam_date,
+                        expire_date:origin_prescription.expire_date,
+                        prescription_name:origin_prescription.prescription_name?origin_prescription.prescription_name.replace(/\s+/g,"|"):"",
+                        old_prescription_id:origin_prescription.entity_id,
+                        parent_id:origin_prescription.parent_id,
+                        is_default: 1,
+                        prescription_img:"",
+                        prescription_type:origin_prescription.norx!=1?prescriptionType:"N",
+                        progressive_code:"",
+                        use_for:useFor
+                    },
+                    profile: {
+                        age_group:"25"
+                    },
+                    support_php:"",
+                    product: {
+                        sku:$(".frame_sku").val(),
+                        quantity:parseInt($(".frame_qit").val()),
+                        product_group: "Default"
+                    },
+                    shipping_method:$("#Methods").val()
+                }
+            };
+
+            if(origin_prescription.norx!=1){
+                iqstr.parameters.prescription.single_pd=parseInt($('.id_od_singgle_pd').val())!=0 && $('.id_od_singgle_pd').val()!="Select"?"1":"0";
+            }
+
+            return iqstr;
+        }
+
+
+
+
+        function PostAjax(url,data,fn,fn1,fn2){
+            $.ajax({
+                url: url,
+                type:"POST",
+                dataType: 'json',
+                data:data,
+                success: fn,
+                beforeSend:fn1,
+                error:fn2
+            });
+        }
+
+
+        //获取接口数据
+        $('.btn_next').off("click").on("click",function(){
+            var origin_prescription = window.origin_prescription;
+            var dan = parseInt($('.id_od_singgle_pd').val() );
+            var suangLeft = parseInt($('.id_od_pd').val());
+            var suangRight = parseInt($('.id_os_pd').val());
+            //获取数量
+            var qit = $(".frame_qit").val();
+            if(!(/(^[0-9]*[1-9][0-9]*$)/.test(qit))){
+                $(".lens_option_3002,.lens_option_3001").hide();
+                layer.open({
+                    title:"Error",
+                    content:"<span style='color:red'>Quantity cannot be empty or floating point</span>",
+                    scrollbar: false,
+                    yes: function () {
+                        layer.closeAll();
+                    }
+                });
+                return false;
+            }
+
+
+            if(origin_prescription.norx!=1){
+                //如果单双pd值都为0的时候阻止
+                if(!(dan || ( suangLeft && suangRight ))){
+                    $(".lens_option_3002,.lens_option_3001").hide();
+                    layer.open({
+                        title:"Error",
+                        content:"<span style='color:red'>PD value cannot be empty, please re-enter</span>",
+                        scrollbar: false,
+                        yes: function () {
+                            layer.closeAll();
+                        }
+                    });
+                    return false;
+                }
+            }
+
+            var iqstr = "";
+            var od_add = Math.ceil($('.id_od_add').val());
+            var os_add = Math.ceil($('.id_os_add').val());
+            var url = "/api/reorder/rules_3002/";
+
+
+            if(origin_prescription.norx!=1){
+                //如果有add的时候
+                if(od_add || os_add){
+                    url = "/api/reorder/rules_3002/";
+                    iqstr = data_list("","P",itemId,orderNumber);
+                }else{
+                    url = "/api/reorder/rules_3001/";
+                    iqstr = data_list("","S",itemId,orderNumber);
+                }
+            }else{
+                url = "/api/reorder/rules_3001/";
+                iqstr = data_list("","N",itemId,orderNumber);
+            }
+
+
+            $(".btn_Submit").attr("profile_prescription",JSON.stringify(iqstr));
+            var h = $(document).height()-$(window).height();
+            PostAjax(url,JSON.stringify(iqstr),function(res) {
+                if(res.status==-1){
+                    layer.open({
+                        title:"Error",
+                        content:"<span style='color:red'>"+res.message+"</span>",
+                        scrollbar: false,
+                        yes: function () {
+                            layer.closeAll();
+                            $(".mask_show").addClass("hide");
+                        }
+                    });
+                    $(".mask_show").addClass("hide");
+                    $("#next_3001,.lens_option_3001,.next_3002,.lens_option_3002").hide();
+                    return false;
+                }
+                else if (res.success) {
+                    $('body,html').animate({'scrollTop':h+500},500);
+                    $(".mask_show").addClass("hide");
+                    if ((od_add || os_add) && origin_prescription.norx!=1) {
+                        var list = res.success;
+                        var lens_tittle = '';
+                        list.forEach(function (o) {
+                            var child_one = o.items;
+                            var child_sum = "";
+                            child_one.forEach(function(l){
+                                var child_two = l.items;
+                                var child_sum_two = "";
+                                child_two.forEach(function(t){
+                                    var new_tite = t.title.replace(/\s+/g,"|");
+                                    if(t.is_available==0){
+                                        child_sum_two += '<label class="radio-inline radio-inline_click" style="pointer-events:none;text-decoration: line-through;color: #ccc !important;"><input type="radio" style="color: #ccc">' + t.title + '</label>';
+                                    }else {
+                                        child_sum_two += '<label class="radio-inline radio-idS radio-inline_click first_click" id="radio-id" prescription_type=' + new_tite + ' use_for=' + t.used_for + ' progressive_type=' + t.pre_type + ' progressive_code=' + t.sku_code + '><input type="radio" name="qk" id="inlineRadio1" value="option1">' + t.title + '</label>';
+                                    }
+                                });
+                                var new_tite  = l.title.replace(/\s+/g,"|");
+                                if(l.is_available==0){
+                                    child_sum += '<label class="radio-inline radio-inline_click" style="pointer-events:none;text-decoration: line-through;color: #ccc !important;"><input type="radio" style="color: #ccc">' + l.title + '</label>';
+                                }else {
+                                    child_sum += '<label class="radio-inline radio-idS radio-inline_click first_click2" id="radio-id" prescription_type=' + new_tite + ' use_for=' + l.used_for + ' progressive_type=' + l.pre_type + ' progressive_code=' + l.sku_code + '> <input type="radio" name="ql" id="inlineRadio1" value="option1">' + l.title + '<div class="child_none first_click_child"><ul>' + child_sum_two + '</ul></div></label>';
+                                }
+                            });
+                            var new_tite  = o.title.replace(/\s+/g,"|");
+                            if(o.is_available==0){
+                                lens_tittle += '<label class="radio-inline radio-inline_click" style="pointer-events:none;text-decoration: line-through;color: #ccc !important;"><input type="radio" style="color: #ccc">' + o.title + '</label>';
+                            }else{
+                                lens_tittle += '<label class="radio-inline radio-idS radio-inline_click first_click3" id="radio-id" prescription_type='+new_tite+' use_for='+o.used_for+' progressive_type='+o.pre_type+' progressive_code='+o.sku_code+'><input type="radio" name="q" id="inlineRadio1" value="option1">' + o.title + '<div class="child_none first_click_child2"><ul>'+child_sum+'</ul></div></label>';
+                            }
+                        });
+                        $('.label_firstA').html(lens_tittle);
+                        $("#next_3001,.lens_option_3001").hide();
+                        $('.next_3002,.lens_option_3002').show();
+                    } else {
+                        var list = res.success;
+                        var prescription = res.prescription;
+                        prescription.prescription_name=prescription.prescription_name.replace(/\s+/g,"|");
+                        prescription = JSON.stringify(prescription);
+                        $(".btn_Submit").attr("prescription",prescription);
+                        var lens_tittle = '';
+                        list.forEach(function(o){
+                            var child_tittle = "";
+                            var isSung = "";
+                            if(o.usage=="SUN"){
+                                isSung=1;
+                            }else{
+                                isSung=0;
+                            }
+                            var Opt_ele = "par";
+                            if(o.title.indexOf("OPTIONS?")!=-1){
+                                Opt_ele = true;
+                            }
+                            o.items.forEach(function(e){
+                                var childS_titile="";
+                                var Opt_ele = "par";
+                                if(e.title.indexOf("OPTIONS?")!=-1){
+                                    Opt_ele = true;
+                                }
+                                e.items.forEach(function(c){
+                                    var include_dischk_products = c.data.include_dischk_products;
+                                    var product = c.data.product;
+                                    var newArr = [];
+                                    if(Array.isArray(include_dischk_products)){
+                                        for(var i=0; i<include_dischk_products.length; i++){
+                                            newArr.push(include_dischk_products[i]);
+                                        }
+                                    }
+                                    if(Array.isArray(product)){
+                                        for(var i=0; i<product.length; i++){
+                                            newArr.push(product[i]);
+                                        }
+                                    }
+                                    newArr = JSON.stringify(newArr);
+                                    var productTint = c.data.productTint;
+
+
+
+                                    //SUNGLASSES & TINTED LENSES  添加颜色选择
+                                    var tinted_color = "";
+                                    if(product.length>=1){
+                                        product = product[0];
+                                    }else{
+                                        product = "";
+                                    }
+                                    if(productTint){
+                                        if(productTint){
+                                            productTint.forEach(function(kt){
+                                                var newKt = "";
+                                                kt.name = kt.name.replace(/\s+/g,"|");
+                                                if(kt){
+                                                    newKt = JSON.stringify(kt);
+                                                }
+                                                if(kt.colorname=="Brown"){
+                                                    kt.colorname="#8c5907"
+                                                }
+                                                //当为三个点的时候绑定属性
+                                                if(kt.sku.length<=1){
+                                                    tinted_color += '<div class="light_child_smok"><div class="light_child" style="display:inline-block;position:absolute;right:0;left:0;bottom: 0;top:0;margin:auto;width: 30px;\n' +
+                                                        'height: 30px;\n' +
+                                                        'background:'+kt.colorname+';\n' +
+                                                        'border-radius: 50%;" Parentsku='+product.sku+'  sku='+kt.sku+'></div></div>';
+                                                }else{
+                                                    tinted_color += '<div class="light_child_smok"><div class="light_child" style="display:inline-block;position:absolute;right:0;left:0;bottom: 0;top:0;margin:auto;width: 30px;\n' +
+                                                        'height: 30px;\n' +
+                                                        'background:'+kt.colorname+';\n' +
+                                                        'border-radius: 50%;" Parentsku='+product.sku+'  sku='+kt.sku+' dataSku='+newKt+'></div></div>';
+                                                }
+                                            });
+                                        }
+                                    }
+                                    var Opt_ele = "par";
+                                    if(c.title.indexOf("OPTIONS?")!=-1){
+                                        Opt_ele = true;
+                                    }
+
+                                    var bx = c.data.include_dischk_products;
+                                    var str_li = "";
+                                    bx.forEach(function(val){
+                                        str_li+="<li style=\"\n" +
+                                            "    list-style-type: disc;margin-left: 30px;\n" +
+                                            "\">"+val.name+"</li>"
+                                    });
+                                    var ms = "This option includes";
+                                    if(!str_li){
+                                        ms = "";
+                                    }
+                                    childS_titile += '<label class="Opt 3 radio-inline radio-inline_par_child radio-inline_click"    data='+encodeURI(newArr)+'  prescription='+prescription+' usage='+o.usage+' sun_group='+e.code+' isSunglasses='+isSung+' id='+Opt_ele+'><input type="radio" name="d"><p style="margin-bottom: 0px" class="">'+c.title+'</p><p style="color: #000;font-size: 17px">'+c.content+'</p><ul style="font-size: 15px;padding-left: 0;color:#666;"><p style="font-style: italic;margin-bottom: 0">'+ms+'</p>'+str_li+'</ul>'+tinted_color+'<div class="radio-inline_child"><ul></ul></div></label>';
+                                });
+
+                                var include_dischk_products = e.data.include_dischk_products;
+                                var product = e.data.product;
+                                var newArr = [];
+                                if(Array.isArray(include_dischk_products)){
+                                    for(var i=0; i<include_dischk_products.length; i++){
+                                        newArr.push(include_dischk_products[i]);
+                                    }
+                                }
+                                if(Array.isArray(product)){
+                                    for(var i=0; i<product.length; i++){
+                                        newArr.push(product[i]);
+                                    }
+
+                                }
+                                newArr = JSON.stringify(newArr);
+
+                                //LIGHT RESPONSIVE  添加颜色选择
+                                var child_color = "";
+                                if(product.length>=1){
+                                    product = product[0];
+                                }else{
+                                    product = "";
+                                }
+                                if(e.data.productTint){
+
+                                    e.data.productTint.forEach(function(k){
+                                        if(k.colorname=="Brown"){
+                                            k.colorname="#8c5907"
+                                        }
+                                        child_color += '<div class="light_child_smok"><div class="light_child" style="display:inline-block;position:absolute;right:0;left:0;bottom: 0;top:0;margin:auto;width: 30px;\n' +
+                                            'height: 30px;\n' +
+                                            'background:'+k.colorname+';\n' +
+                                            'border-radius: 50%;" Parentsku='+product.sku+'  sku='+k.sku+'></div></div>';
+                                    });
+                                }
+                                var bx = e.data.include_dischk_products;
+
+
+                                var str_li = "";
+                                bx.forEach(function(val){
+                                    str_li+="<li style=\"\n" +
+                                        "    list-style-type: disc;margin-left: 30px;\n" +
+                                        "\">"+val.name+"</li>"
+                                });
+
+                                if(e.usage=="SUN"){
+                                    child_tittle += '<label class="Opt  2 radio-inline radio-inline_par_child radio-inline_click SUN_chid2"    usage='+o.usage+' sun_group='+o.code+' isSunglasses='+isSung+'  data='+encodeURI(newArr)+'  prescription='+prescription+'  id='+Opt_ele+'> <input type="radio" name="b">'+e.title+'<p>'+child_color+'</p><div class="radio-inline_child"><ul>'+childS_titile+'</ul></div></label>';
+                                }else{
+                                    var ms = "This option includes";
+                                    if(!str_li){
+                                        ms = "";
+                                    }
+                                    child_tittle += '<label class="Opt  2 radio-inline radio-inline_par_child radio-inline_click SUN_chid2"    usage='+o.usage+' sun_group='+o.code+' isSunglasses='+isSung+'  data='+encodeURI(newArr)+' prescription='+prescription+' id='+Opt_ele+'> <input type="radio" name="b"><p style="margin-bottom: 0px">'+e.title+'</p><p style="color: #000;font-size: 17px">'+e.content+'</p><ul style="font-size: 15px;padding-left: 0;color:#666;"><p style="font-style: italic;margin-bottom: 0">'+ms+'</p>'+str_li+'</ul>'+child_color+'<div class="radio-inline_child"><ul>'+childS_titile+'</ul></div></label>';
+                                }
+                            });
+                            lens_tittle += '<label class="Opt cleared_lable 1 radio-inline radio-inline_Par radio-inline_click Lens_click" sku='+o.used_for+'  usage='+o.usage+' sun_group='+o.code+' isSunglasses='+isSung+' id="par"> <input type="radio" name="c" id="par">'+o.title+'<div class="radio-inline_Nai">\n' +
+                                '<ul>'+child_tittle+'</ul></div></label>';
+                        });
+                        $('.label_firstB').html(lens_tittle);
+                        $('.next_3002,.lens_option_3002').hide();
+                        $("#next_3001,.lens_option_3001").show();
+                    };
+                }else{
+                    layer.open({
+                        title:"Tips",
+                        content: res.message,
+                        scrollbar: false,
+                        yes: function () {
+                            layer.closeAll();
+                            $(".mask_show").addClass("hide");
+                        }
+                    });
+                    return false;
+                }
+            },function(){
+                $(".mask_show").removeClass("hide");
+            },function(){
+                $(".mask_show").removeClass("hide");
+            });
+        });
+
+        //3002点击请求3001
+        $("body").on("click",".radio-idS",function(){
+            $(this).children("div").show();
+            var prescriptionType = $(this).attr("prescription_type");
+            var useFor = $(this).attr("use_for");
+            var progressiveType = $(this).attr("progressive_type");
+            var progressive_code = $(this).attr("progressive_code");
+            if($(this).find("label").length<=0){
+                var h = $(document).height()-$(window).height();
+                var url = "/api/reorder/rules_3001/";
+                var iqstr = data_list(useFor,progressiveType,itemId,orderNumber);
+                if(!progressive_code || progressive_code=="undefined"){
+                    progressive_code="";
+                }
+                prescriptionType = prescriptionType.replace(/\|/g," ");
+                iqstr["parameters"]["prescription"]["progressive_code"]=progressive_code;
+                iqstr["parameters"]["prescription"]["progressive_type"]=prescriptionType;
+                iqstr["parameters"]["prescription"]["from_rule_id"]=3001;
+                //3002请求3001 ajax
+                PostAjax(url,JSON.stringify(iqstr),function(res) {
+                    if (res.success) {
+                        $('body,html').animate({'scrollTop':h+500},500);
+                        $(".mask_show").addClass("hide");
+                        var list = res.success;
+                        var prescription = res.prescription;
+                        prescription.prescription_name=prescription.prescription_name.replace(/\s+/g,"|");
+                        var progressive_type  = prescription["progressive_type"];
+                        prescription["progressive_type"] = progressive_type.replace(/\s+/g,"|");
+                        prescription = JSON.stringify(prescription);
+                        $(".btn_Submit").attr("prescription",prescription);
+                        var lens_tittle = '';
+                        list.forEach(function(o){
+                            var child_tittle = "";
+                            var isSung = "";
+                            if(o.usage=="SUN"){
+                                isSung=1;
+                            }else{
+                                isSung=0;
+                            }
+                            var Opt_ele = "par";
+                            if(o.title.indexOf("OPTIONS?")!=-1){
+                                Opt_ele = true;
+                            }
+                            o.items.forEach(function(e){
+                                var childS_titile="";
+                                var Opt_ele = "par";
+                                if(e.title.indexOf("OPTIONS?")!=-1){
+                                    Opt_ele = true;
+                                }
+                                e.items.forEach(function(c){
+                                    var include_dischk_products = c.data.include_dischk_products;
+                                    var product = c.data.product;
+                                    var newArr = [];
+                                    if(Array.isArray(include_dischk_products)){
+                                        for(var i=0; i<include_dischk_products.length; i++){
+                                            newArr.push(include_dischk_products[i]);
+                                        }
+                                    }
+                                    if(Array.isArray(product)){
+                                        for(var i=0; i<product.length; i++){
+                                            newArr.push(product[i]);
+                                        }
+                                    }
+                                    newArr = JSON.stringify(newArr);
+                                    var productTint = c.data.productTint;
+
+
+
+                                    //SUNGLASSES & TINTED LENSES  添加颜色选择
+                                    var tinted_color = "";
+                                    if(product.length>=1){
+                                        product = product[0];
+                                    }else{
+                                        product = "";
+                                    }
+                                    if(productTint){
+                                        if(productTint){
+                                            productTint.forEach(function(kt){
+                                                var newKt = "";
+                                                kt.name = kt.name.replace(/\s+/g,"|");
+                                                if(kt){
+                                                    newKt = JSON.stringify(kt);
+                                                }
+                                                if(kt.colorname=="Brown"){
+                                                    kt.colorname="#8c5907"
+                                                }
+                                                //当为三个点的时候绑定属性
+                                                if(kt.sku.length<=1){
+                                                    tinted_color += '<div class="light_child_smok"><div class="light_child" style="display:inline-block;position:absolute;right:0;left:0;bottom: 0;top:0;margin:auto;width: 30px;\n' +
+                                                        'height: 30px;\n' +
+                                                        'background:'+kt.colorname+';\n' +
+                                                        'border-radius: 50%;" Parentsku='+product.sku+'  sku='+kt.sku+'></div></div>';
+                                                }else{
+                                                    tinted_color += '<div class="light_child_smok"><div class="light_child" style="display:inline-block;position:absolute;right:0;left:0;bottom: 0;top:0;margin:auto;width: 30px;\n' +
+                                                        'height: 30px;\n' +
+                                                        'background:'+kt.colorname+';\n' +
+                                                        'border-radius: 50%;" Parentsku='+product.sku+'  sku='+kt.sku+' dataSku='+newKt+'></div></div>';
+                                                }
+                                            });
+                                        }
+                                    }
+                                    var Opt_ele = "par";
+                                    if(c.title.indexOf("OPTIONS?")!=-1){
+                                        Opt_ele = true;
+                                    }
+
+                                    var bx = c.data.include_dischk_products;
+                                    var str_li = "";
+                                    bx.forEach(function(val){
+                                        str_li+="<li style=\"\n" +
+                                            "    list-style-type: disc;margin-left: 30px;\n" +
+                                            "\">"+val.name+"</li>"
+                                    });
+
+                                    var bx = c.data.include_dischk_products;
+                                    var str_li = "";
+                                    bx.forEach(function(val){
+                                        str_li+="<li style=\"\n" +
+                                            "    list-style-type: disc;margin-left: 30px;\n" +
+                                            "\">"+val.name+"</li>"
+                                    });
+
+                                    var ms = "This option includes";
+                                    if(!str_li){
+                                        ms = "";
+                                    }
+                                    childS_titile += '<label class="Opt 3 radio-inline radio-inline_par_child SUN_child radio-inline_click"    data='+encodeURI(newArr)+'  prescription='+prescription+' usage='+o.usage+' sun_group='+e.code+' isSunglasses='+isSung+' id='+Opt_ele+'><input type="radio" name="d"><p style="margin-bottom: 0px" class="">'+c.title+'</p><p style="color: #000;font-size: 17px">'+c.content+'</p><ul style="font-size: 15px;padding-left: 0;color:#666;"><p style="font-style: italic;margin-bottom: 0">'+ms+'</p>'+str_li+'</ul>'+tinted_color+'<div class="radio-inline_child"><ul></ul></div></label>';
+                                });
+
+                                var include_dischk_products = e.data.include_dischk_products;
+                                var product = e.data.product;
+                                var newArr = [];
+                                if(Array.isArray(include_dischk_products)){
+                                    for(var i=0; i<include_dischk_products.length; i++){
+                                        newArr.push(include_dischk_products[i]);
+                                    }
+                                }
+                                if(Array.isArray(product)){
+                                    for(var i=0; i<product.length; i++){
+                                        newArr.push(product[i]);
+                                    }
+
+                                }
+                                newArr = JSON.stringify(newArr);
+
+                                //LIGHT RESPONSIVE  添加颜色选择
+                                var child_color = "";
+                                if(product.length>=1){
+                                    product = product[0];
+                                }else{
+                                    product = "";
+                                }
+                                if(e.data.productTint){
+                                    e.data.productTint.forEach(function(k){
+                                        if(k.colorname=="Brown"){
+                                            k.colorname="#8c5907"
+                                        }
+                                        child_color += '<div class="light_child_smok"><div class="light_child" style="display:inline-block;position:absolute;right:0;left:0;bottom: 0;top:0;margin:auto;width: 30px;\n' +
+                                            'height: 30px;\n' +
+                                            'background:'+k.colorname+';\n' +
+                                            'border-radius: 50%;" Parentsku='+product.sku+'  sku='+k.sku+'></div></div>';
+                                    });
+                                }
+
+                                var bx = e.data.include_dischk_products;
+
+
+                                var str_li = "";
+                                bx.forEach(function(val){
+                                    str_li+="<li style=\"\n" +
+                                        "    list-style-type: disc;margin-left: 30px;\n" +
+                                        "\">"+val.name+"</li>"
+                                });
+                                if(e.usage=="SUN"){
+                                    child_tittle += '<label class="Opt  2 radio-inline radio-inline_par_child radio-inline_click SUN_chid2"    usage='+o.usage+' sun_group='+o.code+' isSunglasses='+isSung+'  data='+encodeURI(newArr)+'  prescription='+prescription+'  id='+Opt_ele+'> <input type="radio" name="b">'+e.title+'<p>'+child_color+'</p><div class="radio-inline_child"><ul>'+childS_titile+'</ul></div></label>';
+                                }else{
+                                    var ms = "This option includes";
+                                    if(!str_li){
+                                        ms = "";
+                                    }
+                                    child_tittle += '<label class="Opt  2 radio-inline radio-inline_par_child radio-inline_click"    usage='+o.usage+' sun_group='+o.code+' isSunglasses='+isSung+'  data='+encodeURI(newArr)+' prescription='+prescription+' id='+Opt_ele+'> <input type="radio" name="b"><p style="margin-bottom: 0px">'+e.title+'</p><p style="color: #000;font-size:17px">'+e.content+'</p><ul style="font-size: 15px;padding-left: 0;color:#666;"><p style="font-style: italic;margin-bottom: 0">'+ms+'</p>'+str_li+'</ul>'+child_color+'<div class="radio-inline_child"><ul>'+childS_titile+'</ul></div></label>';
+                                }
+                            });
+                            lens_tittle += '<label class="Opt cleared_lable 1 radio-inline radio-inline_Par radio-inline_click Lens_click" sku='+o.used_for+'  usage='+o.usage+' sun_group='+o.code+' isSunglasses='+isSung+' id="par"> <input type="radio" name="c" id="par">'+o.title+'<div class="radio-inline_Nai">\n' +
+                                '<ul>'+child_tittle+'</ul></div></label>';
+                        });
+                        $('.label_firstB').html(lens_tittle);
+                        $('.next_3002,.lens_option_3002').show();
+                        $("#next_3001,.lens_option_3001").show();
+                    }
+                },function(){
+                    $(".mask_show").removeClass("hide");
+                },function(){
+                    $(".mask_show").removeClass("hide");
+                });
+            }
+        });
+        $("body").on("click",".radio-inline_Par",function(){
+            var h = $(document).height()-$(window).height();
+            $('body,html').animate({'scrollTop':h+500},500);
+            $(this).find(".radio-inline_Nai").show().parents().siblings().find(".radio-inline_Nai").hide();
+        });
+        $("body").on("click",".radio-inline_par_child",function(){
+            $(this).find(".radio-inline_child").show().parents().siblings().find(".radio-inline_child").hide();
+        });
+
+        $("body").on("click",".chid-inline_3009",function(e){
+//            e.stopPropagation();
+            $(this).find(".bx_kx").show().parents().siblings().find(".bx_kx").hide();
+            $(this).find(".light_child_smok_3009_parents").show().parents().siblings().find(".light_child_smok_3009_parents").hide();
+            $(".btn_Submit").removeClass("hidelight_child_smok_3009");
+
+            var data_Submit = $(".btn_Submit").attr("data");
+            var chidinline_data = $(this).attr("orderglass");
+
+            var prescription_3009 = $(this).attr("prescription");
+            var itemId =  window.item_id;
+            var sku =$(".frame_sku").val();
+//            var shipping_method = $("#Methods").val();
+            var quantity = parseInt($(".frame_qit").val());
+            var obj = {
+                item_id:itemId,
+                frame_sku:sku,
+                quantity:quantity,
+//                shipping_method:shipping_method
+            };
+            if(chidinline_data){
+                chidinline_data = JSON.parse(chidinline_data);
+                obj.orderglass = chidinline_data;
+            }
+            if(prescription_3009){
+                prescription_3009 = JSON.parse(prescription_3009);
+                obj.prescription = prescription_3009;
+            }
+            $(".btn_Submit").attr("data",JSON.stringify(obj));
+            $(".btn_Submit").removeClass("hide");
+        });
+
+
+        //可选项切换
+        $("body").on("click",".kx_click",function(e){
+            e.stopPropagation();
+            $(this).find("input").attr("checked","checked").parent().siblings().find("input").removeAttr("checked");
+            var kx_data = $(this).attr("kx");
+            var orderglass_par  = $(this).parents(".chid-inline_3009").attr("orderglass");
+            var data_submit = $(".btn_Submit").attr("data");
+            if(kx_data && orderglass_par){
+                kx_data =  JSON.parse(kx_data);
+                orderglass_par = JSON.parse(orderglass_par);
+                orderglass_par.forEach(function(val,idx){
+                    if(val.type == kx_data.type){
+                        orderglass_par[idx] = kx_data;
+                    }
+                });
+                if(data_submit){
+                    data_submit = JSON.parse(data_submit);
+                    data_submit.orderglass = orderglass_par;
+                    $(".btn_Submit").attr("data",JSON.stringify(data_submit));
+                }
+            }
+        });
+
+        //点击options请求规则3009
+        $("body").on("click",".Opt",function(e){
+            e.stopPropagation();
+            var usage = $(this).attr("usage");
+            var sun_group = $(this).attr("sun_group");
+            var prescription = $(this).attr("prescription");
+            var prescription_3009 = $(this).attr("prescription");
+            var recommend = $(this).attr("id");
+            if(recommend=='true'){
+                if(prescription){
+                    prescription =  JSON.parse(prescription);
+                }
+                prescription.from_rule_id=3009;
+                if(prescription.prescription_type=="B"){
+                    prescription.prescription_type=origin_prescription.norx!=1?"B":"N";
+                }else{
+                    prescription.prescription_type=origin_prescription.norx!=1?"S":"N";
+                }
+                prescription.prescription_name = prescription.prescription_name.replace(/\|/g," ");
+                var new_data = {
+                    parameters:{
+                        prescription:prescription,
+                        usage:usage,
+                        profile:{
+                            age_group:"25"
+                        },
+                        sun_group:sun_group,
+                        support_php:"",
+                        product: {
+                            sku:$(".frame_sku").val(),
+                            quantity:parseInt($(".frame_qit").val()),
+                            product_group: "Default"
+                        },
+//                        shipping_method:$("#Methods").val()
+                    }
+                };
+                var that = this;
+                var url = "/api/reorder/rules_3009/";
+                var h = $(document).height()-$(window).height();
+                PostAjax(url,JSON.stringify(new_data),function(res){
+                    if(res.success){
+                        $('body,html').animate({'scrollTop':h+500},500);
+                        var data = res.success;
+                        var str = "";
+
+
+
+                        data.forEach(function(v){
+                            var bx_str = "";
+                            var kx_str = "";
+                            var orderGlass=[];
+
+
+                            var parent_type = "";
+                            var parent_sku = "";
+                            if(v.data.productTint.length>=1){
+                                if(v.data.productTint[0].sku.length>1){
+                                    parent_type = v.data.productTint[0].type;
+                                    parent_sku = v.data.productTint.sku;
+                                }else{
+                                    parent_type = v.data.product[0].mainProduct.type;
+                                    parent_sku = v.data.product[0].mainProduct.sku;
+                                }
+                            }else{
+                               parent_type = v.data.product[0].mainProduct.type;
+                                parent_sku = v.data.product[0].mainProduct.sku;
+                            }
+                            //3009  色块展示
+                            var sk = "";
+                            v.data.productTint.forEach(function(product,idx){
+                                var color = product.color.value;
+                                var child_sku = product.sku;
+                                if(idx==0){
+                                    sk+='<div class="light_child_smok_3009 light_child_smok_color" sku='+child_sku+' parent_type='+parent_type+' parent_sku='+parent_sku+'><div class="light_child" style="display:inline-block;position:absolute;right:0;left:0;bottom: 0;top:0;margin:auto;width: 30px;height:30px;background:'+color+';border-radius:50%;"></div></div>'
+                                }else{
+                                    sk+='<div class="light_child_smok_3009" sku='+child_sku+' parent_type='+parent_type+' parent_sku='+parent_sku+'><div class="light_child" style="display:inline-block;position:absolute;right:0;left:0;bottom: 0;top:0;margin:auto;width: 30px;height:30px;background:'+color+';border-radius:50%;"></div></div>'
+                                }
+                            });
+                            v.data.product.forEach(function(product){
+                                product.mainProduct.name = product.mainProduct.name.replace(/\s+/g,"|");
+
+                                //如果当前3009的有色块，将产品sku进行拼接
+                                if(v.data.productTint.length>=1){
+                                    if(v.data.productTint[0].sku.length>1){
+                                        v.data.productTint[0].name = v.data.productTint[0].name.replace(/\s+/g,"|");
+                                        orderGlass.push(v.data.productTint[0]);
+                                    }else{
+                                        product.mainProduct.sku = product.mainProduct.sku+v.data.productTint[0].sku;
+                                    }
+                                }
+                                orderGlass.push(product.mainProduct);
+                                //3009必选项展示
+                                product.include_dischk_skus.forEach(function(bx){
+                                    var yj = bx["price-original"];
+                                    var xj = bx["price"];
+                                    var dzj = "";
+                                    if(yj==xj){
+                                        if(parseInt(xj)==0){
+                                            xj="price included"
+                                        }else{
+                                            xj="+"+xj;
+                                        }
+                                        dzj = "<div style=\"\n" +
+                                            "    display: inline-block;color: #f90;\n" +
+                                            "    /* font-weight: bold; */\n" +
+                                            "\">(\n" +
+                                            "    <span style='color: #f90;'>"+xj+"</span>\n" +
+                                            ")</div>"
+                                    }else{
+                                        if(parseInt(yj)==0){
+                                            yj="price included"
+                                        }else{
+                                            yj="+"+yj;
+                                        }
+                                        if(parseInt(xj)==0){
+                                            xj="price included"
+                                        }else{
+                                            xj="+"+xj;
+                                        }
+                                        dzj = "<div style=\"\n" +
+                                            "    display: inline-block;\n" +
+                                            "    color: #ccc;\n" +
+                                            "    /* font-weight: bold; */\n" +
+                                            "\">(\n" +
+                                            "    <span style=\"\n" +
+                                            "    text-decoration: line-through;\n" +
+                                            "    color: #ccc;\n" +
+                                            "    margin-right: 5px;\n" +
+                                            "\">"+yj+"</span>\n" +
+                                            "    <span style='color: #f90;'>"+xj+"</span>\n" +
+                                            ")</div>"
+                                    }
+                                    bx_str += "<label class=\"radio-inline chid-inline_3\" style='pointer-events:none;color: #ccc !important;display: inline;'><input type='checkbox' checked='checked' style=\"color: #ccc\">" + bx.name + dzj + "</label>"
+                                    bx.name = bx.name.replace(/\s+/g,"|");
+                                    orderGlass.push(bx);
+                                });
+                                var progressiveProduct = product.progressiveProduct;
+                                if(progressiveProduct){
+                                    bx_str += "<label class=\"radio-inline chid-inline_3\" style='pointer-events:none;color: #ccc !important;display: inline;'><input type='checkbox' checked='checked' style=\"color: #ccc\">" + progressiveProduct.name + "</label>"
+                                    progressiveProduct.name = progressiveProduct.name.replace(/\s+/g,"|");
+                                    orderGlass.push(progressiveProduct);
+                                }
+                                //3009可选选项
+                                product.bundleProduct.forEach(function(bx,idx){
+                                    var new_tit = bx.name;
+                                    bx.name = bx.name.replace(/\s+/g,"|");
+                                    var yj = bx["price-original"];
+                                    var xj = bx["price"];
+                                    var dzj = "";
+                                    if(yj==xj){
+                                        if(parseInt(xj)==0){
+                                            xj="price included"
+                                        }else{
+                                            xj="+$"+xj;
+                                        }
+                                        dzj = "<div style=\"\n" +
+                                            "    display: inline-block;color: #f90;\n" +
+                                            "    /* font-weight: bold; */\n" +
+                                            "\">(\n" +
+                                            "    <span style='color: #f90;'>"+xj+"</span>\n" +
+                                            ")</div>"
+                                    }else{
+                                        if(parseInt(yj)==0){
+                                            yj="price included"
+                                        }else{
+                                            yj="+$"+yj;
+                                        }
+                                        if(parseInt(xj)==0){
+                                            xj="price included"
+                                        }else{
+                                            xj="+$"+xj;
+                                        }
+                                        dzj = "<div style=\"\n" +
+                                            "    display: inline-block;\n" +
+                                            "    color: #ccc;\n" +
+                                            "    /* font-weight: bold; */\n" +
+                                            "\">(\n" +
+                                            "    <span style=\"\n" +
+                                            "    text-decoration: line-through;\n" +
+                                            "    color: #ccc;\n" +
+                                            "    margin-right: 5px;\n" +
+                                            "\">"+yj+"</span>\n" +
+                                            "    <span style='color: #f90;'>"+xj+"</span>\n" +
+                                            ")</div>"
+                                    }
+                                    if(idx==product.bundleProduct.length-1){
+                                        kx_str += "<label class=\"radio-inline chid-inline_3 kx_click\" style='display: inline;' kx="+JSON.stringify(bx)+"><input type='checkbox' checked='checked'>" + new_tit + dzj + "</label>"
+                                    }else{
+                                        kx_str += "<label class=\"radio-inline chid-inline_3 kx_click\" style='display: inline;' kx="+JSON.stringify(bx)+"><input type='checkbox'>" + new_tit + dzj + "</label>"
+                                    }
+                                });
+                                product.bundleProduct[product.bundleProduct.length-1].name = product.bundleProduct[0].name.replace(/\s+/g,"|");
+                                orderGlass.push(product.bundleProduct[product.bundleProduct.length-1]);
+                            });
+
+                            //price
+                            var color_price = "";
+                            if(v.is_available==1){
+                                color_price = "color: #f90;"
+                            }else{
+                                color_price = "color: #ccc;"
+                            }
+                            var price_str = "";
+
+
+                            if(v.data.totalprice==v.data["totalprice-original"]){
+                                //这里指的是没有打折
+                                var yj = v.data["totalprice-original"];
+                                if(parseInt(yj)==0){
+                                    yj="price included"
+                                }else{
+                                    yj="+$"+yj;
+                                }
+                                price_str="<p style=\"margin-left:40px;display: inline-block;\">\n" +
+                                    "<span style=\"\n" +
+                                    color_price+
+                                    "    font-weight: bold;\n" +
+                                    "\">"+yj+"</span>\n" +
+                                    "\n" +
+                                    "</p>"
+                            }else{
+                                var xj = v.data.totalprice;
+                                var yj = v.data["totalprice-original"];
+                                if(parseInt(yj)==0){
+                                    yj="price included"
+                                }else{
+                                    yj="+$"+yj;
+                                }
+                                if(parseInt(xj)==0){
+                                    xj="price included"
+                                }else{
+                                    xj="+$"+xj;
+                                }
+                                //这里指的是打折
+                                price_str="<p style=\"margin-left:40px;display: inline-block;\">\n" +
+                                    "<span style=\"\n" +
+                                    "    color: #ccc;\n" +
+                                    "    text-decoration: line-through;\n" +
+                                    "\">"+yj+"</span>\n" +
+                                    "\n" +
+                                    "<span style=\"\n" +
+                                    color_price +
+                                    "    font-weight: bold;\n" +
+                                    "\">"+xj+"</span>\n" +
+                                    "\n" +
+                                    "</p>"
+
+                            }
+                            if(v.is_available==1){
+                                str += "<label class=\"radio-inline chid-inline_3009\" orderGlass="+JSON.stringify(orderGlass)+" prescription="+prescription_3009+"><input type=\"radio\" name='child'>" + v.title + price_str + "<div class='bx bx_kx'><ul>"+bx_str+"</ul></div><div class='kx bx_kx'><ul>"+kx_str+"</ul></div><div class='light_child_smok_3009_parents'>"+sk+"</div></label>"
+                            }else {
+                                str += "<label class=\"radio-inline chid-inline_3009\" style=\"pointer-events:none;color: #ccc !important;\"><input type=\"radio\" style=\"color: #ccc\" name='child'>" + v.title + price_str + "</label>"
+                            }
+                        });
+                        $(that).find(".radio-inline_child ul").html(str);
+                    }else{
+                        layer.open({
+                            title:"Error",
+                            content:"<span style='color:red'>"+res.message+"</span>",
+                            scrollbar: false,
+                            yes: function () {
+                                layer.closeAll();
+                                $(".mask_show").addClass("hide");
+                            }
+                        });
+                    }
+                    $(".mask_show").addClass("hide");
+                },function(){
+                    $(".mask_show").removeClass("hide");
+                },function(){
+                    $(".mask_show").removeClass("hide");
+                });
+            }
+        });
+        $("body").on("click",".chid-inline,.chid-inline_3009,.light_child_smok_3009",function(event){
+            event.stopPropagation();//阻止事件冒泡即可
+        });
+
+
+
+
+
+        window.dj_cs =  0;
+//        submit提交数据
+        $(".btn_Submit").on("click",function(){
+            $(".mask_show").removeClass("hide");
+            var  data = $(this).attr("data");
+            var profile_prescription = $(this).attr("profile_prescription");
+            if(profile_prescription){
+                profile_prescription = JSON.parse(profile_prescription);
+            }
+            if(data){
+                data = JSON.parse(data);
+                data.profile_prescription=profile_prescription.parameters.prescription;
+                data.profile_prescription.prescription_name = data.profile_prescription.prescription_name.replace(/\|/g," ");
+                data.prescription.prescription_name = data.prescription.prescription_name.replace(/\|/g," ");
+                var newData = data.orderglass;
+                var orderglass={};
+                if (typeof newData == 'string') {
+                    newData = JSON.parse(newData);
+                }
+                newData.map(function(val){
+                    orderglass[val.type]=val;
+                });
+
+                for(key in orderglass){
+                    orderglass[key].name = orderglass[key].name.replace(/\|/g," ");
+                }
+                data.orderglass=orderglass;
+                var url = "/api/reorder/add_to_cart/";
+                if(window.dj_cs>0){
+                    layer.open({
+                        title:"Error",
+                        content:"<span style='color:red'>Do you want to resubmit?</span>",
+                        btn:["Yes","No"],
+                        scrollbar: false,
+                        btn1: function () {
+                            layer.closeAll();
+                            PostAjax(url,JSON.stringify(data),function(res){
+                                $(".mask_show").addClass("hide");
+                                //成功
+                                if(res.status==0){
+                                    window.dj_cs++;
+                                    layer.open({
+                                        title:"Success",
+                                        content:"<span>"+res.message+"</span>",
+                                        scrollbar: false,
+                                        yes: function () {
+                                            layer.closeAll();
+                                            $("#next_3001,.lens_option_3001,#next_3002,.lens_option_3002").hide();
+                                            $('body,html').animate({'scrollTop':0},500);
+                                            $(".mask_show").addClass("hide");
+                                            window.location.reload();
+                                        }
+                                    });
+                                }else{
+                                    layer.open({
+                                        title:"Error",
+                                        content:"<span style='color:red'>"+res.message+"</span>",
+                                        scrollbar: false,
+                                        yes: function () {
+                                            layer.closeAll();
+//                                            $("#next_3001,.lens_option_3001,#next_3002,.lens_option_3002").hide();
+//                                            $('body,html').animate({'scrollTop':0},500);
+                                            $(".mask_show").addClass("hide");
+                                        }
+                                    });
+                                }
+                            },function(){
+                                $(".mask_show").removeClass("hide");
+                            },function(){
+                                $(".mask_show").removeClass("hide");
+                            });
+                        },
+                        btn2:function(){
+                            layer.closeAll();
+                            window.dj_cs = 0;
+                            $(".btn_Submit,.mask_show").addClass("hide");
+                            $("#next_3001,.lens_option_3001,.next_3002,.lens_option_3002").hide();
+                        },
+                        cancel:function(){
+                            layer.closeAll();
+                            window.dj_cs = 0;
+                            $(".btn_Submit,.mask_show").addClass("hide");
+                            $("#next_3001,.lens_option_3001,.next_3002,.lens_option_3002").hide();
+                        }
+                    });
+                    return false;
+                }else{
+                    PostAjax(url,JSON.stringify(data),function(res){
+                        $(".mask_show").addClass("hide");
+                        //成功
+                        if(res.status==0){
+                            window.dj_cs++;
+                            layer.open({
+                                title:"Success",
+                                content:"<span>"+res.message+"</span>",
+                                scrollbar: false,
+                                yes: function () {
+                                    layer.closeAll();
+                                    $("#next_3001,.lens_option_3001,#next_3002,.lens_option_3002").hide();
+                                    $('body,html').animate({'scrollTop':0},500);
+                                    $(".mask_show").addClass("hide");
+                                    window.location.reload();
+                                }
+                            });
+                        }else{
+                            layer.open({
+                                title:"Error",
+                                content:"<span style='color:red'>"+res.message+"</span>",
+                                scrollbar: false,
+                                yes: function () {
+                                    layer.closeAll();
+//                                    $("#next_3001,.lens_option_3001,#next_3002,.lens_option_3002").hide();
+//                                    $('body,html').animate({'scrollTop':0},500);
+                                    $(".mask_show").addClass("hide");
+                                }
+                            });
+                        }
+                    },function(){
+                        $(".mask_show").removeClass("hide");
+                    },function(){
+                        $(".mask_show").removeClass("hide");
+                    });
+                }
+            }
+        });
+
+
+
+
+        $("body").on("click",".radio-inline_click",function(e){
+            //只针对当前元素点击触发，子元素点击不触发
+            if(e.target.id!="par"){
+                $(".light_child_smok").removeClass("light_child_smok_color");
+                $(this).find(".light_child_smok").eq(0).addClass("light_child_smok_color");
+            }
+
+            var data = $(this).attr("data");
+            var prescription = $(this).attr("prescription");
+            data = decodeURI(data);
+            if(data=="undefined" || data=="[]" || !data){
+                $(".btn_Submit").addClass("hide");
+            }else{
+                $(".btn_Submit").removeClass("hide");
+                data = JSON.parse(data);
+                function distinct1(arr,key){
+                    var newobj = {},newArr = [];
+                    for(var i=0;i<arr.length;i++){
+                        var item = arr[i];
+                        if(!newobj[item[key]]){
+                            newobj[item[key]] = newArr.push(item);
+                        }
+                    }
+                    return newArr;
+                }
+                data =  distinct1(data,"sku");
+                var parentSku =  $(this).find(".light_child").eq(0).attr("parentSku");
+                var childSku =  $(this).find(".light_child").eq(0).attr("sku");
+                var DataSku =  $(this).find(".light_child").eq(0).attr("dataSku");
+                if(DataSku){
+                    if(e.target.id!="par") {
+                        DataSku = JSON.parse(DataSku);
+                        if(data[data.length-1].sku.indexOf("VTS")==-1){
+                            data.push(DataSku);
+                        }
+                        $(this).attr("dataSku",JSON.stringify(data));
+                    }
+                }else{
+                    data.forEach(function(val){
+                        if(val.sku==parentSku){
+                            val.sku = val.sku+childSku;
+                        }
+                    });
+                }
+                prescription = JSON.parse(prescription);
+                prescription.prescription_name = prescription.prescription_name.replace(/\|/g," ");
+                var itemId =  window.item_id;
+//                var shipping_method = $("#Methods").val();
+                var sku = $(".frame_sku").val();
+                var quantity = parseInt($(".frame_qit").val());
+                var obj = {
+                    item_id:itemId,
+                    frame_sku:sku,
+                    quantity:quantity,
+//                    shipping_method:shipping_method,
+                    orderglass:data,
+
+                };
+                obj.prescription=prescription;
+                $(".btn_Submit").attr("data",JSON.stringify(obj));
+            }
+        });
+
+        $("body").on("click",".first_click3",function(e){
+            $(this).find(".first_click_child2").show().parent().siblings().find(".first_click_child2").hide();
+        });
+        $("body").on("click",".first_click2",function(e){
+            $(this).find(".first_click_child").show().parent().siblings().find(".first_click_child").hide();
+        });
+
+        //SUNGLASSES & TINTED LENSES这个选项的二级子元素绑定事件
+        $("body").on("click",".SUN_child",function(){
+                if($(this).find("p:nth-of-type(1)").text()){
+                    if($(this).find("p:nth-of-type(1)").text().indexOf("OPTIONS")!=-1){
+                        $(".btn_Submit").addClass("hide");
+                    }else{
+                        $(".btn_Submit").removeClass("hide");
+                    }
+                }
+            $(this).find(".light_child_smok").eq(0).addClass("light_child_smok_color").parent().siblings().find(".light_child_smok").removeClass("light_child_smok_color")
+        });
+
+        //SUNGLASSES & TINTED LENSES这个选项的一级子元素绑定事件
+        $("body").on("click",".SUN_chid2",function(){
+            $(this).find(".light_child_smok").removeClass("light_child_smok_color");
+            $(this).find(".SUN_child>input").removeAttr("checked");
+
+        });
+
+
+        //Lens_type选项点击还原
+        $("body").on("click",".Lens_click",function(){
+            $(this).find(".SUN_chid2>input").removeAttr("checked");
+            $(this).find(".radio-inline_child").hide();
+
+        });
+
+        //绑定3009色块来回切换
+        $("body").on("click",".light_child_smok_3009",function(ev){
+            ev.preventDefault();
+            var child_Sku = $(this).attr("sku");
+            var parent_type = $(this).attr("parent_type");
+            var parent_sku = $(this).attr("parent_sku");
+            $(this).addClass("light_child_smok_color").siblings().removeClass("light_child_smok_color");
+            var parents_data = $(this).parents(".chid-inline_3009").attr("orderglass");
+            if(parents_data){
+                parents_data = JSON.parse(parents_data);
+                parents_data.forEach(function(val){
+                    if(val.type==parent_type){
+                        if(child_Sku.length>1){
+                            val.sku = child_Sku;
+                        }else{
+                            val.sku = parent_sku + child_Sku;
+                        }
+                    }
+                });
+                var tj_sub  = $(".btn_Submit").attr("data");
+                if(tj_sub){
+                    tj_sub = JSON.parse(tj_sub);
+                    tj_sub.orderglass = parents_data;
+                    $(this).parents(".chid-inline_3009").attr("orderglass",JSON.stringify(parents_data));
+                    $(".btn_Submit").attr("data",JSON.stringify(tj_sub));
+                }
+            }
+        });
+
+        //颜色来回切换事件
+        $("body").on("click",".light_child_smok",function(){
+            $(".btn_Submit").removeClass("hide");
+            //点击颜色切换的时候，让父元素自动选中
+            $(this).parent().find("input").attr("checked","checked").siblings().find("input").removeAttr("checked");
+            //当点击颜色的时候，全部为不选中状态
+            $(".light_child_smok_color").removeClass("light_child_smok_color");
+            //当前颜色选中，其他颜色为不选中
+            $(this).addClass("light_child_smok_color").siblings().removeClass("light_child_smok_color");
+            //发送的集合sku数据
+            var send_data = $(".btn_Submit").attr("data");
+
+            //当前集合的sku
+            var data = $(this).parent().attr("data");
+            data = decodeURI(data);
+
+            if(!send_data){
+                var prescription = $(this).parent().attr("prescription");
+                prescription = JSON.parse(prescription);
+                prescription.prescription_name = prescription.prescription_name.replace(/\|/g," ");
+                function distinct1(arr,key){
+                    var newobj = {},newArr = [];
+                    for(var i=0;i<arr.length;i++){
+                        var item = arr[i];
+                        if(!newobj[item[key]]){
+                            newobj[item[key]] = newArr.push(item);
+                        }
+                    }
+                    return newArr;
+                }
+                var new_data =  distinct1(data,"sku");
+                var itemId =  window.item_id;
+//                var shipping_method = $("#Methods").val();
+                var sku = $(".frame_sku").val();
+                var quantity = parseInt($(".frame_qit").val());
+                var obj = {
+                    item_id:itemId,
+                    frame_sku:sku,
+                    quantity:quantity,
+//                    shipping_method:shipping_method,
+                    orderglass:new_data,
+
+                };
+                obj.prescription=prescription;
+                send_data = JSON.stringify(obj);
+            }
+            var parentSku = $(this).find(".light_child").attr("parentsku");
+            var DataSku = $(this).find(".light_child").attr("dataSku");
+            var childSku = $(this).find(".light_child").attr("sku");
+            var parent_dataSku = $(this).parent().attr("dataSku");
+            if(DataSku){
+                DataSku = JSON.parse(DataSku);
+                //已绑定属性进行替换
+                if(parent_dataSku){
+                    parent_dataSku = JSON.parse(parent_dataSku);
+                    parent_dataSku[parent_dataSku.length-1] = DataSku ;
+                    $(this).parent().attr("dataSku",JSON.stringify(parent_dataSku));
+                    parent_dataSku.forEach(function(val){
+                        if(val.sku.indexOf("VTS")!=-1 || val.sku.indexOf("VTG")!=-1){
+                            data = parent_dataSku;
+                        }
+                    })
+                }
+                //为绑定属性绑定属性进行替换
+                else{
+                    if(data){
+                        data = JSON.parse(data);
+                        if(data[data.length-1].sku.indexOf("VTS")==-1){
+                            data.push(DataSku);
+                        }
+                        $(this).attr("dataSku",JSON.stringify(data));
+                    }
+                }
+            }else{
+                if(data){
+                    data = JSON.parse(data);
+                    data.forEach(function(val){
+                        if(val.sku.indexOf(parentSku)!=-1){
+                            val.sku = val.sku+childSku;
+                        }
+                    });
+                }
+            }
+            if(send_data){
+                send_data = JSON.parse(send_data);
+                send_data.orderglass = data;
+                $(".btn_Submit").attr("data",JSON.stringify(send_data));
+            }
+            return false;
+        });
+
+//    })
+</script>
+{% endblock %}

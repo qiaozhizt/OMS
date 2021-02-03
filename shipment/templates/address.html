@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Shipments {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}Address{% endblock %}
+{% block content %}
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle"
+                type="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            过滤器 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href={{ requestUrl }}?filter=all&region={{ region }}>
+                {% ifequal filter 'all' %}
+                    *{% endifequal %}全部</a></li>
+            <li>&nbsp</li>
+            <li><a href={{ requestUrl }}?filter=express&region={{ region }}>
+                {% ifequal filter 'express' %}
+                    *{% endifequal %}
+                加急</a></li>
+            <li><a href={{ requestUrl }}?filter=standard&region={{ region }}>
+                {% ifequal filter 'standard' %}*{% endifequal %}
+                普通</a></li>
+
+            <li><a href={{ requestUrl }}?filter=flatrate&region={{ region }}>
+                {% ifequal filter 'flatrate' %}
+                    *{% endifequal %}
+                批量</a></li>
+
+            <li><a href={{ requestUrl }}?filter=employee&region={{ region }}>
+                {% ifequal filter 'employee' %}*{% endifequal %}
+                内部员工</a></li>
+            <li>&nbsp</li>
+            <li><a href={{ requestUrl }}?filter=issue_addr&region={{ region }}>
+                {% ifequal filter 'issue_addr' %}
+                    *{% endifequal %}
+                问题地址</a></li>
+            <li><a href={{ requestUrl }}?filter=issue_addr_processing&region={{ region }}>
+                {% ifequal filter 'issue_addr_processing' %}
+                    *{% endifequal %}
+                问题地址[排除已完成&验证]</a></li>
+            <li style="display:none"><a href={{ requestUrl }}?filter=status_pair&region={{ region }}>
+                {% ifequal filter 'status_pair' %}
+                    *{% endifequal %}
+                处于订单配对状态</a></li>
+        </ul>
+    </div>
+
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button class="btn btn-default btn dropdown-toggle"
+                type="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            区域 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href={{ requestUrl }}?filter={{ filter }}&region=all>
+                {% ifequal region 'all' %}
+                    *{% endifequal %}全部</a></li>
+            <li>&nbsp</li>
+            <li><a href={{ requestUrl }}?filter=standard&region=east>
+                {% ifequal region 'east' %}
+                    *{% endifequal %}
+                东部</a></li>
+            <li><a href={{ requestUrl }}?filter=standard&region=west>
+                {% ifequal region 'west' %}*{% endifequal %}
+                西部</a></li>
+
+        </ul>
+    </div>
+
+    <div style="float: left;margin-left: 5px;">
+        <button id="btn_address_verified" name="btn_address_verified" type="button"
+                class="btn btn-default btn active">更新地址&重新验证
+        </button>
+    </div>
+    <div style="float: left;margin-left: 5px;">
+        <a class="btn btn-block btn-default"
+           href={{ requestUrl }}?filter={{ filter }}&region={{ region }}&page={{ currentPage }}
+           target='view_window'>导出CSV</a>
+    </div>
+
+    <!--Search end-->
+
+    <!--Actions-->
+    <div class="cl">
+        <div style="float: left;margin-right: 3px;margin-left:10px;display: none;">
+            <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+
+        <div style="float: left;margin-left: 5px;display:none">
+            <a class="btn btn-block btn-default" href={{ requestUrl }}?filter={{ filter }}&page={{ currentPage }}
+               target='view_window'>分配</a>
+        </div>
+        <!-- /btn-group -->
+    </div>
+    <!--Actions end-->
+
+
+    <div class="row" style="display:none">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">订单详情</h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+
+
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th><input id="chk_all" type="checkbox"></th>
+                <th>Ship</th>
+                <th>Issue Addr</th>
+                <th>Web Status</th>
+                <th>Increment ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>PostCode</th>
+                <th>Street</th>
+                <th>City</th>
+                <th>Region</th>
+                <th>Country ID</th>
+                <th>Telephone</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td><input name="chk_items" value="{{ item.Entity_id }}" type="checkbox"></td>
+                    <td>{{ item.ship_region }}</td>
+
+                    {% if item.is_issue_addr == True %}
+                        <td><img src="{% static "image/icon-no.svg" %}"></td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+
+                    <td>{{ item.web_status }}</td>
+                    <td class="order_entity">{{ item.order_number }}</td>
+                    <td>{{ item.firstname }}</td>
+                    <td>{{ item.lastname }}</td>
+                    <td>{{ item.postcode }}</td>
+                    <td>{{ item.street }}</td>
+                    <td>{{ item.street2 }}</td>
+                    <td>{{ item.city }}</td>
+                    <td>{{ item.region }}</td>
+                    <td>{{ item.country_id }}</td>
+                    <td>{{ item.phone }}</td>
+                </tr>
+                <tr style="display:none">
+                    <td colspan="15"></td>
+                    <td colspan="4">
+                        <div name="actions">
+
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            {#上一页按钮开始#}
+            {#如果当前页有上一页#}
+            {% if list.has_previous %}
+                {#当前页的上一页按钮正常使用#}
+                <li class="previous"><a
+                        href="{{ requestUrl }}?page={{ list.previous_page_number }}&filter={{ filter }}&region={{ region }}">previous</a>
+                </li>
+            {% else %}
+                {#当前页的不存在上一页时,上一页的按钮不可用#}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {#上一页按钮结束#}
+            {#页码开始#}
+            {% for num in paginator.page_range %}
+
+                {% if num == currentPage %}
+                    <li class="item active"><a
+                            href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&region={{ region }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="item"><a
+                            href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&region={{ region }}">{{ num }}</a>
+                    </li>
+
+                {% endif %}
+            {% endfor %}
+            {#页码结束#}
+            {#下一页按钮开始#}
+            {% if list.has_next %}
+                <li class="next"><a
+                        href="{{ requestUrl }}?page={{ list.next_page_number }}&filter={{ filter }}&region={{ region }}">next</a>
+                </li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+            {#下一页按钮结束#}
+        </ul>
+    </div>
+    <!--paginator end-->
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+
+            url = "{% url 'shipment_address' %}";
+
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = url + '?order_number=' + order_number;
+            }
+        });
+
+        //全选/不选
+        document.getElementById('chk_all').onclick = function () {
+            // 获取所有的复选框
+            var checkElements = document.getElementsByName('chk_items');
+            if (this.checked) {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = "checked";
+                }
+            }
+            else {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = null;
+                }
+            }
+        };
+
+        $("#btn_address_verified").click(function () {
+            var entities = [];
+
+            checkboxs = $("input[name='chk_items']:checked");
+            if (checkboxs.length <= 0) {
+                alert("Please select a lab order");
+                return false;
+            }
+
+            checkboxs.each(function () {
+                order_entity = $(this).closest("tr").find(".order_entity").html();
+                entities.push(order_entity);
+
+
+            });
+
+            entity = JSON.stringify(entities);
+
+
+            address_verified(entity);
+
+
+        });
+
+        // 点击 头部 Actions Vendor List，更新 Vendor；无确认需求
+
+        function address_verified(entity) {
+            var window = layer.load(2); //换了种风格
+            var returnData;
+            url = "{% url 'api_pgorder_address_verified' %}";
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    entities: entity
+                },
+                async: true
+            }).done(function (response) {
+                returnData = response;
+                layer.closeAll();
+                location.reload();
+            });
+        };
+    </script>
+{% endblock %}

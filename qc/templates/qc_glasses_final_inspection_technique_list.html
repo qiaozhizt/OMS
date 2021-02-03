@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}QC List {% if form_data.total %}
+    <span class="label label-default" xmlns="http://www.w3.org/1999/html">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}终检合格清单{% endblock %}
+{% block content %}
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <!--Search-->
+    <div class="btn-group" id="vendor" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            Vendor <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="{{ requestUrl }}?vendor=all&start_time={{ form_data.start_time }}&end_time={{ form_data.end_time }}&assembler={{ form_data.assembler }}">
+                    {% if form_data.vendor == 'all' %}
+                        *
+                    {% endif %}
+                    ALL
+                </a>
+            </li>
+            {% for vd in form_data.vendor_list %}
+                <li>
+                    <a href="{{ requestUrl }}?vendor={{ vd.key }}&start_time={{ form_data.start_time }}&end_time={{ form_data.end_time }}&assembler={{ form_data.assembler }}">
+                        {% if form_data.vendor == vd.key %}
+                            *
+                        {% endif %}
+                        {{ vd.value }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="btn-group" id="vendor" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            装配师 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="{{ requestUrl }}?vendor={{ form_data.vendor }}&start_time={{ form_data.start_time }}&end_time={{ form_data.end_time }}&assembler=all">
+                    {% if form_data.assembler == 'all' %}
+                        *
+                    {% endif %}
+                    ALL
+                </a>
+            </li>
+            {% for ab in form_data.assembler_list %}
+                <li>
+                    <a href="{{ requestUrl }}?vendor={{ form_data.vendor }}&start_time={{ form_data.start_time }}&end_time={{ form_data.end_time }}&assembler={{ ab.key }}">
+                        {% if form_data.assembler == ab.key %}
+                            *
+                        {% endif %}
+                        {{ ab.value }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="col-sm-6" id="filters" style="float: left;margin-left: 10px;">
+        <div style="float: left;">
+            开始时间:
+            <input type="text" class="datetimepicker" id="start_time" value="{{ form_data.start_time }}">
+        </div>
+        <div style="float: left;margin-left: 235px;margin-top: -32px">
+            结束时间:
+            <input type="text" class="datetimepicker" id="end_time" value="{{ form_data.end_time }}">
+        </div>
+        <div style="float: left;margin-left: 480px;margin-top: -33px">
+            <input type="button" class="btn btn-default" id="filter_time" value="筛选时间">
+        </div>
+    </div>
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>订单号</th>
+                <th>VD</th>
+                <th>创建时间</th>
+                <th>更新时间</th>
+                <th>质检员</th>
+                <th>装配师ID</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.lab_number }}</td>
+                    <td>{{ item.vendor }}</td>
+                    <td>{{ item.created_at }}</td>
+                    <td>{{ item.updated_at }}</td>
+                    <td>{{ item.user_name }}</td>
+                    <td>{{ item.assembler_user_name }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+
+{% endblock %}
+{% block jquery %}
+    <script>
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            var lab_number = $("#number").val();
+            if (lab_number == '' || lab_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                location.href = '/qc/qc_glasses_final_inspection_technique_list/?lab_number=' + lab_number;
+            }
+        });
+
+        $("#filter_time").on("click", function () {
+            var start_time = $("#start_time").val();
+            var end_time = $("#end_time").val();
+            location.href = '/qc/qc_glasses_final_inspection_technique_list/?vendor={{ form_data.vendor }}&start_time=' + start_time + '&end_time=' + end_time+'&assembler={{ form_data.assembler }}';
+        });
+
+        laydate.render({
+            elem: '#start_time', //指定元素
+            type: 'date'
+        });
+        laydate.render({
+            elem: '#end_time', //指定元素
+            type: 'date'
+        });
+    </script>
+{% endblock %}

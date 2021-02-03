@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders {% if page_info.total %}<span class="label label-default">{{ page_info.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}出库申请{% endblock %}
+{% block content %}
+    <div style="float: left;display:none">{% include 'search.html' %}</div>
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            过滤器 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+
+            <li style="display:none"><a href="{% url 'laborder_request_notes' %}?filter=new">{% ifequal filter 'new' %}
+                *{% endifequal %}新订单</a></li>
+            <li style="display:none">&nbsp</li>
+            {% for vc in vendors_choices %}
+             <li><a href="{% url 'laborder_request_notes' %}?filter={{ vc.key }}&warehouse={{ warehouse }}&ship={{ ship }}&overdue={{ overdue }}&priority={{ priority }}">{% ifequal filter vc.key %}
+                *{% endifequal %}{{ vc.value }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <!--Search end-->
+
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            仓库 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse=W01&ship={{ ship }}&overdue={{ overdue }}&priority={{ priority }}">{% ifequal warehouse 'W01' %}
+                *{% endifequal %}本部</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse=W02&ship={{ ship }}&overdue={{ overdue }}&priority={{ priority }}">{% ifequal warehouse 'W02' %}
+                *{% endifequal %}上海分部</a></li>
+        </ul>
+    </div>
+    
+    <!--priority-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn 
+        {% ifequal priority '5' %}btn-default{% endifequal %}
+        {% ifequal priority '4' %}btn-primary{% endifequal %}
+        {% ifequal priority '3' %}btn-success{% endifequal %}
+        {% ifequal priority '2' %}btn-warning{% endifequal %}
+        {% ifequal priority '1' %}btn-danger{% endifequal %}
+        btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            优先级[{{ priority }}] <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship={{ ship }}&overdue={{ overdue }}&priority=1">{% ifequal priority '1' %}
+                *{% endifequal %}1.最高</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{warehouse}}&ship={{ ship }}&overdue={{ overdue }}&priority=2">{% ifequal priority '2' %}
+                *{% endifequal %}2.紧急</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{warehouse}}&ship={{ ship }}&overdue={{ overdue }}&priority=3">{% ifequal priority '3' %}
+            *{% endifequal %}3.优先</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{warehouse}}&ship={{ ship }}&overdue={{ overdue }}&priority=4">{% ifequal priority '4' %}
+            *{% endifequal %}4.普通</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{warehouse}}&ship={{ ship }}&overdue={{ overdue }}&priority=5">{% ifequal priority '5' %}
+            *{% endifequal %}5.难做</a></li>
+        </ul>
+    </div>
+
+    <!--Search end-->
+
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            发货方式 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship=ALL&overdue={{ overdue }}&priority={{ priority }}">{% ifequal ship 'ALL' %}
+                *{% endifequal %}全部</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship=STANDARD&overdue={{ overdue }}&priority={{ priority }}">{% ifequal ship 'STANDARD' %}
+                *{% endifequal %}普通</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship=EXPRESS&overdue={{ overdue }}&priority={{ priority }}">{% ifequal ship 'EXPRESS' %}
+                *{% endifequal %}加急</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship=EMPLOYEE&overdue={{ overdue }}&priority={{ priority }}">{% ifequal ship 'EMPLOYEE' %}
+                *{% endifequal %}内部</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship=FLATRATE&overdue={{ overdue }}&priority={{ priority }}">{% ifequal ship 'FLATRATE' %}
+                *{% endifequal %}批量</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship=CA_EXPRESS&overdue={{ overdue }}&priority={{ priority }}">{% ifequal ship 'CA_EXPRESS' %}
+                *{% endifequal %}加急-加拿大</a></li>
+        </ul>
+    </div>
+    <!--Search end-->
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            超期时间 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship={{ ship }}&overdue=ALL&priority={{ priority }}">{% ifequal overdue 'ALL' %}
+                *{% endifequal %}全部</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship={{ ship }}&overdue=THREE&priority={{ priority }}">{% ifequal overdue 'THREE' %}
+                *{% endifequal %}大于等于3天</a></li>
+            <li style=""><a href="{% url 'laborder_request_notes' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship={{ ship }}&overdue=TWO&priority={{ priority }}">{% ifequal overdue 'TWO' %}
+                *{% endifequal %}小于等于2天</a></li>
+        </ul>
+    </div>
+    <!--Search end-->
+    <!--Actions-->
+    <div class="cl">
+        <div style="float: left;margin-right: 3px;margin-left:10px; display:none;">
+            <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+
+{#        <div style="float: left;margin-left: 5px;">#}
+{#            <a class="btn btn-block btn-default" href={% url 'laborder_request_notes_create' %}?filter={{ filter }}&warehouse={{ warehouse }}&ship={{ ship }}&overdue={{ overdue }}&priority={{ priority }}#}
+{#               target='view_window' target="_blank">生成出库申请单</a>#}
+{#        </div>#}
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" id="request_notes_create">生成出库申请单</a>
+        </div>
+        <div style="float: left;margin-left: 5px;display:none">
+            <a class="btn btn-block btn-default" href={% url 'laborder_request_notes_print' %}?filter={{ filter }}
+               target='view_window'>打印</a>
+        </div>
+
+    </div>
+    <div style="float: right;">
+        <div  style="float: left;margin-left: 5px;">大于等于5天：<label>{{ total_lab_five }}</label></div>
+        <div  style="float: left;margin-left: 5px;">4天：<label>{{ total_lab_forth }}</label></div>
+        <div  style="float: left;margin-left: 5px;">3天：<label>{{ total_lab_three }}</label></div>
+        <div  style="float: left;margin-left: 5px;">小于等于2天：<label>{{ total_lab_two }}</label></div>
+    </div>
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th><input id="chk_all" type="checkbox"></th>
+                <th>#</th>
+                <th>镜架</th>
+                <th>货位</th>
+                <th>订单号</th>
+                <th>实际发货方式</th>
+                <th>数量</th>
+                <th>车房片</th>
+                <th>订单日期</th>
+                <th>超期天数</th>
+                <th>VD</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td><input name="chk_items" value="{{ item.id }}" type="checkbox"></td>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.frame }}</td>
+                    <td>{{ item.location }}</td>
+                    <td>{{ item.lab_number }}</td>
+                    <td>{{ item.get_act_ship_direction_display}}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.lens_type }}</td>
+                    <td>{{ item.order_date }}</td>
+                    <td>{{ item.overdue_day }}</td>
+                    <td>{{ item.vendor }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+{% block jquery %}
+    <script>
+        //全选/不选
+        document.getElementById('chk_all').onclick = function () {
+            // 获取所有的复选框
+            var checkElements = document.getElementsByName('chk_items');
+            if (this.checked) {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = "checked";
+                }
+            } else {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = null;
+                }
+            }
+        };
+        $("#request_notes_create").on("click", function () {
+            var url ="{% url 'laborder_request_notes_create' %}";
+            var entities = [];
+            var warehouse = "{{warehouse}}";
+            if(warehouse == ''){
+                alert("请选择仓库！");
+                return
+            }
+            checkboxs = $("input[name='chk_items']:checked");
+            if (checkboxs.length <= 0) {
+                url = url + '?filter={{ filter }}&warehouse={{ warehouse }}&ship={{ ship }}&overdue={{ overdue }}&priority={{ priority }}'
+                window.open(url);
+            }else{
+                checkboxs.each(function () {
+                    order_entity = $(this).attr("value");
+                    entities.push(order_entity);
+                });
+                url = url + '?warehouse={{ warehouse }}&entities=' + entities
+                window.open(url);
+            }
+        });
+    </script>
+{% endblock %}
+{% endblock %}
+

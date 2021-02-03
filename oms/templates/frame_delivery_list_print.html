@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>镜架出库清单</title>
+    <link rel="stylesheet" href="{% static "css/print_template.css" %}">
+    <script src={% static "js/jquery-2.2.3.min.js" %}></script>
+</head>
+<script>
+    $(document).ready(function () {
+        window.print();
+    })
+</script>
+<body>
+<div id="print-content">
+        <div class="header clear">
+            <div class="titleArea">
+                <h1>镜架出库清单 [{{ date }}]</h1>
+            </div>
+        </div>
+        <table class="tableTopBorder_3">
+            <thead>
+            <tr class="height30">
+                <th>单号</th>
+                <th>镜架</th>
+                <th>数量</th>
+                <th>镜片名称</th>
+                <th>CK</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for itm in lbos %}
+                <tr class="height30">
+                    <td>{{ itm.lab_number }}</td>
+                    <td>{{ itm.frame }}</td>
+                    <td>{% ifnotequal itm.quantity 1 %} {{ itm.quantity }}{% else %}1{% endifnotequal %}</td>
+                    <td>{{ itm.act_lens_name }}</td>
+                    <td>{{ itm.lens_type }} | {{ itm.vendor }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="pageBreak"><!--如果需要强制换页就在上一页的未尾出加上此代码--></div>
+</div>
+
+<button style="display:none" id="print_1">打印</button>
+</body>
+</html>

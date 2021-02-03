@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>出库申请单</title>
+    <link rel="stylesheet" href="{% static "css/print_template.css" %}">
+    <script src={% static "js/jquery-2.2.3.min.js" %}></script>
+</head>
+<script>
+    $(document).ready(function () {
+        window.print();
+    })
+</script>
+<body>
+<div id="print-content">
+        <div class="header clear">
+            <div class="titleArea">
+                <h1>镜片出库申请清单 </h1>
+            </div>
+        </div>
+        <p> </p>
+        <table class="tableTopBorder_3">
+            <thead>
+            <tr class="height30">
+                <th rowspan="2">#</th>
+                <th rowspan="2">工厂单号</th>
+                <th rowspan="2">SKU</th>
+                <th rowspan="2">名称</th>
+                <th colspan="3">右眼[OD]</th>
+                <th colspan="3">左眼[OS]</th>
+            </tr>
+            <tr class="height30">
+                <th>SPH</th>
+                <th>CYL</th>
+                <th>货位</th>
+                <th>SPH</th>
+                <th>CYL</th>
+                <th>货位</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for itme in list %}
+                <tr class="height30">
+                    <td>{{ forloop.counter}}</td>
+                    <td>{{ itme.lab_number }}</td>
+                    <td>{{ itme.act_lens_sku }}</td>
+                    <td>{{ itme.act_lens_name }}</td>
+                    <td>{{ itme.od_sph }}</td>
+                    <td>{{ itme.od_cyl}}</td>
+                    <td></td>
+                    <td>{{ itme.os_sph }}</td>
+                    <td>{{ itme.os_cyl}}</td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="pageBreak"><!--如果需要强制换页就在上一页的未尾出加上此代码--></div>
+</div>
+
+<button style="display:none" id="print_1">打印</button>
+</body>
+</html>

@@ -1,0 +1,55 @@
+ {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>出库申请单</title>
+    <link rel="stylesheet" href="{% static "css/print_template.css" %}">
+    <script src={% static "js/jquery-2.2.3.min.js" %}></script>
+</head>
+<script>
+    $(document).ready(function () {
+        window.print();
+    })
+</script>
+<body>
+<div id="print-content">
+    {% for item in list %}
+        <div class="header clear">
+            <div class="titleArea">
+                <h1>[{{ form_data.id }}] 出库申请单 [{{ item.created_at }}][{{ item.index }}/{{ item.count }}]&nbsp;&nbsp;&nbsp;{{ item.warehouse }}</h1>
+            </div>
+        </div>
+        <table class="tableTopBorder_3">
+            <thead>
+            <tr class="height30">
+                <th>#</th>
+                <th>SKU</th>
+                <th>单号</th>
+                <th>数量</th>
+                <th>仓库</th>
+                <th>货位</th>
+                <th>库存</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for itm in item.items %}
+                <tr class="height30">
+                    <td>{{ itm.left.index }}</td>
+                    <td>{{ itm.left.obj.sku }}</td>
+                    <td>{{ itm.left.obj.accs_order_number }}</td>
+                    <td>{{ itm.left.obj.quantity }}</td>
+                    <td>{{ itm.left.obj.get_warehouse_display }}</td>
+                    <td>{{ itm.location }}</td>
+                    <td>{{ itm.quantity }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="pageBreak"><!--如果需要强制换页就在上一页的未尾出加上此代码--></div>
+    {% endfor %}
+</div>
+
+<button style="display:none" id="print_1">打印</button>
+</body>
+</html>

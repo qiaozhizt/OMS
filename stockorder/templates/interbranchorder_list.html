@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="/static/layui/css/layui.css" />
+    <style>
+        .span_title{
+            padding-right: 30px;
+        }
+        .stack_a{
+            cursor: pointer;
+            color: #ffffff;
+        }
+        /* 防止下拉框的下拉列表被隐藏---必须设置--- */
+        .layui-table-cell {overflow: visible !important;        }
+        /* 使得下拉框与单元格刚好合适 */
+        td .layui-form-select{
+            margin-top: -10px;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+        .input-top{
+            margin-top: 15px;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}成镜订单管理 {% if form_data.total %}<span class="label label-info">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}{{ title }}{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                {% include 'interbranchorder_list_search.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                {% include 'interbranchorder_list_actions.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Interbranch Order List：</h3>
+                </div>
+                <table class="layui-hide" id="stock_in_table" lay-filter="demo" style="overflow-x: hidden;"></table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title" id="myModalLabel">Receive Interbranch Order</h3>
+                </div>
+                <div class="modal-body" style="height: 400px;">
+                  <input type="hidden" style="width: 300px; height: 30px; line-height: 30px;" id="receive_id">
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">Interbranch Order:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="receive_interbranch_order_number" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">调出仓库:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="receive_issuing_warehouse" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">调入仓库:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="receive_receiving_warehouse" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">成镜 SKU:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="receive_frame_sku" disabled="disabled">
+                    </div>
+                  </div>
+{#                  <div class="form-group">#}
+{#                    <div class="col-sm-12 input-top">#}
+{#                        <label style="width: 150px;">Lens SKU:</label>#}
+{#                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="receive_lens_sku" disabled="disabled">#}
+{#                    </div>#}
+{#                  </div>#}
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">数量:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="receive_quantity" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">实际数量:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="receive_act_quantity">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">备注:</label>
+                        <textarea  rows="3" cols="50" id="receive_comments"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="close_btn">关闭</button>
+                    <button type="button" class="btn btn-primary" id="receive_btn">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        laydate.render({
+          elem: '#start_date'
+          ,type: 'datetime' //默认，可不填
+        });
+        laydate.render({
+          elem: '#finish_date'
+          ,type: 'datetime' //默认，可不填
+        });
+        layui.use(['table', 'layer', 'element', 'jquery', 'form'], function() {
+            var table = layui.table;
+            var form = layui.form;
+            //第一个实例
+            table.render({
+                elem: '#stock_in_table'
+                ,toolbar: '#toolbarDemo'
+                , height: 'full-10'
+                , url: "{% url 'interbranch_order_list_data' %}"
+                , where: {flag:'{{ flag }}'}
+                ,done: function(res, curr, count){
+                    console.log(res);
+                    //得到当前页码
+                    console.log(curr);
+                    //得到数据总量
+                    console.log(count);
+                }
+                , cellMinWidth: 100
+                , page: true //开启分页
+                , limit:30
+                , limits:[30,50,70,90,120,10000]
+                , even: true
+                , cols: [[ //表头
+                    {type:'checkbox'}
+                    , {field: 'id', title: 'ID',width: 80, sort: true,}
+                    , {field: 'interbranch_order_number', title: 'Interbranch Order Number', width: 180}
+                    , {field: 'frame', title: '成镜 SKU', width: 100}
+                    //, {field: 'lens_sku', title: 'Lens SKU',width: 100}
+                    , {field: 'quantity', title: '数量', sort:true, width: 100}
+                    , {field: 'status', title: '状态', sort:true, width: 100}
+                    , {field: 'warehouse_from', title: '调出仓库', width: 150}
+                    , {field: 'warehouse_to', title: '调入仓库', width: 150}
+                    , {field: 'fulfil_date', title: 'Fulfil Date', width: 150}
+                    , {field: 'comments', title: '备注'}
+                    , {title: 'Action', width: 160, templet: function(row){
+                            if(row.status == 'Fulfilled'){
+                                var barBtnsHTML = '<button type="button" class="btn btn-primary" id="creat_reciept_request_btn" lay-event="receive">Receive</button>';
+                                return barBtnsHTML;
+                            }else{
+                                var barBtnsHTML = ''
+                                return barBtnsHTML;
+                            }
+                    }}
+                ]]
+            });
+            $("#search_btn").click(function () {
+                var interbranch_order_number = $("#interbranch_order_number").val();
+                var issuing_warehouse = $("#issuing_warehouse").val();
+                var receiving_warehouse = $("#receiving_warehouse").val();
+                var frame_sku = $("#frame_sku").val();
+                var order_status = $("#order_status").val();
+                var sku_attribute = $("#sku_attribute").val();
+                table.reload('stock_in_table',{
+                    url: "{% url 'interbranch_order_list_data' %}",
+                    where: {
+                        interbranch_order_number:interbranch_order_number,
+                        issuing_warehouse:issuing_warehouse,
+                        receiving_warehouse:receiving_warehouse,
+                        frame_sku:frame_sku,
+                        order_status:order_status,
+                        sku_attribute:sku_attribute
+                    },
+                    page:{
+                        curr:1
+                    }
+                })
+            });
+            //输入转lab的数量
+            table.on('tool(demo)', function(obj){
+                var data = obj.data;
+                if(obj.event === 'receive'){
+                    $("#receive_interbranch_order_number").val(data.interbranch_order_number);
+                    $("#receive_issuing_warehouse").val(data.warehouse_from);
+                    $("#receive_receiving_warehouse").val(data.warehouse_to);
+                    $("#receive_frame_sku").val(data.frame);
+                    $("#receive_lens_sku").val(data.lens_sku);
+                    $("#receive_quantity").val(data.quantity);
+                    $("#receive_id").val(data.id);
+                    $("#myModal").modal("show");
+                }
+            });
+            $("#receive_btn").click(function () {
+                var re_inte_order_number = $("#receive_interbranch_order_number").val();
+                var re_issuing_warehouse = $("#receive_issuing_warehouse").val();
+                var re_receiving_warehouse = $("#receive_receiving_warehouse").val();
+                var re_frame_sku = $("#receive_frame_sku").val();
+                //var re_lens_sku = $("#receive_lens_sku").val();
+                var receive_quantity = $("#receive_quantity").val();
+                var re_act_quantity = $("#receive_act_quantity").val();
+                var re_comments = $("#receive_comments").val();
+                var id = $("#receive_id").val();
+                if(re_act_quantity == ''){
+                    layer.msg('请输入收货数量！', {time:3000,icon:7});
+                     return
+                }
+                 var url = "{% url 'interbranch_order_receive' %}";
+                 $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        "id": id,
+                        "re_inte_order_number": re_inte_order_number,
+                        "re_issuing_warehouse": re_issuing_warehouse,
+                        "re_receiving_warehouse": re_receiving_warehouse,
+                        "re_frame_sku": re_frame_sku,
+                        //"re_lens_sku": re_lens_sku,
+                        "re_quantity": receive_quantity,
+                        "re_act_quantity": re_act_quantity,
+                        "re_comments": re_comments
+                    },
+                    dataType:'json',
+                    success: function (arg) {
+                        if (arg.code == 0){
+                            layer.msg(arg.msg, {icon:6,time:3000});
+                            setTimeout(function () {
+                                window.location.reload();
+                            },  1000);
+                        }else {
+                            layer.msg(arg.msg, {icon:7,time:3000});
+                        }
+                    }
+                 });
+            });
+            $("#close_btn").click(function () {
+                $("#receive_interbranch_order_number").val('');
+                $("#receive_receiving_warehouse").val('');
+                $("#receive_frame_sku").val('');
+                $("#receive_lens_sku").val('');
+                $("#receive_act_quantity").val('');
+                $("#receive_comments").val('');
+                $("#receive_id").val('');
+            });
+            table.on('toolbar(demo)', function (obj) {
+                var layEvent = obj.event;
+                var checkStatus = table.checkStatus(obj.config.id);
+                check_data = checkStatus.data;
+                console.log(check_data)
+                 if(layEvent == 'new'){
+                    window.location.href = "{% url 'interbranch_transfer_new' %}"
+                }else{
+                    var url = "{% url 'change_interbranch_order_status' %}";
+                }
+
+                if(check_data.length == 0){
+                    layer.msg('请选择要操作的数据', {time:3000,icon:7});
+                     return
+                }
+                 if(layEvent == 'print'){
+                     var print_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         if(check_data[i].status != 'Open'){
+                             print_flag = true;
+                             break
+                         }
+                     }
+                     if(print_flag){
+                         layer.msg('只有OPen状态可以进行Print', {time:3000,icon:7});
+                         return
+                     }
+                 }else if(layEvent == 'cancel'){
+                    var cancel_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         if(check_data[i].status != 'Open' || check_data[i].status != 'Printed'){
+                             cancel_flag = true;
+                             break
+                         }
+                     }
+                     if(cancel_flag){
+                         layer.msg('只有OPen或Printed状态可以进行Cancel', {time:3000,icon:7});
+                         return
+                     }
+                 }else if(layEvent == 'fulfill'){
+                    var fulfill_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         if(check_data[i].status != 'Printed'){
+                             fulfill_flag = true;
+                             break
+                         }
+                     }
+                     if(fulfill_flag){
+                         layer.msg('只有Printed状态可以进行Fulfill', {time:3000,icon:7});
+                         return
+                     }
+                 }else if(layEvent == 'receive'){
+                    var receive_flag = false;
+                     for (var i=0; i< check_data.length; i++){
+                         if(check_data[i].status != 'Printed'){
+                             receive_flag = true;
+                             break
+                         }
+                     }
+                     if(receive_flag){
+                         layer.msg('只有Fulfilled状态可以进行Receive', {time:3000,icon:7});
+                         return
+                     }
+                 }
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        "checkdata":JSON.stringify(check_data),
+                        "action": layEvent
+                    },
+                    dataType:'json',
+                    success: function (arg) {
+                        if (arg.code == 0){
+
+                            if (layEvent == 'print'){
+                                var id_str = ''
+                                for(var i=0; i<arg.data.length; i++){
+                                    id_str = id_str +'-'+ arg.data[i]
+                                }
+                                console.log(id_str)
+                                var print_url = "{% url 'interbranch_order_print' %}"+"?id_str="+id_str
+                                window.open(print_url);
+                            }
+                            layer.msg(arg.msg, {icon:6,time:3000})
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 2000)
+                        }else {
+                            layer.msg(arg.msg, {icon:7,time:3000})
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

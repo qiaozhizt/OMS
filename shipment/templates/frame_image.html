@@ -1,0 +1,37 @@
+<!--#prd_img_pre根路径
+
+#poi pgorderiteam 对象
+-->
+
+
+    <div class="col-md-6">
+        <div class="box box-default">
+
+            {% if form_data.caution_info %}
+            <div class="box-header with-border">
+                <i class="fa fa-hourglass-half"></i>
+                <h3 class="box-title">警示信息&nbsp;</h3><h4 style="display:inline;color:red">{{ form_data.caution_info }}</h4>
+            </div>
+            {% endif %}
+
+            <div class="box-header with-border">
+                <i class="fa fa-hourglass-half"></i>
+                <h3 class="box-title">镜架图片</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <div class="row clearfix">
+                    <div class="col-md-12 column">
+                        <div class="form-group">
+                            <div class="col-sm-12 order-images-each">
+                                <img src="https://static.payneglasses.com/media/catalog/product{{ item.image }}"
+                                     class="img-responsive center-block"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.box-body -->
+        </div>
+        <!-- /.box -->
+    </div>

@@ -1,0 +1,319 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>深圳智镜光学有限公司--作业单</title>
+    <link rel="stylesheet" href="{% static "css/print_template.css" %}">
+    <script src={% static "js/jquery-2.2.3.min.js" %}></script>
+    <style>
+        table{
+            font-size: 12px;
+            border: none;
+        }
+        .first_tr{
+            //padding-bottom: 20px;
+        }
+        .first_tr_td{
+            border: none;
+            text-align: left;
+            //padding-bottom: 10px;
+        }
+        .frame{
+            color: #ff1058;
+            font-weight: bold;
+        }
+        .font_s{
+            font-weight: bold;
+        }
+        .td_border{
+            border-top: 2px solid #000000 ;
+            //font-weight: bold;
+        }
+    </style>
+</head>
+<script>
+    $(document).ready(function () {
+        window.print();
+        //$("#print_1").click(function () {
+        //    window.print();
+        //})
+    })
+</script>
+<body>
+<div id="print-content">
+    <div class="header clear">
+    </div>
+    <table class="tableTopBorder_3">
+        <thead>
+
+        </thead>
+        <tbody>
+        <tr class="first_tr">
+            <td colspan="2" class="first_tr_td">
+                <img src='{{ media_base_url }}{{ item.c128_path }}'/>
+            </td>
+            <td colspan="2" class="first_tr_td" style="font-size: 18px; border-left: 1px dashed #000000;">
+                <h2>作业单</h2>
+            </td>
+            <td colspan="2" class="first_tr_td" style="font-size: 18px; border-left: 1px dashed #000000;">
+                <h2>{{ form_data.obj.worknumber }}</h2>
+            </td>
+            <td colspan="2" class="first_tr_td" style="font-size: 18px;"><h2>{{ form_data.obj.locker_obj_num }}</h2></td>
+            <td colspan="1" class="first_tr_td" style="font-size: 18px; border-left: 1px dashed #000000;">
+                <h2>P {{ form_data.obj.priority }}</h2>
+            </td>
+            <td class="first_tr_td">&nbsp;&nbsp;计&nbsp;划<br>完成日期</td>
+            <td class="first_tr_td" style="border-left: 1px solid #000000;"><h2>{{ form_data.obj.com_date }}</h2></td>
+        </tr>
+        <tr>
+            <td colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="2">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td colspan="7" class="first_tr_td">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        </tr>
+        <tr>
+            <td>订单号</td>
+            <td colspan="3"><b>{{ form_data.obj.lab_number }}</b></td>
+            <td>打印时间（{{ form_data.obj.times }}）</td>
+            <td colspan="2">{{ form_data.created_at }}</td>
+            <td class="font_s">&nbsp;&nbsp;&nbsp;{{ form_data.obj.vendor }}&nbsp;&nbsp;&nbsp;</td>
+            <td>发货方式</td>
+            <td colspan="2">{{ form_data.obj.ship_direction }}</td>
+
+        </tr>
+        <tr>
+            <td>镜架</td>
+            <td>{{ form_data.obj.frame }}</td>
+            <td>货位</td>
+            <td>{{ form_data.obj.cargo_location }}</td>
+            <td>尺寸</td>
+            <td>{{ form_data.obj.size }}</td>
+            <td>框型</td>
+            <td>{{ form_data.obj.frame_type }}</td>
+            <td>框高</td>
+            <td>{{ form_data.obj.lens_height }}</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        </tr>
+        <tr>
+            <td>片型</td>
+            <td>计划</td>
+            <td colspan="3">{{ form_data.obj.lens_name }}</td>
+            <td>直径</td>
+            <td>直径2</td>
+            <td>染色</td>
+            <td>折射率</td>
+            <td>工艺</td>
+            <td>设计</td>
+        </tr>
+        <tr>
+            <td>{{ form_data.obj.lens_type }}</td>
+            <td>实际</td>
+            <td colspan="3">{{ form_data.obj.act_lens_name }}</td>
+            <td>{{ form_data.obj.dia_1 }}</td>
+            <td>{{ form_data.obj.dia_2 }}</td>
+            <td>{{ form_data.obj.tint_name }}</td>
+            <td>{{ form_data.obj.lens_index }}</td>
+            <td>
+                {% if form_data.obj.coating_name != '----' %}
+                    {{ form_data.obj.coating_name }}
+                {% else %}
+                    HMC
+                {% endif %}
+            </td>
+            <td>{{ form_data.obj.pal_design_name }}</td>
+        </tr>
+        <tr>
+            <td class="td_border">#</td>
+            <td class="td_border">SPH</td>
+            <td class="td_border">CYL</td>
+            <td class="td_border">AXIS</td>
+            <td class="td_border">ADD</td>
+            <td class="td_border">PD</td>
+            <td class="td_border">PRISM-H</td>
+            <td class="td_border">BASE-H</td>
+            <td class="td_border">PRISM-V</td>
+            <td class="td_border">BASE-V</td>
+            <td class="td_border">通道</td>
+        </tr>
+        <tr>
+            <td>OD</td>
+            <td>{{ form_data.obj.od_sph }}</td>
+            <td>{{ form_data.obj.od_cyl }}</td>
+            <td>{{ form_data.obj.od_axis }}</td>
+            <td>{{ form_data.obj.od_add }}</td>
+            {% if form_data.obj.is_singgle_pd %}
+                <td rowspan="2">{{ form_data.obj.pd }}</td>
+            {% else %}
+                <td>{{ form_data.obj.od_pd }}</td>
+            {% endif %}
+            <td>{{ form_data.obj.od_prism }}</td>
+            <td>{{ form_data.obj.od_base }}</td>
+            <td>{{ form_data.obj.od_prism1 }}</td>
+            <td>{{ form_data.obj.od_base1 }}</td>
+            <td rowspan="2">{{ form_data.obj.channel }}</td>
+        </tr>
+        <tr>
+            <td>OS</td>
+            <td>{{ form_data.obj.os_sph }}</td>
+            <td>{{ form_data.obj.os_cyl }}</td>
+            <td>{{ form_data.obj.os_axis }}</td>
+            <td>{{ form_data.obj.os_add }}</td>
+            {% if form_data.obj.is_singgle_pd %}
+
+            {% else %}
+                <td>{{ form_data.obj.os_pd }}</td>
+            {% endif %}
+            <td>{{ form_data.obj.os_prism }}</td>
+            <td>{{ form_data.obj.os_base }}</td>
+            <td>{{ form_data.obj.os_prism1 }}</td>
+            <td>{{ form_data.obj.os_base1 }}</td>
+        </tr>
+        <tr>
+            <td>加工<br>瞳高</td>
+            <td>{{ form_data.obj.lab_seg_height }}</td>
+            <td>装配<br>瞳高</td>
+            <td>按标准瞳高 {% if form_data.obj.assemble_height != '----' %}{{ form_data.obj.assemble_height }}{% endif %}</td>
+            <td>子镜高度</td>
+            <td>{{ form_data.obj.sub_mirrors_height }}</td>
+            <td>加工要求</td>
+            <td colspan="4">{{ form_data.obj.special_handling }}</td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align: left;"><img src='{{ media_base_url }}{{ item.c128_path }}'/></td>
+            <td>警示<br>信息</td>
+            <td>{{ form_data.caution_info }}</td>
+            <td>备注</td>
+            <td colspan="8">{{ form_data.obj.comments }}</td>
+        </tr>
+        <tr style="border-bottom: 1px double #000000;">
+            <td colspan="7" style="border-left: none; border-right: none;"><span style="float: left;">{{ form_data.obj.tag }}</span> </td>
+            <td colspan="2" class="font_s" style="border-left: none; border-right: none;font-size: 18px;">{{ form_data.obj.workshop }}</td>
+            <td colspan="2" style="border-left: none; border-right: none;">深圳智镜光学有限公司</td>
+        </tr>
+        </tbody>
+    </table>
+    <!--<table class="tableTopBorder_3">
+        <thead>
+        <th>数量</th>
+        <th colspan="2">类型</th>
+        <th>P/A</th>
+        <th>产品名称</th>
+        <th>折射率</th>
+        <th>工艺</th>
+        <th>染色</th>
+        </thead>
+        <tbody>
+
+        <tr>
+            <td rowspan="2">{{ form_data.obj.quantity }}</td>
+            <th>镜框</th>
+            <td>{{ item.frame_type }}</td>
+            <td>计划</td>
+            <td>{{ form_data.obj.lens_name }}</td>
+            <td>{{ form_data.obj.lens_index }}</td>
+            <td>
+                HMC
+                {% if form_data.obj.coating_name %}
+                    {{ form_data.obj.coating_name }}
+                {% endif %}
+            </td>
+            <td>
+                {% if form_data.obj.tint_name %}
+                    {{ form_data.obj.tint_name }}
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>镜片</th>
+            <td>{{ item.lens_type }}</td>
+            <td>实际</td>
+            <td>{{ form_data.obj.act_lens_name }}</td>
+            <td>{{ form_data.obj.lens_index }}</td>
+            {#            <td>HMC</td>#}
+            <td>
+                HMC
+                {% if form_data.obj.coating_name %}
+                    {{ form_data.obj.coating_name }}
+                {% endif %}
+            </td>
+            <td>
+                {% if form_data.obj.tint_name %}
+                    {{ form_data.obj.tint_name }}
+                {% endif %}
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="tableTopBorder_3">
+        <tr>
+            <th>#</th>
+            <th>SPH</th>
+            <th>CYL</th>
+            <th>AXIS</th>
+            <th>ADD</th>
+            <th>PD</th>
+            <th>PRISM-H</th>
+            <th>BASE-H</th>
+            <th>PRISM-V</th>
+            <th>BASE-V</th>
+        </tr>
+        <tr>
+            <td>OD</td>
+            <td>{{ item.od_sph }}</td>
+            <td>{{ item.od_cyl }}</td>
+            <td>{{ item.od_axis }}</td>
+            <td>{{ item.od_add }}</td>
+            <td>
+                {% ifequal item.is_singgle_pd 1 %}{{ item.pd }}{% endifequal %}
+                {% ifequal item.is_singgle_pd 0 %}{{ item.od_pd }}{% endifequal %}
+            </td>
+            <td>{{ item.od_prism }}</td>
+            <td>{{ item.od_base }}</td>
+            <td>{{ item.od_prism1 }}</td>
+            <td>{{ item.od_base1 }}</td>
+        </tr>
+        <tr>
+            <td>OS</td>
+            <td>{{ item.os_sph }}</td>
+            <td>{{ item.os_cyl }}</td>
+            <td>{{ item.os_axis }}</td>
+            <td>{{ item.os_add }}</td>
+            <td>
+                {% ifequal item.is_singgle_pd 0 %}{{ item.os_pd }}{% endifequal %}
+            </td>
+            <td>{{ item.os_prism }}</td>
+            <td>{{ item.os_base }}</td>
+            <td>{{ item.os_prism1 }}</td>
+            <td>{{ item.os_base1 }}</td>
+        </tr>
+    </table>
+
+    <table class="tableTopBorder_3">
+        <tbody>
+        <tr>
+            <th>框高</th>
+            <td>{{ item.lens_height }}</td>
+            <th>加工瞳高</th>
+            <td>{{ item.lab_seg_height }}</td>
+            <th>子镜高度</th>
+            <td>{{ item.sub_mirrors_height }}</td>
+            <th>特殊处理</th>
+            <td>{{ item.special_handling }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="tableTopBorder_3" style="table-layout:fixed">
+        <tbody>
+        <tr>
+            <td><img src='{{ media_base_url }}{{ item.c128_path }}'/></td>
+            <td>备注1</td>
+            <td colspan="4">{{ item.comments }}</td>
+        </tr>
+        </tbody>
+    </table>-->
+    <div class="pageBreak"><!--如果需要强制换页就在上一页的未尾出加上此代码--></div>
+</div>
+
+<button style="display:none" id="print_1">打印</button>
+</body>
+</html>

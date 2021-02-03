@@ -1,0 +1,730 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .table-bordered-v{
+            text-align: center;
+            border: 1px solid #000000;
+        }
+        .table-bordered-v>thead>tr>th{
+            text-align: center;
+            border: 1px solid #000000;
+        }
+        .table-bordered-v tr, .table-bordered-v td, .table-bordered-v th  {
+            text-align: center;
+            border: 1px solid #000000;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}Shipments {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}已拣配{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header">
+
+                    <div style="float: left;">{% include 'search.html' %}</div>
+
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;display:none">
+                        <button class="btn btn-default btn dropdown-toggle"
+                                type="button"
+                                data-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false">
+                            过滤器 <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href={{ requestUrl }}?filter=all&region={{ region }}>
+                                {% ifequal filter 'all' %}
+                                    *{% endifequal %}全部</a></li>
+                            <li>&nbsp</li>
+                            <li><a href={{ requestUrl }}?filter=express&region={{ region }}>
+                                {% ifequal filter 'express' %}
+                                    *{% endifequal %}
+                                加急</a></li>
+                            <li><a href={{ requestUrl }}?filter=standard&region={{ region }}>
+                                {% ifequal filter 'standard' %}*{% endifequal %}
+                                普通</a></li>
+
+                            <li><a href={{ requestUrl }}?filter=flatrate&region={{ region }}>
+                                {% ifequal filter 'flatrate' %}
+                                    *{% endifequal %}
+                                批量</a></li>
+
+                            <li><a href={{ requestUrl }}?filter=employee&region={{ region }}>
+                                {% ifequal filter 'employee' %}*{% endifequal %}
+                                内部员工</a></li>
+                        </ul>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <input type="text" class="form-control" id="txt_tracking_number" placeholder="输入物流跟踪号码"
+                        >
+                        <input type="text" class="form-control" id="txt_remark" placeholder="输入BOX发货备注[选填]"
+                        >
+                    </div>
+
+                    <div style="float: left;margin-left: 5px; ">
+                        <button id="btn_delivery_e" name="btn_delivery_e" type="button"
+                                class="btn btn-primary btn-flat">发货-东部
+                        </button>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px; display: none">
+                        <button id="btn_delivery_w" name="btn_delivery_w" type="button"
+                                class="btn btn-default btn btn-flat">发货-西部
+                        </button>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px; display: none;">
+                        <button id="btn_delivery_box" name="btn_delivery_box" type="button"
+                                class="btn btn-primary">更新发货记录
+                        </button>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <button id="calculate_merge_shipment" name="calculate_merge_shipment" type="button"
+                                class="btn btn-default btn btn-flat">计算合并发货
+                        </button>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <button id="btn_sm_standard" name="btn_sm_standard" type="button"
+                                class="btn btn-success">普通
+                        </button>
+                    </div>
+                    <div style="float: left;margin-left: 5px;">
+                        <button id="btn_sm_express" name="btn_sm_express" type="button"
+                                class="btn btn-danger">加急
+                        </button>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <button id="btn_post_box" name="btn_post_box" type="button"
+                                class="btn btn-default btn btn-flat">创建BOX
+                        </button>
+                    </div>
+                    <div style="float: left;margin-left: 5px;">{{ form_data.pd.shipping_method }}</div>
+                    <div style="float: left;margin-left: 5px;">
+                        <button class="btn btn-default btn btn-flat" data-toggle="modal" data-target="#uploadModal">AI批量发货</button>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    {% include 'delivery_detail.pspf.html' %}
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th><input id="chk_all" type="checkbox"></th>
+
+                <th>Return Label</th>
+                <th>订单号</th>
+                <th>订单日期</th>
+                <th>工厂订单号</th>
+                <th>镜架</th>
+                <th>发货方向</th>
+                <th>发货方式</th>
+                <th>工厂实际发货方向</th>
+                <th>工厂实际发货方式</th>
+                <th>承运方</th>
+                <th>快递号</th>
+                <th>已拣配</th>
+                <th>发货备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td><input name="chk_items" value="{{ item.id }}" type="checkbox"></td>
+
+                    {% if item.pg_order_entity.is_required_return_lable == True %}
+                        <td class="hid"><img src="{% static "image/icon-yes.svg" %}"></td>
+                    {% else %}
+                        <td class="hid"><img src="{% static "image/icon-no.svg" %}"></td>
+                    {% endif %}
+                    <td>{{ item.pg_order_entity.order_number }}</td>
+                    <td>{{ item.pg_order_entity.order_date }}</td>
+                    <td>{{ item.lab_order_entity.lab_number }}</td>
+                    <td>{{ item.lab_order_entity.frame }}</td>
+
+                    <td>{{ item.pg_order_entity.ship_region }}</td>
+                    <td>{{ item.pg_order_entity.get_ship_direction_display }}</td>
+                    <td>{{ item.ship_region }}</td>
+                    <td>{{ item.lab_order_entity.get_act_ship_direction_display }}</td>
+                    <td>{{ item.ship_carrier }}</td>
+                    <td>{{ item.tracking_number }}</td>
+
+                    <td>{{ item.is_picked }}</td>
+                    <td>{{ item.lab_order_entity.comments_ship }}</td>
+                    <td>{% if item.lab_order_entity.act_ship_direction == "EXPRESS" or item.lab_order_entity.act_ship_direction == "CA_EXPRESS" %}<button type="button" class="btn btn-primary btn_develary" data-toggle="modal" data-target="#myModal" data="{{ item.lab_order_entity.lab_number }}" data-order="{{ item.lab_order_entity.order_number }}" {% if item.lab_order_entity.status == 'SHIPPING' %}disabled="disabled" style="background: #000000;" {% endif %}>发货</button>{% endif %}</td>
+                </tr>
+                <tr style="display:none">
+                    <td colspan="15"></td>
+                    <td colspan="4">
+                        <div name="actions">
+
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            {#上一页按钮开始#}
+            {#如果当前页有上一页#}
+            {% if list.has_previous %}
+                {#当前页的上一页按钮正常使用#}
+                <li class="previous"><a
+                        href="{{ requestUrl }}?page={{ list.previous_page_number }}&pd_entity={{ form_data.pd_entity }}">previous</a>
+                </li>
+            {% else %}
+                {#当前页的不存在上一页时,上一页的按钮不可用#}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {#上一页按钮结束#}
+            {#页码开始#}
+            {% for num in paginator.page_range %}
+
+                {% if num == currentPage %}
+                    <li class="item active"><a
+                            href="{{ requestUrl }}?page={{ num }}&pd_entity={{ form_data.pd_entity }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="item"><a
+                            href="{{ requestUrl }}?page={{ num }}&pd_entity={{ form_data.pd_entity }}">{{ num }}</a>
+                    </li>
+
+                {% endif %}
+            {% endfor %}
+            {#页码结束#}
+            {#下一页按钮开始#}
+            {% if list.has_next %}
+                <li class="next"><a
+                        href="{{ requestUrl }}?page={{ list.next_page_number }}&pd_entity={{ form_data.pd_entity }}">next</a>
+                </li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+            {#下一页按钮结束#}
+        </ul>
+    </div>
+    <!--paginator end-->
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-body">
+                    <div style="float: left;margin-left: 5px;">
+                        <a class="btn btn-block btn-default btn-flat"
+                           href="#"
+                           target='view_window'>预计完成时间</a>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <a class="btn btn-block btn-default btn-flat"
+                           href="#"
+                           target='view_window'>打印订单</a>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <a class="btn btn-block btn-default btn-flat"
+                           href="#"
+                           target='view_window'>添加评论</a>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <a class="btn btn-block btn-default btn-flat"
+                           href="#"
+                           target='view_window'>完成</a>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <a class="btn btn-block btn-default btn-flat"
+                           href="#"
+                           target='view_window'>暂停</a>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <a class="btn btn-block btn-default btn-flat"
+                           href="#"
+                           target='view_window'>取消</a>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <a class="btn btn-block btn-default btn-flat"
+                           href="#"
+                           target='view_window'>重做</a>
+                    </div>
+                    <!-- /.box-body -->
+                    <!-- /.box -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">发货</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label>订单号：</label><span class="order_number"></span>
+                    </div>
+                    <div class="input-group">
+                        <label>工厂订单号：</label><span class="lab_number"></span>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="tracking_number_single" class="form-control" placeholder="输入物流跟踪号码">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="submit_tracking_number">确认</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="shipMyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="width:80%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        建议合并发货清单
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered-v">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center;">Customer Info</th>
+                            <th style="text-align: center;">Order Number</th>
+                        </tr>
+                        </thead>
+                        <tbody class="pick_html">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">AI批量发货</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="" class="input-group">
+                        <span class="input-group-addon">文件:</span>
+                        <input id="input_file" name="input_file" type="file" class="form-control hidden"
+                               onchange="document.getElementById('input_file_btn').value = this.value">
+                        <input id="input_file_btn" type="button" class="btn btn-default form-control" value="请选择Excel文件"
+                               onclick="document.getElementById('input_file').click()">
+                    </div>
+                    <div class="text-center">
+                        <br/>
+                        <br/>
+                        <h4 id="upload_result_h">
+                            上传结果
+                        </h4>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="upload_btn">上传</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_entity = $("#number").val();
+
+            url = "{% url 'delivery_detail' %}";
+
+            if (order_entity == '' || order_entity == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                location.href = url + '?order_entity=' + order_entity + '&pd_entity=' + "{{ form_data.pd_entity }}";
+            }
+        });
+
+        //全选/不选
+        document.getElementById('chk_all').onclick = function () {
+            // 获取所有的复选框
+            var checkElements = document.getElementsByName('chk_items');
+            if (this.checked) {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = "checked";
+                }
+            } else {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = null;
+                }
+            }
+        };
+
+        $("#btn_order_matched").click(function () {
+            var window = layer.load(3); //换了种风格
+            var url = "{% url 'pre_delivery_update_status' %}";
+            var delivery_id = "{{ delivery.id }}";
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    entity: delivery_id,
+                },
+                async: true
+            }).done(function (response) {
+                if (response == '0') {
+                    layer.close(window);
+                    layer.alert('此操作已成功!');
+                } else {
+                    layer.alert(response);
+                    returnData = response;
+                    layer.close(window);
+                }
+
+                //layer.closeAll();
+            });
+        });
+
+
+        $("#btn_delivery_e").click(function () {
+            delivery('E');
+        });
+
+        $("#btn_delivery_w").click(function () {
+            delivery('W');
+        });
+
+        function delivery(region) {
+            var lalist = [];
+            var pglist = [];
+            var dilivery_entity = " {{ delivery.id }}";
+            var order_qtyinbox_list = [];
+            var shipMethod = 'STANDARD';
+            var carrier = 'UPS';
+            var tracking_number = $("#txt_tracking_number").val();
+            var remark = $("#txt_remark").val();
+
+            if (tracking_number == '' && "{{ form_data.pd.shipping_method }}"=="STANDARD") {
+                alert('物流跟踪号码必须填写!');
+                return false;
+            }
+
+            var lalist = JSON.stringify(lalist);
+            var pglist = JSON.stringify(pglist);
+
+            var index = layer.load();
+            $.ajax({
+                url: '/oms/shipmentController/',
+                type: 'post',
+                data: {
+                    shipMethod: shipMethod,
+                    carrier: carrier,
+                    post_orderNum: tracking_number,
+                    remark: remark,
+                    lalist: lalist,
+                    pglist: pglist,
+                    dilivery_entity: dilivery_entity,
+                    region: region,
+                },
+                success: function (arg) {
+                    layer.close(index);
+                    if (arg == 'success') {
+                        layer.msg('Success', {time: 1000, icon: 6}, function () {
+                            window.location.reload();
+                        });
+                    } else {
+                        alert(arg);
+                        // layer.msg(arg, {time: 1000, icon: 6});
+                    }
+                }
+            })
+
+        }
+
+        $("#btn_sm_standard").click(function () {
+            setShippingMethod("STANDARD");
+        });
+        $("#btn_sm_express").click(function () {
+            setShippingMethod("EXPRESS");
+        });
+
+        function setShippingMethod(shipping_method) {
+            var dilivery_entity = "{{ delivery.id }}";
+            var index = layer.load();
+
+            $.ajax({
+                url: "{% url 'pre_delivery_set_shippingmethod' %}",
+                type: 'post',
+                data: {
+                    shipping_method: shipping_method,
+                    entity: dilivery_entity,
+                },
+                success: function (arg) {
+                    layer.close(index);
+
+                    obj = JSON.parse(arg);
+
+                    if (obj.code == 0) {
+                        layer.msg('Success', {time: 1000, icon: 6}, function () {
+                            window.location.reload();
+                        });
+                    } else {
+                        alert(obj.message);
+                        // layer.msg(arg, {time: 1000, icon: 6});
+                    }
+                },
+                error:function (arg) {
+                    alert(arg);
+                }
+            })
+        }
+
+
+        $("#btn_post_box").click(function () {
+
+            layer.open({
+                title: '发货方式确认',
+                content: '请确认是否完成了 发货方式的确认 ？请确认每一个订单的追踪码已经输入!'
+                , btn: ['确认已经完成', '我想回去重新设定']
+                , yes: function (index, layero) {
+                    layer.closeAll();
+                    postBox();
+                }
+                , btn2: function (index, layero) {
+                    layer.closeAll();
+                    return false;
+                }
+                , cancel: function () {
+                    layer.closeAll();
+                    return false;
+                }
+            });
+        });
+
+        function postBox() {
+            var dilivery_entity = "{{ delivery.id }}";
+            var shipMethod = 'STANDARD';
+            var carrier = 'UPS';
+            var tracking_number = $("#txt_tracking_number").val();
+            var remark = $("#txt_remark").val();
+
+            if (tracking_number == '' && "{{ form_data.pd.shipping_method }}"=="STANDARD") {
+                alert('物流跟踪号码必须填写!');
+                return false;
+            }
+
+            var index = layer.load();
+            $.ajax({
+                url: "{% url 'glasses_boxing_post_box' %}",
+                type: 'post',
+                data: {
+                    shipMethod: shipMethod,
+                    carrier: carrier,
+                    tracking_number: tracking_number,
+                    comments: remark,
+                    dilivery_entity: dilivery_entity,
+                    region: 'E',
+                },
+                success: function (arg) {
+                    layer.close(index);
+
+                    obj = JSON.parse(arg);
+
+                    if (obj.code == 0) {
+                        layer.msg('Success', {time: 1000, icon: 6}, function () {
+                            window.location.reload();
+                        });
+                    } else {
+                        alert(obj.message);
+                        // layer.msg(arg, {time: 1000, icon: 6});
+                    }
+                }
+            })
+        }
+
+
+        $(".btn_develary").click(function () {
+            lab_number = $(this).attr("data")
+            order_number = $(this).attr("data-order")
+            $(".lab_number").text(lab_number);
+            $(".order_number").text(order_number);
+        });
+        $("#submit_tracking_number").click(function () {
+            var dilivery_entity = "{{ delivery.id }}";
+            var status = 'SHIPPING';
+            var carrier = 'UPS';
+            var tracking_number = $("#tracking_number_single").val();
+            var lab_number = $(".lab_number").text();
+            var order_number = $(".order_number").text();
+
+            if(lab_number == ""){
+                alert('工厂订单号不能为空!');
+                return false;
+            }
+            if (tracking_number == '') {
+                alert('物流跟踪号码必须填写!');
+                return false;
+            }
+            data = {
+                box_id: dilivery_entity,
+                status: status,
+                carrier: carrier,
+                tracking_number: tracking_number,
+                lab_number: lab_number,
+                order_number: order_number
+            }
+            console.log(data)
+            var index = layer.load();
+            $.ajax({
+                url: "{% url 'laborder_status_change' %}",
+                type: 'post',
+                data: {
+                    box_id: dilivery_entity,
+                    status: status,
+                    carrier: carrier,
+                    tracking_number: tracking_number,
+                    lab_number: lab_number,
+                    order_number: order_number
+                },
+                success: function (arg) {
+                    layer.close(index);
+                    obj = JSON.parse(arg);
+                    if (obj.code == 0) {
+                        if(obj.message == 'Success'){
+                            layer.msg(obj.message, {time: 3000, icon: 6}, function () {
+                                $("#tracking_number_single").attr("value", "");
+                                $("#myModal").modal("hide");
+                            });
+                        }else{
+                            layer.msg(obj.message, {time: 5000, icon: 6}, function () {
+                                $("#tracking_number_single").attr("value", "");
+                                $("#myModal").modal("hide");
+                            });
+                        }
+                    }else {
+                        layer.msg(obj.message, {time: 3000, icon: 7}, function () {
+                            $("#tracking_number_single").attr("value", "");
+                            $("#myModal").modal("hide");
+                        });
+                    }
+                }
+            })
+        });
+
+        $("#calculate_merge_shipment").click(function () {
+            var dilivery_entity = "{{ delivery.id }}";
+            var index = layer.load();
+            $.ajax({
+                url: "{% url 'shipment_calculate_combined_shipment' %}",
+                type: 'post',
+                data: {
+                    dilivery_entity:dilivery_entity,
+                },
+                success: function (arg) {
+                    layer.close(index);
+                    obj = JSON.parse(arg);
+
+                    if (obj.code == 0) {
+                        var pick_html = '';
+                        for(var i=0; i<obj.data.length; i++){
+                            pick_html += '<tr><td style="vertical-align:middle;" rowspan="'+obj.data[i].list.length+'">'+obj.data[i].address+'</td><td>'+obj.data[i].list[0]+'</td></tr>';
+                            for(var j=1; j<obj.data[i].list.length; j++){
+                                pick_html += '<tr><td>'+obj.data[i].list[j]+'</td></tr>'
+                            }
+                        }
+                        $(".pick_html").empty();
+                        $(".pick_html").append(pick_html)
+                        $("#shipMyModal").modal("show");
+                        layer.msg('Success', {time: 1000, icon: 6});
+                    } else {
+                        layer.msg(obj.message, {time: 1000, icon: 7});
+                    }
+                }
+            })
+        });
+        $("#upload_btn").click(function () {
+            var file_name = $("#input_file").val();
+            var url = "{% url 'shipping_upload_excel' %}"
+            console.log(file_name)
+            if (file_name == "") {
+                layer.msg('请先上传Excel文件', {time: 5000});
+                return
+            }
+            var formData = new FormData();
+            formData.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+            formData.append("file", $("#input_file")[0].files[0]);
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType:'json',
+                success: function (arg) {
+                    if(arg.code == 0){
+                        $("#upload_result_h").html("<span style='color: #06B535;font-size: 20px;'>上传成功:" + arg.msg+"</span>");
+                        setTimeout(function () {
+                            $("#uploadModal").modal("hide");
+                        }, 3000 )
+
+                    }else{
+                        $("#upload_result_h").html("<span style='color: #9f191f;font-size: 20px;'>上传失败:" + arg.msg+"</span>");
+                    }
+                }
+            })
+        });
+    </script>
+{% endblock %}

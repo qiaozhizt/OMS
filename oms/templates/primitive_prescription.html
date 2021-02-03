@@ -1,0 +1,56 @@
+<div class="col-md-12">
+    <table class="table table-hover">
+        <tr>
+            <th>#</th>
+            <th>SPH</th>
+            <th>CYL</th>
+            <th>AXIS</th>
+            <th>ADD</th>
+            <th>PD</th>
+        </tr>
+        <tr>
+            <td>OD</td>
+            <td>{{ item.rsph }}</td>
+            <td>{{ item.rcyl }}</td>
+            <td>{{ item.rax }}</td>
+            <td>{{ item.radd }}</td>
+            <td>
+                {% ifequal item.single_pd 1 %}{{ item.pd }}{% endifequal %}
+                {% ifequal item.single_pd 0 %}{{ item.rpd }}{% endifequal %}
+            </td>
+        </tr>
+        <tr>
+            <td>OS</td>
+            <td>{{ item.lsph }}</td>
+            <td>{{ item.lcyl }}</td>
+            <td>{{ item.lax }}</td>
+            <td>{{ item.ladd }}</td>
+            <td>
+                {% ifequal item.single_pd 0 %}{{ item.lpd }}{% endifequal %}
+            </td>
+        </tr>
+    </table>
+    <table class="table table-hover">
+        <tr>
+            <th>#</th>
+            <th>Prism-H</th>
+            <th>Base-H</th>
+            <th>Prism-V</th>
+            <th>Base-V</th>
+        </tr>
+        <tr>
+            <td>OD</td>
+            <td>{{ item.rpri }}</td>
+            <td>{{ item.rbase }}</td>
+            <td>{{ item.rpri1 }}</td>
+            <td>{{ item.rbase1 }}</td>
+        </tr>
+        <tr>
+            <td>OS</td>
+            <td>{{ item.lpri }}</td>
+            <td>{{ item.lbase }}</td>
+            <td>{{ item.lpri1 }}</td>
+            <td>{{ item.lbase1 }}</td>
+        </tr>
+    </table>
+</div>

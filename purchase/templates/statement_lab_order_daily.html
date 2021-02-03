@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Purchase{% if form_data.total %}
+    <span class="label label-default" xmlns="http://www.w3.org/1999/html">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}日对账单{% endblock %}
+{% block content %}
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            [{{ form_data.doc_type }}] 单据类型 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            {% for val in form_data.doc_types %}
+                <li class="{% ifequal form_data.doc_type val %}active{% endifequal %}"><a
+                        href="{{ requestUrl }}?filter={{ filter }}&year={{ form_data.year }}&month={{ form_data.month }}&day={{ form_data.day }}&workshop={{ form_data.workshop }}&doc_type={{ val }}">
+                    {% ifequal form_data.doc_type val %}*{% endifequal %}{{ val }}
+                </a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            {{ form_data.year }} 年 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            {% for year in form_data.years %}
+                <li class="{% ifequal form_data.year year %}active{% endifequal %}"><a
+                        href="{{ requestUrl }}?filter={{ filter }}&year={{ year }}&month={{ form_data.month }}&day={{ form_data.day }}&workshop={{ form_data.workshop }}&doc_type={{ form_data.doc_type }}">
+                    {% ifequal form_data.year year %}*{% endifequal %}{{ year }}
+                </a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            {{ form_data.month }} 月 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            {% for val in form_data.months %}
+                <li class="{% ifequal form_data.month val %}active{% endifequal %}"><a
+                        href="{{ requestUrl }}?filter={{ filter }}&year={{ form_data.year }}&month={{ val }}&day={{ form_data.day }}&workshop={{ form_data.workshop }}&doc_type={{ form_data.doc_type }}">
+                    {% ifequal form_data.month val %}*{% endifequal %}{{ val }}
+                </a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            {{ form_data.day }} 日 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            {% for val in form_data.days %}
+                <li class="{% ifequal form_data.day val %}active{% endifequal %}"><a
+                        href="{{ requestUrl }}?filter={{ filter }}&year={{ form_data.year }}&month={{ form_data.month }}&day={{ val }}&workshop={{ form_data.workshop }}&doc_type={{ form_data.doc_type }}">
+                    {% ifequal form_data.day val %}*{% endifequal %}{{ val }}
+                </a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+
+    {% ifequal form_data.doc_type 'LENS' %}
+        <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+            <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+                {{ filter }} 过滤器 <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                {% for val in form_data.vendors %}
+                    <li class="{% ifequal filter val %}active{% endifequal %}"><a
+                            href="{{ requestUrl }}?filter={{ val }}&year={{ form_data.year }}&month={{ form_data.month }}&day={{ form_data.day }}&workshop={{ form_data.workshop }}&doc_type={{ form_data.doc_type }}">
+                        {% ifequal filter val %}*{% endifequal %}{{ val }}
+                    </a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+            <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+                {{ form_data.workshop }} 成镜车间 <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                {% for val in form_data.workshops %}
+                    <li class="{% ifequal form_data.workshop val %}active{% endifequal %}"><a
+                            href="{{ requestUrl }}?filter={{ filter }}&year={{ form_data.year }}&month={{ form_data.month }}&day={{ form_data.day }}&workshop={{ val }}&doc_type={{ form_data.doc_type }}">
+                        {% ifequal form_data.workshop val %}*{% endifequal %}{{ val }}
+                    </a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endifequal %}
+
+
+    <div class="filterLab">
+        <!--Actions-->
+
+        <div style="float: left;margin-left: 5px;" class="hidden">
+            <a class="btn btn-block btn-default" id="generate_csv_wx" target='view_window'>查询对账单</a>
+        </div>
+        <div style="float: left;margin-left: 5px;" class="hidden">
+            <a class="btn btn-block btn-default" id="generate_csv_wx" target='view_window'>查询对账单</a>
+        </div>
+
+        {% if perms.purchase.SLOD_EXPORT %}
+            <div style="float: left;margin-left: 10px;">
+                <a class="btn btn-block btn-default" id="generate_csv" target='view_window'>导出 CSV</a>
+            </div>
+        {% endif %}
+
+
+        <div id="is_chk_full" style="float:left;margin-left:25px;display:none">
+            <div class="checkbox">
+                <label>
+                    <input id="select_all_data" type="checkbox">选择全部<span id="data_total">{{ form_data.total }}</span>条数据
+                </label>
+            </div>
+        </div>
+
+    </div>
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th><input id="chk_all" type="checkbox"></th>
+                <th>#</th> <!-- laborder_purchase_order的ID -->
+                <th>条码</th>
+                <th>订单号</th>
+                <th>订单日期</th>
+                <th>镜架</th>
+                <th>框型</th>
+                <th>实际镜片 SKU</th>
+                <th>实际镜片</th>
+                <th>超防水</th>
+                <th>设计 SKU</th>
+                <th>设计</th>
+                <th>棱镜度</th>
+                <th>高散</th>
+                <th>染色</th>
+                <th>染色描述</th>
+                <th>数量[片]</th>
+                <th>收片日期</th>
+                <th>生产周期</th>
+                <th>登记次数</th>
+                <th width="80px">备注</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for obj in list %}
+                <tr>
+                    <td><input name="chk_items" value="{{ obj.laborder_entity.id }}" type="checkbox"></td>
+                    <td class="entity">{{ obj.laborder_entity.id }}</td>
+                    <td>{{ obj.laborder_entity.get_bar_code }}</td>
+                    <td>{{ obj.laborder_entity.lab_number }}</td>
+                    <td>{{ obj.laborder_entity.create_at | date:"Y-m-d" }}</td>
+                    <td>{{ obj.laborder_entity.frame }}</td>
+                    <td>{{ obj.laborder_entity.frame_type }}</td>
+                    <td>{{ obj.laborder_entity.act_lens_sku }}</td>
+                    <td>{{ obj.laborder_entity.act_lens_name }}</td>
+                    <td>{{ obj.laborder_entity.coating_sku }}</td>
+                    <td>{{ obj.laborder_entity.get_pal_design_sku }}</td>
+                    <td>{{ obj.laborder_entity.pal_design_name }}</td>
+                    <td>{{ obj.laborder_entity.get_has_prism }}</td>
+                    <td>{{ obj.laborder_entity.get_strong_cyl }}</td>
+                    <td>{{ obj.laborder_entity.get_has_tint }}</td>
+                    <td>{{ obj.laborder_entity.tint_name }}</td>
+                    <td>{{ obj.laborder_entity.get_lens_quantity }}</td>
+                    <td>{{ obj.created_at | date:"Y-m-d" }}</td>
+                    <td>{{ obj.laborder_entity.days_of_lens_registration }}</td>
+                    <td>{{ obj.laborder_entity.get_reg_times }}</td>
+                    <td>{{ obj.laborder_entity.comments }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            {#上一页按钮开始#}
+            {#如果当前页有上一页#}
+
+            {% if list.has_previous %}
+                {#当前页的上一页按钮正常使用#}
+                <li class="previous"><a
+                        href="{{ requestUrl }}?page={{ list.previous_page_number }}&filter={{ filter }}&year={{ form_data.year }}&month={{ form_data.month }}&day={{ form_data.day }}&workshop={{ form_data.workshop }}&doc_type={{ form_data.doc_type }}">previous</a>
+                </li>
+            {% else %}
+                {#当前页的不存在上一页时,上一页的按钮不可用#}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {#上一页按钮结束#}
+            {#页码开始#}
+            {% for num in paginator.page_range %}
+
+                {% if num == currentPage %}
+                    <li class="item active"><a
+                            href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&year={{ form_data.year }}&month={{ form_data.month }}&day={{ form_data.day }}&workshop={{ form_data.workshop }}&doc_type={{ form_data.doc_type }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="item"><a
+                            href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&year={{ form_data.year }}&month={{ form_data.month }}&day={{ form_data.day }}&workshop={{ form_data.workshop }}&doc_type={{ form_data.doc_type }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {#页码结束#}
+            {#下一页按钮开始#}
+            {% if list.has_next %}
+                <li class="next"><a
+                        href="{{ requestUrl }}?page={{ list.next_page_number }}&filter={{ filter }}&year={{ form_data.year }}&month={{ form_data.month }}&day={{ form_data.day }}&workshop={{ form_data.workshop }}&doc_type={{ form_data.doc_type }}">next</a>
+                </li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+            <li class="item"><a>Total&nbsp;:&nbsp;{{ form_data.total }}</a></li>
+            {#下一页按钮结束#}
+        </ul>
+    </div>
+    <!--paginator end-->
+    <!--paginator end-->
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        //全选/不选
+        document.getElementById('chk_all').onclick = function () {
+            // 获取所有的复选框
+            var checkElements = document.getElementsByName('chk_items');
+
+            if (this.checked) {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = "checked";
+                }
+
+                $("#is_chk_full").css("display", "block");
+            } else {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = null;
+                    $("#is_chk_full").css("display", "none");
+                }
+                $("#select_all_data").prop("checked", false);
+            }
+        };
+
+        // 导出 CSV
+        $("#generate_csv").click(function () {
+
+            generate_csv("statement_lab_order_daily_csv");
+        });
+
+        // 导出
+        function generate_csv(uri) {
+            // var window = layer.load(3);
+            var is_full = '0';
+            if ($("#select_all_data").prop("checked")) {
+                is_full = '1';
+            }
+
+            var entities = [];
+
+            checkboxs = $("input[name='chk_items']:checked");
+
+            checkboxs.each(function () {
+                entity = $(this).closest("tr").find(".entity").html();
+                entities.push(entity);
+            });
+
+            url = "{% url 'statement_lab_order_daily_csv' %}";
+            window.location = url + "?entities=" + entities + '&is_full=' + is_full + '&filter={{ filter }}&year={{ form_data.year }}&month={{ form_data.month }}&day={{ form_data.day }}&workshop={{ form_data.workshop }}&doc_type={{ form_data.doc_type }}';
+            layer.msg('已经生成CSV文件 正准备导出 ....');
+        }
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            var order_number = $("#number").val();
+            if (order_number === '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                window.location.href = "/purchase/redirect_statement_lab_order_daily/" + "?doc_type=" + "{{ form_data.doc_type }}" +"&lab_number=" + order_number;
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css %}
+{% endblock %}
+{% block h1 %}Merchandising{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}分配&撤回操作清单{% endblock %}
+{% block content %}
+    <!--Search-->
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle btn-flat"
+                type="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            Filter <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href={{ requestUrl }}?filter=all>
+                {% ifequal filter 'all' %}{% ifequal flatrate 'all' %}*{% endifequal %}{% endifequal %}All</a>
+            </li>
+            <li class="divider"></li>
+            <li><a href={{ requestUrl }}?filter=OIRC>
+                {% ifequal filter 'OIRC' %}*{% endifequal %}分配</a></li>
+            <li><a href={{ requestUrl }}?filter=OIDC>
+                {% ifequal filter 'OIDC' %}*{% endifequal %}撤回</a></li>
+        </ul>
+    </div>
+    <!--Search end-->
+    <!--Actions-->
+    <!-- 全选按钮 -->
+    {% include 'laborder_list_v2_exceed.pspf.html' %}
+    <!--Actions end-->
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>数量</th>
+                    <th>PG Web</th>
+                    <th>操作类型</th>
+                    <th>状态</th>
+                    <th>原因</th>
+                    <th>创建时间</th>
+                    <th>操作人</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td>{{ item.sku }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.channel_name }}</td>
+                    <td>{% if item.type == 'OIRC'%}分配 {% else %} 撤回 {% endif %}</td>
+                    <td>{% if item.success_status == '1'%}失败 {% elif item.success_status == '0' %} 成功 {% endif %}</td>
+                    <td>{{ item.message }}</td>
+                    <td>{{ item.created_at }}</td>
+                    <td>{{ item.user_name }}</td>
+                    <td>
+                        {% if item.type == 'OIRC'  %}
+                            <button type="button" class="btn btn-default dis_quantity" data="distribution" data_sku="{{ item.sku }}" data_quantity="{{ item.quantity }}">重新分配</button>
+                        {% else %}
+                            <button type="button" class="btn btn-default dis_quantity" data="withdraw" data_sku="{{ item.sku }}" data_quantity="{{ item.quantity }}">重新撤回</button>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+    <div id="edit_dis_quantity" class="col-md-12 column hidden">
+        <style>
+            label {
+                display: block;
+                line-height: 42px;
+                font-size: 16px;
+                letter-spacing: 1px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                margin-bottom: 0px;
+                font-weight: 500;
+            }
+
+            label > input[name='is_ret'] {
+                margin-right: 8px;
+            }
+
+            textarea {
+                resize: none;
+                width: 100%;
+                min-height: 100px;
+                margin-top: 20px;
+            }
+            .quantity_div{
+                margin-bottom: 10px;
+            }
+            .al_ch_quantity{
+                display:none;
+            }
+        </style>
+        <form role="form" style="margin-left: 26px;">
+            <div class="quantity_div"><input type="text" id="quantity" placeholder="请输入数量" readonly="readonly"/></div>
+            <div class="quantity_div"><span>分配渠道：</span><span id="channel_code">WEBSITE</span></div>
+        </form>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $(function () {
+            var sku = getQueryString('sku');
+            $("#number").val(sku);
+        })
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+            if (sku == '' || sku == null) {
+                layer.msg('Please enter a sku', {time: 3000, icon: 7});
+            }
+            else {
+                url = '{% url "wms_distribution_withdrawal_list" %}';
+                location.href = url+'?sku=' + sku;
+            }
+        });
+
+        var edit_dis_quantity = $("#edit_dis_quantity")
+        var dis_quantity = $(".dis_quantity");
+        dis_quantity.click(function () {
+            let _self = $(this);
+            let _quantity = _self.attr("data_quantity")
+            let flag = _self.attr('data');
+            console.log(flag)
+            let idx = layer.open({
+                title: "分配",
+                area: "25%",
+                shadeClose: true,
+                content: edit_dis_quantity.html(),
+                success: function (layero, index) {
+                    if(flag == 'distribution'){
+                        $(".layui-layer-title").html('分配')
+                    }else{
+                        $(".layui-layer-title").html('撤回')
+                    }
+                     layero.find('input').val(_quantity)
+                },
+                yes: function (i, e) {
+                    layer.close(idx);
+                    let quantity = $.trim(e.find("#quantity").val());
+                    let sku = _self.attr('data_sku')
+                    let channel_code = $("#channel_code").text()
+                    console.log(quantity)
+                    console.log(sku)
+                    console.log(channel_code)
+                    if(quantity == ""){
+                        layer.msg("数量不能为空");
+                        return false;
+                    }
+                    if(isNaN(quantity)){
+                        layer.msg("请输入正确的数量格式");
+                        return false;
+                    }
+
+                    $.post("{% url 'wms_inventory_again_dis_quantity' %}", {
+                        'quantity': quantity,
+                        'flag': flag,
+                        'sku': sku,
+                        'channel_code':channel_code
+                    }, function (res) {
+                        if (res.code == 0) {
+                            layer.msg("執行成功");
+                            return true;
+                        }else{
+                            layer.msg(res.message);
+                            window.location.reload()
+                        }
+
+                    });
+                }
+            });
+
+    });
+    function getQueryString(key){
+        // 获取参数
+        var url = window.location.search;
+        // 正则筛选地址栏
+        var reg = new RegExp("(^|&)"+ key +"=([^&]*)(&|$)");
+        // 匹配目标参数
+        var result = url.substr(1).match(reg);
+        //返回参数值
+        return result ? decodeURIComponent(result[2]) : null;
+    }
+    </script>
+{% endblock %}

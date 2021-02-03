@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block h1 %}Pg Order{% endblock %}
+{% block small %}Send Comment{% endblock %}
+
+{% block content %}
+    <form id="forms" class="form-inline">
+        {% csrf_token %}
+        <div class="form-group">
+
+            <label for="exampleInputName2">order Number</label>
+            <input type="text" class="form-control" id="show_entity" placeholder="order Number" onblur="change()"
+                   {% if order_num %}value="{{ order_num }}" {% endif %}>&nbsp;&nbsp;&nbsp;
+            <label for="exampleInputName2">entity</label>
+            <input type="text" class="form-control" id="entity" readonly name="entity"></div>
+        <br><br>
+        <label>评论：</label><select id="selectComment" style="width: 33%;">
+        <option selected value="">
+            --------------------------------------------------------------------------------------------
+        </option>
+        {% for comment in comments %}
+            <option value="{{ comment.value }}">{{ comment.key }}&nbsp;&nbsp;||&nbsp;&nbsp;{{ comment.value|slice:'26' }}...</option>{% endfor %}
+    </select><br>
+
+        <label><h3>comment</h3></label><br><textarea id="comment" class="form-control" rows="5" cols="75"
+                                                     name="comment">{% if comment %}{{ comment }}{% endif %}</textarea>
+
+
+        <br><br>
+
+        <input id="is_visible" type="checkbox" name="is_customer_notified"> is_visible_on_front
+        <input id="is_customer_notified" type="checkbox" name="is_visible_on_front">is_customer_notified<br><br>
+        <button id="send" class="btn btn-default" type="button">Submit</button>
+
+
+    </form>
+
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $(document).ready(function () {
+
+            $("#selectComment").change(function () {
+                var com = $(this).select().val()
+                $("#comment").val(com)
+            })
+
+            if ('{{ order_num }}' != 'None') {
+                var order = $("#show_entity").val()
+
+                $.ajax({
+                    url: '/oms/get_entity/',
+                    type: 'POST',
+                    data: {
+                        "order_number": order
+
+                    },
+                    async: false,
+                    success: function (arg) {
+                        if (arg != 'error') {
+                            $("#entity").val(arg)
+                        }
+                        else {
+                            layer.msg("can't find order", {time: 1000, icon: 5})
+                        }
+
+
+                    }
+
+
+                })
+            }
+
+        });
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $("#send").click(function () {
+            var entity = $("#entity").val()
+            var comment = $("#comment").val()
+            var is_visible_on_front = 0
+            var is_customer_notified = 0
+            if ($("#is_visible").prop("checked") == true) {
+                is_visible_on_front = 1
+            }
+            if ($("#is_customer_notified").prop("checked") == true) {
+                is_customer_notified = 1
+            }
+
+            var index = layer.load(2); //换了种风格
+            $.ajax({
+                url: '/oms/sendAPI',
+                type: 'POST',
+                {#data:{#}
+                {#    'entity':entity,#}
+                {#    'comment':comment,#}
+                {#    'is_visible_on_front':is_visible_on_front,#}
+                {#    'is_customer_notified':is_customer_notified#}
+
+                data: $("#forms").serialize(),
+                success: function (arg) {
+                    layer.close(index);
+                    if (arg == '成功') {
+                        {% if redirect %}
+                            changeStatus({{ pk }})
+                        {% endif %}
+
+                        layer.msg("message delivery success ", {time: 3000, icon: 1}, function () {
+                            {% if order_num %}
+                                history.back(-1);
+                            {% endif %}
+                        })
+
+                    } else {
+                        layer.msg("message delivery fail", {time: 3000, icon: 2})
+                    }
+
+                }
+            })
+        });
+
+        function changeStatus(arg) {
+            $.ajax({
+                url: '/oms/changeActivitySendStatus/',
+                type: "post",
+                data: {
+                    pk: arg
+                },
+                success: function (arg) {
+
+                }
+            })
+        }
+
+        function change() {
+            var order = $("#show_entity").val()
+
+            $.ajax({
+                url: '/oms/get_entity/',
+                type: 'POST',
+                data: {
+                    "order_number": order
+
+                },
+                async: false,
+                success: function (arg) {
+                    if (arg != 'error') {
+                        $("#entity").val(arg)
+                    }
+                    else {
+                        layer.msg("can't find order", {time: 1000, icon: 5})
+                    }
+
+                }
+
+            })
+        }
+    </script>
+{% endblock %}

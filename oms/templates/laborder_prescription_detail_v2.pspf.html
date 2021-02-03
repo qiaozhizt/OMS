@@ -1,0 +1,228 @@
+<!-- /.box-body -->
+<!-- /.box-footer -->
+
+
+<div class="col-md-6">
+    <!-- Bar chart -->
+    <div class="box box-default">
+        <div class="box-header with-border">
+            <i class="fa fa-eye"></i>
+
+            <h3 class="box-title">验光单</h3>
+            <input type="hidden" value="{{ item.lab_number }}" id="edit_lab_number"/>
+            <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool"><i
+                        class="fa fa-edit" id="edit_frame"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                        class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="box-body">
+            <div class="col-xs-12">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Profile ID</th>
+                        <th>Profile Name</th>
+                        <th>Prescription ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Used For</th>
+                    </tr>
+                    <tr>
+                        <td>{{ item.profile_id }}</td>
+                        <td>{{ item.profile_name }}</td>
+                        <td>{{ item.prescription_id }}</td>
+                        <td>{{ item.prescription_name }}</td>
+                        <td>{{ item.prescription_type }}</td>
+                        <td><span class="label label-default">{{ item.used_for }}</span></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-xs-12">
+
+                <table class="table table-hover">
+                    <tr>
+                        <th>#</th>
+                        <th>SPH</th>
+                        <th>CYL</th>
+                        <th>AXIS</th>
+                        <th>ADD</th>
+                        <th>PD</th>
+                    </tr>
+                    <tr>
+                        <td>OD</td>
+                        <td>{{ item.od_sph }}</td>
+                        <td>{{ item.od_cyl }}</td>
+                        <td>{{ item.od_axis }}</td>
+                        <td>{{ item.od_add }}</td>
+                        <td>
+                            {% ifequal item.is_singgle_pd 1 %}{{ item.pd }}{% endifequal %}
+                            {% ifequal item.is_singgle_pd 0 %}{{ item.od_pd }}{% endifequal %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>OS</td>
+                        <td>{{ item.os_sph }}</td>
+                        <td>{{ item.os_cyl }}</td>
+                        <td>{{ item.os_axis }}</td>
+                        <td>{{ item.os_add }}</td>
+                        <td>
+                            {% ifequal item.is_singgle_pd 0 %}{{ item.os_pd }}{% endifequal %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-xs-12">
+                <table class="table table-hover">
+                    <tr>
+                        <th>#</th>
+                        <th>Prism-H</th>
+                        <th>Base-H</th>
+                        <th>Prism-V</th>
+                        <th>Base-V</th>
+                    </tr>
+                    <tr>
+                        <td>OD</td>
+                        <td>{{ item.od_prism }}</td>
+                        <td>{{ item.od_base }}</td>
+                        <td>{{ item.od_prism1 }}</td>
+                        <td>{{ item.od_base1 }}</td>
+                    </tr>
+                    <tr>
+                        <td>OS</td>
+                        <td>{{ item.os_prism }}</td>
+                        <td>{{ item.os_base }}</td>
+                        <td>{{ item.os_prism1 }}</td>
+                        <td>{{ item.os_base1 }}</td>
+                    </tr>
+
+                </table>
+            </div>
+            <div class="col-xs-12">
+                <table class="table table-hover">
+                    <tr>
+                        <th>Dia_1</th>
+                        <th>Dia_2</th>
+                        <th>MONO PD OFF CTR MM</th>
+                    </tr>
+                    <tr>
+                        <td>{{ item.dia_1 }}</td>
+                        <td>{{ item.dia_2 }}</td>
+                        <td>{{ item.get_mono_pd_off_ctr_mm }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <!-- /.box-body-->
+    </div>
+    <!-- /.box -->
+
+</div>
+<!-- /.col -->
+<!-- /.row -->
+<script>
+    $("#edit_frame").on('click', function () {
+        var url = "{% url 'edit_laborder_frame' %}";
+        var order_number = $("#edit_lab_number").val();
+        var clk_ld = layer.load(2);
+        $.ajax({
+            url: '/oms/edit_laborder_frame/',
+            type: 'POST',
+            data: {
+                "order_number": order_number
+            },
+            success: function (res_data) {
+                layer.close(clk_ld);
+                var index = layer.open({
+                    title: "编辑验光单信息",
+                    content: res_data,
+                    area: '55%',
+                    btn: ['修改', '取消'],
+                    type: 1,
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 3000});
+                    },
+                    success: function (ex) {
+                        var e_is_sg = ex.find("[name='is_singgle_pd']");
+                        var e_pd = ex.find("[name='pd']");
+                        var e_od_pd = ex.find("[name='od_pd']");
+                        var e_os_pd = ex.find("[name='os_pd']");
+                        $(e_is_sg).click(function () {
+                            var _self = $(this);
+                            if (_self.prop("checked")) {
+                                e_pd.show();
+                                e_od_pd.hide();
+                                e_os_pd.hide();
+                                _self.val('True');
+                            } else {
+                                e_pd.hide();
+                                e_od_pd.show();
+                                e_os_pd.show();
+                                _self.val('False');
+                            }
+                        });
+                    },
+                    yes: function (i, e) {
+                        layer.close(index);
+                        var index_load = layer.load(2);
+                        let form_data = getFormData(e.find("form.edit_form").eq(0));
+                        var is_singgle_flag = e.find("[name='is_singgle_pd']")
+                        var e_check = $(is_singgle_flag).prop('checked');
+                        if(e_check){
+                            form_data["is_singgle_pd"] = 'True'
+                        }else{
+                            form_data["is_singgle_pd"] = 'False'
+                        }
+                        //form_data["is_singgle_pd"] = e.find("[name='is_singgle_pd']").val();
+                        console.log(JSON.stringify(form_data))
+
+                        $.ajax({
+                            url: '/oms/modify_laborder_frame/',
+                            type: 'POST',
+                            data: {
+                                "order_number": order_number,
+                                "form_data": JSON.stringify(form_data)
+                            },
+                            success: function (arg) {
+                                if (arg.code != '0') {
+                                    layer.msg('操作失败: ' + arg.message);
+                                } else {
+                                    layer.msg("修改成功");
+                                }
+                                layer.close(index_load);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    })
+
+    // 返回JSON格式字符串
+    function getFormData(form) {
+        var data = form.serialize();
+        console.log(data);
+        data = decodeURI(data);
+        var arr = data.split('&');
+        var item, key, value, newData = {};
+        for (var i = 0; i < arr.length; i++) {
+            item = arr[i].split('=');
+            key = item[0];
+            value = item[1];
+            if (key.indexOf('[]') != -1) {
+                key = key.replace('[]', '');
+                if (!newData[key]) {
+                    newData[key] = [];
+                }
+                newData[key].push(value);
+            } else {
+                newData[key] = value;
+            }
+        }
+        return newData;
+    }
+</script>

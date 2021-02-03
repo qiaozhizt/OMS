@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Glasses Received List {% if form_data.total %}
+    <span class="label label-default" xmlns="http://www.w3.org/1999/html">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}成镜收货清单{% endblock %}
+{% block content %}
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            过滤器 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href={{ requestUrl }}?filter=all>
+                    {% if form_data.filter == 'all' %}
+                        *
+                    {% endif %}
+                    所有
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="col-sm-6" id="filters" style="float: left;margin-left: 10px;">
+        <div style="float: left;">
+            开始时间:
+            <input type="text" class="datetimepicker" id="start_time" value="{{ form_data.start_time }}">
+        </div>
+        <div style="float: left;margin-left: 10px;">
+            结束时间:
+            <input type="text" class="datetimepicker" id="end_time" value="{{ form_data.end_time }}">
+        </div>
+        <div style="float: left;margin-left: 480px;margin-top: -32px;">
+            <input type="button" class="btn btn-default" id="filter_time" value="筛选时间">
+        </div>
+    </div>
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>订单号</th>
+                <th>创建时间</th>
+                <th>用户名</th>
+                <th>状态</th>
+                <th>备注</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.lab_number }}</td>
+                    <td>{{ item.created_at }}</td>
+                    <td>{{ item.user_name }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{{ item.comments }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+        $("#btnSearch").on("click", function () {
+            lab_number = $("#number").val();
+            if (lab_number == '' || lab_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                location.href = '/oms/received_glasses_list/?lab_number=' + lab_number;
+            }
+        });
+           $("#filter_time").on("click", function () {
+            var start_time = $("#start_time").val();
+            var end_time = $("#end_time").val();
+            location.href = '/oms/received_glasses_list/?lab_number={{ form_data.lab_number }}&start_time=' + start_time + '&end_time=' + end_time;
+        });
+        laydate.render({
+            elem: '#start_time', //指定元素
+            type: 'date'
+        });
+        laydate.render({
+            elem: '#end_time', //指定元素
+            type: 'date'
+        });
+    </script>
+{% endblock %}

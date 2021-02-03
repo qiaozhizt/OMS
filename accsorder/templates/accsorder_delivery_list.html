@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" href="{% static 'layui/css/layui.css' %}"  media="all">
+    <script src="{% static 'layui/layui.js' %}"></script>
+    <style>
+        .span_title{
+            padding-right: 30px;
+        }
+        .stack_a{
+            cursor: pointer;
+            color: #ffffff;
+        }
+        /* 防止下拉框的下拉列表被隐藏---必须设置--- */
+        .layui-table-cell {overflow: visible !important;        }
+        /* 使得下拉框与单元格刚好合适 */
+        td .layui-form-select{
+            margin-top: -10px;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+    .input-top{
+        margin-top: 10px;
+    }
+    td .layui-table-cell{
+        height:auto;
+        overflow:visible;
+        text-overflow:inherit;
+        white-space:normal;
+    }
+    </style>
+{% endblock %}
+{% block h1 %}nRX订单管理 {% if form_data.total %}<span class="label label-info">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}nRX订单出库列表{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                {% include 'accsorder_list_search.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                {% include 'accsorder_list_actions.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">nRX订单出库列表：</h3>
+                </div>
+                <table class="layui-hide" id="stock_in_table" lay-filter="demo" style="overflow-x: hidden;"></table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        laydate.render({
+          elem: '#start_date'
+          ,type: 'datetime' //默认，可不填
+          ,format: 'yyyy-MM-dd HH:mm:ss'
+          ,value: new Date(new Date()- 1000*60*60*24*90)
+        });
+        laydate.render({
+          elem: '#finish_date'
+          ,type: 'datetime' //默认，可不填
+          ,format: 'yyyy-MM-dd HH:mm:ss'
+          ,value: new Date()
+        });
+        layui.use(['table', 'layer', 'element', 'jquery', 'form'], function() {
+            var table = layui.table;
+            var form = layui.form;
+            //第一个实例
+            table.render({
+                elem: '#stock_in_table'
+                ,toolbar: '#toolbarDemo'
+                , height: 'full-10'
+                , url: "{% url 'accs_order_pick_list_data' %}"
+                ,data:[]
+                , where: {flag:'{{ flag }}'}
+                ,done: function(res, curr, count){
+                    console.log(res);
+                    //得到当前页码
+                    console.log(curr);
+                    //得到数据总量
+                    console.log(count);
+                }
+                , cellMinWidth: 100
+                , page: true //开启分页
+                , limit:30
+                , limits:[30,50,70,90,120,10000]
+                , even: true
+                , cols: [[ //表头
+                    {field: 'id', title: 'ID',sort: true,width:80}
+                    , {field: 'accs_order_number', title: 'Accs Order Number',width:160}
+                    , {field: 'sku', title: 'SKU'}
+                    , {field: 'quantity', title: 'Quantity'}
+                    , {field: 'warehouse', title: 'Warehouse'}
+                    , {field: 'base_entity', title: 'Base Entity'}
+                    , {field: 'created_at', title: 'Created Date', width: 170}
+                    , {field: 'user_name', title: 'Username'}
+                    , {field: 'comments', title: 'Comments'}
+                ]]
+            });
+            $("#search_btn").click(function () {
+                var accs_order_number = $("#accs_order_number").val();
+                var start_date = $("#start_date").val();
+                var finish_date = $("#finish_date").val();
+                var frame = $("#frame").val();
+                var order_status = $("#order_status").val();
+                var order_wh = $("#order_wh").val();
+                table.reload('stock_in_table',{
+                    url: "{% url 'accs_order_pick_list_data' %}",
+                    where: {
+                        accs_order_number:accs_order_number,
+                        start_date:start_date,
+                        finish_date:finish_date,
+                        frame:frame,
+                        order_status:order_status,
+                        order_wh: order_wh
+                    },
+                    page:{
+                        curr:1
+                    }
+                })
+            });
+
+        });
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+            if (r!=null) return unescape(r[2]); return null; //返回参数值
+        }
+    </script>
+{% endblock %}

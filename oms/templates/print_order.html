@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>质检报告</title>
+    <script src={% static "js/jquery-2.2.3.min.js" %}></script>
+</head>
+<script>
+    $(document).ready(function() {
+       window.print();
+        $("#print_1").click(function () {
+            window.print()
+        })
+    })
+</script>
+<body>
+<table border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse;font-size: 14px;">
+    <tr><td colspan="7" style="text-align: center"><h3>质检报告（1.01）</h3></td></tr>
+    <tr><td colspan="2"><img src='{{ media_base_url }}{{ data.c128_path }}'/></td></tr>
+    <tr><td width="150">lab_order</td><td colspan="2" width="250">{{ data.lab_number }}</td><td width="70">返工次数</td><td width="100"></td><td width="70">检验日期</td><td width="100">{{data.print_date}}</td></tr>
+    <tr><td>镜框型号</td><td colspan="2">{{ data.frame }}</td><td>镜框尺寸</td><td>{{ data.size }}</td><td>镜框高度</td><td></td></tr>
+    <tr><td>镜框规格</td><td colspan="2"></td><td>涂层</td><td>{{ data.tint_name }}</td><td>染色</td><td>{{ data.coating_name }}</td></tr>
+    <tr><td>镜片名称</td><td colspan="2">{{ data.act_lens_name }}</td>
+    <td>设计</td><td colspan="4">{{ data.pal_design_name }}</td>
+    </tr>
+
+    <tr><td>验光数据</td><td width="150">Sph</td><td>Cyl</td><td>Axis</td><td>瞳距</td><td>ADD</td><td>Prism</td></tr>
+
+    {% if data.is_singgle_pd %}
+             <tr><td>R:</td><td width="150">{{ data.od_sph }}</td><td>{{ data.od_cyl }}</td><td>{{ data.od_axis }}</td><td>{{ data.pd }}</td><td>{{ data.od_add }}</td><td>prism:{{ data.od_prism }}{% if data.od_base != None and data.od_base != "" %}|base:{{ data.od_base }}{% endif %}</td></tr>
+             <tr><td>L:</td><td width="150">{{ data.os_sph }}</td><td>{{ data.os_cyl }}</td><td>{{ data.os_axis }}</td><td><hr></td><td>{{ data.os_add }}</td><td>prism:{{ data.os_prism }}{% if data.os_base != None and data.os_base != "" %}|base:{{ data.os_base }}{% endif %}</td></tr>
+    {% else %}
+              <tr><td>R:</td><td width="150">{{ data.od_sph }}</td><td>{{ data.od_cyl }}</td><td>{{ data.od_axis }}</td><td>{{ data.od_pd }}</td><td>{{ data.od_add }}</td><td>prism:{{ data.od_prism }}{% if data.od_base != None and data.od_base != "" %}|base:{{ data.od_base }}{% endif %}</td></tr>
+              <tr><td>L:</td><td width="150">{{ data.os_sph }}</td><td>{{ data.os_cyl }}</td><td>{{ data.os_axis }}</td><td>{{ data.os_pd }}</td><td>{{ data.os_add }}</td><td>prism:{{ data.os_prism }}{% if data.os_base != None and data.os_base != "" %}|base:{{ data.os_base }}{% endif %}</td></tr>
+    {% endif %}
+
+
+
+
+
+
+    <tr><td>检验项目</td><td>标准要求</td><td colspan="2">实际检测值</td><td>互差数值</td><td colspan="2">检测结果</td></tr>
+    <tr><td rowspan="2">球镜光度误差（D）</td><td rowspan="4">GB10810.1-2005    表一规定</td><td width="100">R:</td><td></td><td></td><td colspan="2"></td></tr>
+    <tr><td>L:</td><td></td><td></td><td colspan="2"></td></tr>
+    <tr><td rowspan="2">柱镜光度误差（D）</td><td>R:</td><td></td><td></td><td colspan="2"></td></tr>
+    <tr><td>L:</td><td></td><td></td><td colspan="2"></td></tr>
+    <tr><td rowspan="2">柱镜轴位偏差（°）</td><td rowspan="2">GB13511-2011      表三规定</td><td>R:</td><td ></td><td></td><td colspan="2"></td></tr>
+    <tr><td>L:</td><td></td><td></td><td colspan="2"></td></tr>
+    <tr><td rowspan="2">光学中心垂直互差（mm）</td><td rowspan="2" colspan="3">GB13511-2011表二规定</td><td rowspan="2"></td><td rowspan="2" colspan="2"></td></tr>
+    <tr></tr>
+    <tr><td rowspan="2">光学中心水平偏   （允）差（mm）</td><td rowspan="2">GB13511-2011表一规定</td><td width="50">光学中心水平距离</td><td colspan="2" rowspan="2"></td><td colspan="2" rowspan="2"></td></tr>
+    <tr></tr>
+    <tr><td rowspan="2">光学中心水平互差（mm）</td><td rowspan="2">小于GB13511-2011表一中光学中心水平允差的二分之一</td><td rowspan="2">单眼瞳距</td><td colspan="2">R:</td><td colspan="2" rowspan="2"></td></tr>
+    <tr><td colspan="2">L:</td></tr>
+    <tr><td>水平棱镜度偏差</td><td rowspan="2">GB13511-2011      表四规定</td><td>R:</td><td colspan="2">L:</td><td rowspan="2" colspan="2"></td></tr>
+    <tr><td>垂直棱镜度偏差</td><td>R:</td><td colspan="2">L:</td></tr>
+    <tr><td rowspan="2">光学中心高度偏心</td><td rowspan="2">光学中心应位于镜圈几何中心上下3mm范围内</td><td>R:</td><td></td><td></td><td rowspan="2" colspan="2"></td></tr>
+    <tr><td>L:</td><td></td><td></td></tr>
+    <tr><td>镜片抗蓝光</td><td colspan="3">两镜片抗蓝光属性</td><td colspan="3">□是    □否   □无要求</td></tr>
+    <tr><td>镜片偏光</td><td colspan="3">两镜片偏光属性</td><td colspan="3">□是    □否   □无要求</td></tr>
+    <tr><td>镜片膜变</td><td colspan="3">两镜片是否具有膜变属性 □变灰    □变茶</td><td colspan="3">□是    □否   □无要求</td></tr>
+    <tr><td>镜片超防水涂层</td><td colspan="3">两镜片表面超防水涂层</td><td colspan="3">□是    □否   □无要求</td></tr>
+    <tr><td>镜片染色</td><td colspan="3">两镜片染色属性</td><td colspan="3">□是    □否   □无要求</td></tr>
+    <tr><td rowspan="2">镜片表面质量</td><td colspan="3">光学中心30mm内不允许有影响力之瑕疵</td><td colspan="3">□是    □否</td></tr>
+    <tr><td colspan="3">表面不允许有桔皮或霉斑</td><td colspan="3">□是    □否</td></tr>
+    <tr><td>镜框表面质量</td><td colspan="3">表面无明显瑕疵，焊接点光滑，无毛刺</td><td colspan="3">□是    □否</td></tr>
+    <tr><td>镜片与镜圈形状要求</td><td colspan="3">基本相似且左右对称，无明显缝隙</td><td colspan="3">□是    □否</td></tr>
+    <tr><td rowspan="2">外观要求</td><td colspan="3">无蹦边、焦损、翻边、涂层脱落及擦伤等</td><td colspan="3">□是    □否</td></tr>
+    <tr><td colspan="3">不允许螺纹滑牙及鼻托零件等缺损</td><td colspan="3">□是    □否   □无要求</td></tr>
+    <tr><td rowspan="4">整形质量</td><td colspan="3">左右镜片应保持相对平整，左右两托叶应对称</td><td colspan="3">□是    □否</td></tr>
+    <tr><td colspan="3">左右两腿外张角80-95度，并左右对称</td><td colspan="3">□是    □否</td></tr>
+    <tr><td colspan="3">两镜腿张开平放或倒状均保持平整，镜架不可扭曲</td><td colspan="3">□是    □否</td></tr>
+    <tr><td colspan="3">左右身腿倾斜度互差≤2.5°</td><td colspan="3">□是    □否</td></tr>
+    <tr><td>正顶焦度镜片边缘厚度要求</td><td colspan="3">正顶焦度镜片配装割边后的厚度不小于1.2mm</td><td colspan="3">□是    □否   □无要求</td></tr>
+    <tr><td rowspan="3">综合判定</td><td colspan="6">□合格          □不合格          （处理 □返工、□报废）</td></tr>
+    <tr><td rowspan="2" colspan="6">质检人员签名：</td></tr>
+
+
+</table>
+<button id = "print_1">打印</button>
+</body>
+</html>
+{#<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>#}

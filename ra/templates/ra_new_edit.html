@@ -1,0 +1,568 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}{{ form_data.model }} {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}{{ form_data.function }}{% endblock %}
+{% block content %}
+    <div class="row">
+        {% include 'ra_error_message.html' %}
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Order Detail</h3>
+                </div>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Order Number</th>
+                        <th>Created At</th>
+                        <th>Customer Name</th>
+                        <th>State</th>
+                        <th>City</th>
+                        <th>Street</th>
+                        <th>Ordered Qty</th>
+                        <th>Subtotal</th>
+                        <th>Shipping</th>
+                        <th>Grand Total</th>
+                        <th>Total Paid</th>
+                        <th>Warranty</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <tr>
+                        <td>
+                            <a href="/oms/pgorder_detail_v3/?number={{ obj.order_number }}" target="_blank">
+                                {{ obj.order_number }}</a></td>
+                        <td>{{ obj.create_at }}</td>
+                        <td>{{ obj.customer_name }}</td>
+                        <td>{{ obj.region }}</td>
+                        <td>{{ obj.city }}</td>
+                        <td>{{ obj.street }}</td>
+                        <td>{{ obj.total_qty_ordered }}</td>
+                        <td>{{ obj.subtotal }}</td>
+                        <td>{{ obj.shipping_and_handling }}</td>
+                        <td>{{ obj.grand_total }}</td>
+                        <td>{{ obj.total_paid }}</td>
+                        <td>{{ obj.warranty }}</td>
+                    </tr>
+
+                    </tbody>
+                </table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Items</h3>
+                </div>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <!--<th><input id="chk_all" type="checkbox"></th>-->
+                        <th>#</th>
+                        <th>Item Id</th>
+                        <th>Frame</th>
+                        <th>Name</th>
+                        <th>Lens</th>
+                        <th>Lens Name</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td><input name="chk_items" class="chk_items" value="{{ item.id }}"
+                                       data_item_id="{{ item.id }}"
+                                       data_frame="{{ item.frame }}" data_quantity="{{ item.quantity }}"
+                                       type="checkbox"></td>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.frame }}</td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.lens_sku }}</td>
+                            <td>{{ item.lens_name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>{{ item.price }}</td>
+                        </tr>
+                        <tr style="display:none">
+                            <td colspan="15"></td>
+                            <td colspan="4">
+                                <div name="actions">
+
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>          <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <!--paginator end-->
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header">
+                    <form role="form" class="form-inline box" id="frm_ra_new" method="POST"
+                          style="padding:20px">
+                        <div class="form-group">
+                            <div class="btn-group" id="ra_type_group" style="float: left;">
+                                <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                                        aria-haspopup="true"
+                                        aria-expanded="false">
+                                    RA Type <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                <li><a id="ra_type_cpn" class="dropdown-item" href="#" data="CPN">{% ifequal 'CPN' req.ra_type %}*{% endifequal %}CPN - Return Coupon</a></li>
+                                <li><a id="ra_type_rfd" class="dropdown-item" href="#" data="RFD">{% ifequal 'RFD' req.ra_type %}*{% endifequal %}RFD - Return Refund</a></li>
+                                <li><a id="ra_type_ins" class="dropdown-item" href="#" data="INS">{% ifequal 'INS' req.ra_type %}*{% endifequal %}INS - Inspection</a></li>
+                                <li><a id="ra_type_dmg" class="dropdown-item" href="#" data="DMG">{% ifequal 'DMG' req.ra_type %}*{% endifequal %}DMG - Damaged</a></li>
+                                <li><a id="ra_type_rfw" class="dropdown-item" href="#" data="RFW">{% ifequal 'RFW' req.ra_type %}*{% endifequal %}RFW - Risk Free Warranty</a></li>
+                                <li><a id="ra_type_rmk" class="dropdown-item" href="#" data="RMK">{% ifequal 'RMK' req.ra_type %}*{% endifequal %}RMK - Internal Remake</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input readonly type="text" name="txt_order_entity" class="form-control hidden"
+                                   id="txt_order_entity" value="{{ obj.id }}"
+                                   placeholder="" style="width:150px;"/>
+                        </div>
+                        <div class="form-group">
+                            <input readonly type="text" name="txt_ra_type_key" class="form-control hidden"
+                                   id="txt_ra_type_key"
+                                   placeholder="RA Type" style="width:150px;"/>
+                        </div>
+                        <div class="form-group">
+                            <input readonly type="text" name="txt_ra_type" class="form-control" id="txt_ra_type"
+                                   placeholder="RA Type" style="width:150px;"/>
+                        </div>
+                        <div class="form-group">
+                            <input readonly type="text" name="txt_order_number" class="form-control"
+                                   id="txt_order_number"
+                                   placeholder="Ticket Number" value="{{ order_number_right }}" style="width:80px;"/>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="txt_ticket_number" class="form-control" id="txt_ticket_number"
+                                   placeholder="Ticket #" style="width:80px;"/>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="text" name="txt_amount" class="form-control" id="txt_amount"
+                                   placeholder="Amount"
+                                   style="width:80px;"/>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="txt_label_id" class="form-control" id="txt_label_id"
+                                   placeholder="Label"
+                                   style="width:300px;"/>
+                        </div>
+                        <button id="btnSubmit" type="submit" class="btn btn-primary">Save</button>
+                    </form>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div id="div_confirm" class="box box-info"
+         style="display: none;padding-left: 10px;padding-top: 10px;padding-right: 10px;padding-bottom: 10px; overflow-x: hidden">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">Order Detail</h3>
+                    </div>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Order Number</th>
+                            <th>Created At</th>
+                            <th>Customer Name</th>
+                            <th>State</th>
+                            <th>Ordered Qty</th>
+                            <th>Total Paid</th>
+                            <th>Warranty</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <tr>
+                            <td>{{ obj.order_number }}</td>
+                            <td>{{ obj.create_at }}</td>
+                            <td>{{ obj.customer_name }}</td>
+                            <td>{{ obj.region }}</td>
+                            <td>{{ obj.total_qty_ordered }}</td>
+                            <td>{{ obj.total_paid }}</td>
+                            <td>{{ obj.warranty }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">RA Detail</h3>
+                    </div>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>RA Type</th>
+                            <th>Ticket Number</th>
+                            <th>Amount</th>
+                            <th>Label ID</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <tr>
+                            <td><span id="spn_ra_type"></span></td>
+                            <td><span id="spn_ticket_number"></span></td>
+                            <td><span id="spn_amount"></span></td>
+                            <td><span id="spn_label_id"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        var m_ra_type = "";
+        var m_ticket_number = "";
+        var m_amount = "";
+        var m_label_id = "";
+        var items = new Array();
+
+        // 获取表单数据
+        function getFormData(form) {
+            let data = form.serialize();
+            data = decodeURI(data);
+            let arr = data.split('&');
+            let item, key, value, newData = {};
+            for (let i = 0; i < arr.length; i++) {
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if (key.indexOf('[]') != -1) {
+                    key = key.replace('[]', '');
+                    if (!newData[key]) {
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                } else {
+                    newData[key] = value;
+                }
+            }
+            return newData;
+        }
+
+        $("#frm_ra_new").submit(function (e) {
+            e.preventDefault();//不执行原来的submit提交
+            $("#receipt_submit").prop("disabled", true);
+            var _self = $(this);
+            var form_data = getFormData(_self);
+            //form_data["sku_select"] = form_data["sku_select"].toUpperCase();//转换字符串为大写
+
+            if (form_data["txt_ra_type"] == "") {
+                layer.msg("Ra Type missed!", {
+                    yes: function () {
+                        $("#ra_type_group").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+
+            if (form_data["txt_ticket_number"] == "") {
+                layer.msg("Ticket Number missed!", {
+                    yes: function () {
+                        $("#txt_ticket_number").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+
+            if (!isRealNum(form_data["txt_ticket_number"])) {
+                layer.msg("Ticket Number must be digits!", {
+                    yes: function () {
+                        $("#txt_ticket_number").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+
+            if (form_data["txt_ticket_number"].length != 5) {
+                layer.msg("Ticket Number must be 5 digits!", {
+                    yes: function () {
+                        $("#txt_ticket_number").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+
+            if (form_data["txt_amount"] == "") {
+                layer.msg("Amount missed!", {
+                    yes: function () {
+                        $("#txt_amount").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+
+            if (!isRealNum(form_data["txt_amount"])) {
+                layer.msg("Amount must be digits!", {
+                    yes: function () {
+                        $("#txt_amount").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+
+            if (items.length == 0) {
+                layer.msg("Item Missed!", {
+                    yes: function () {
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+
+            m_amount = form_data["txt_amount"];
+            $('#spn_amount').html(m_amount);
+
+            layer.open({
+                type: 1,
+                title: "Confirm",
+                closeBtn: 1,
+                area: "998px",
+                // skin:'layui-layer-lan',
+                shadeClose: false,
+                shade: 0.7,
+                shift: 1,
+                content: $('#div_confirm'),
+                btn: ['Submit', 'Close'],
+                success: function () {
+                    $(':focus').blur();
+                },
+                cancel: function () {
+                    layer.msg('Nothing to do, EXIT!', {time: 5000});
+                },
+                yes: function () {
+                    submitForm(form_data);
+                }
+            });
+        });
+
+        function submitForm(form_data) {
+            data = JSON.stringify(form_data);
+            $.ajax({
+                url: "{% url 'ra_edit' %}",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data),
+                    "items": JSON.stringify(items),
+                },
+                success: function (arg) {
+                    var res = JSON.parse(arg);
+                    if (res.code != 0) {
+                        layer.msg(res.message);
+                    } else {
+                        layer.msg("Successful!");
+                        layer.open({
+                            type: 1,
+                            title: "Confirm",
+                            closeBtn: 1,
+                            // area: "998px",
+                            // skin:'layui-layer-lan',
+                            shadeClose: false,
+                            shade: 0.7,
+                            // shift: 1,
+                            content: " Successful!",
+                            btn: ['Close'],
+                            success: function () {
+                                $(':focus').blur();
+                            },
+                            cancel: function () {
+                                layer.msg('Nothing to do, EXIT!', {time: 5000});
+                            },
+                            yes: function () {
+                                layer.msg("Redirect in progress within 2 seconds ....");
+                                setTimeout(function () {  //使用  setTimeout（）方法设定定时2000毫秒
+                                    window.location.href = "{% url 'ra_list' %}";
+                                }, 2000);
+                                // window.open("about:blank","_self").close();
+                            }
+                        });
+
+                    }
+                    $("#receipt_submit").prop("disabled", false);
+                },
+                error: function () {
+                    alert("error occured!");
+                }
+            });
+        }
+
+        function RaTypeChoiced(obj) {
+            key = obj.attr('data');
+            value = "";
+            switch (key) {
+                case "CPN":
+                    value = "Return Coupon";
+                    break;
+                case "RFD":
+                    value = "Return Refund";
+                    break;
+                case "INS":
+                    value = "Inspection";
+                    break;
+                case "DMG":
+                    value = "Damaged";
+                    break;
+                case "RFW":
+                    value = "Risk Free Warranty";
+                    break;
+                case "RMK":
+                    value = "Internal Remake";
+                    break;
+                default:
+                    value = "Please Select One.";
+            }
+
+            //$('#ra_type').value=value;
+            document.getElementById("txt_ra_type_key").value = key;
+            document.getElementById("txt_ra_type").value = value;
+            GenerateLabelId();
+        }
+
+        $("#ra_type_cpn").on("click", function () {
+                obj = $("#ra_type_cpn");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_rfd").on("click", function () {
+                obj = $("#ra_type_rfd");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_ins").on("click", function () {
+                obj = $("#ra_type_ins");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_dmg").on("click", function () {
+                obj = $("#ra_type_dmg");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_rfw").on("click", function () {
+                obj = $("#ra_type_rfw");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_rmk").on("click", function () {
+                obj = $("#ra_type_rmk");
+                RaTypeChoiced(obj);
+            }
+        );
+
+        $("#txt_ticket_number").change(function () {
+            GenerateLabelId();
+        });
+
+        function GenerateLabelId() {
+            str_pre = "Payne Glasses Return";
+            ra_type_key = document.getElementById("txt_ra_type_key").value;
+            ra_type = document.getElementById("txt_ra_type").value;
+            order_number = document.getElementById("txt_order_number").value;
+            ticket_number = document.getElementById("txt_ticket_number").value;
+            label_id = str_pre + "(RA-" + order_number + "-" + ra_type_key + "-" + ticket_number + ")";
+
+            m_ra_type = ra_type_key;
+            m_ticket_number = ticket_number;
+            m_label_id = label_id;
+
+            $('#spn_ra_type').html(ra_type);
+            $('#spn_ticket_number').html(ticket_number);
+            $('#spn_label_id').html(label_id);
+
+            if (ra_type != "" && ticket_number != "") {
+                document.getElementById("txt_label_id").value = label_id;
+            } else {
+                document.getElementById("txt_label_id").value = "";
+            }
+        }
+
+        function isRealNum(val) {
+            // isNaN()函数 把空串 空格 以及NUll 按照0来处理 所以先去除
+            if (val === "" || val == null) {
+                return false;
+            }
+            if (!isNaN(val)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        $(".chk_items").click(function () {
+            var item_id = $(this).attr("data_item_id");
+            if ($(this).is(':checked')) {
+                items.push(item_id);
+            } else {
+                var index = 0;
+                for (item in items) {
+                    console.log(items[index]);
+                    if (items[index] == item_id) {
+                        items.splice(index, 1);
+                        break;
+                    }
+                    index += 1;
+                }
+            }
+            console.log(items);
+        });
+    </script>
+{% endblock %}

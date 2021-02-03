@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}{{ form_data.model }} {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}{{ form_data.function }}{% endblock %}
+{% block content %}
+    <div class="row">
+        {% include 'ra_error_message.html' %}
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header">
+                    <form role="form" class="form-inline box" id="frm_pg_order_search" method="GET"
+                          style="padding:20px">
+                        <div class="form-group">
+                            <input type="text" name="order_number" class="form-control" id="order_number"
+                                   value="{{ req.order_number }}"
+                                   placeholder="Order Number"/>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="customer_name" class="form-control" id="customer_name"
+                                   value="{{ req.customer_name }}"
+                                   placeholder="Customer Name"/>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="email" class="form-control" id="email"
+                                   value="{{ req.email }}"
+                                   placeholder="Email"/>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="frame" class="form-control" id="frame"
+                                   value="{{ req.frame }}"
+                                   placeholder="Frame SKU"
+
+                                   style="width:120px;"/>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="state" class="form-control" id="state"
+                                   value="{{ req.state }}"
+                                   placeholder="State"
+                                   style="width:100px;"/>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="city" class="form-control" id="city"
+                                   value="{{ req.city }}"
+                                   placeholder="City"
+                                   style="width:100px;"/>
+                        </div>
+                        <div class="form-group hidden">
+                            <input type="text" name="street" class="form-control" id="street" placeholder="Street"
+                                   value="{{ req.street }}"
+                                   style="width:300px;"/>
+                        </div>
+                        <button id="btnSearch" type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Order List</h3>
+                </div>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Order Number</th>
+                        <th>Created At</th>
+                        <th>Customer Name</th>
+                        <th>State</th>
+                        <th>City</th>
+                        <th>Email</th>
+                        <th>Ordered Qty</th>
+                        <th>Subtotal</th>
+                        <th>Shipping</th>
+                        <th>Grand Total</th>
+                        <th>Total Paid</th>
+                        <th>Warranty</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in order_items %}
+                        <tr>
+                            <td>
+                                <a href="/ra/edit/?order_entity={{ item.id }}" target="_blank"> {{ item.id }}</a>
+                            </td>
+                            <td>
+                                <a href="/ra/edit/?order_entity={{ item.id }}"
+                                   >{{ item.order_number }}</a>
+                            </td>
+                            <td>
+                                {{ item.created_at }}
+                            </td>
+                            <td>
+                                {{ item.customer_name }}
+                            </td>
+                            <td>
+                                {{ item.state }}
+                            </td>
+                            <td>
+                                {{ item.city }}
+                            </td>
+                            <td>
+                                {{ item.email }}
+                            </td>
+                            <td>
+                                {{ item.total_qty_ordered }}
+                            </td>
+                            <td>
+                                {{ item.subtotal }}
+                            </td>
+                            <td>
+                                {{ item.shipping_and_handling }}
+                            </td>
+                            <td>
+                                {{ item.grand_total }}
+                            </td>
+                            <td>
+                                {{ item.total_paid }}
+                            </td>
+                            <td>
+                                {{ item.warranty }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 获取表单数据
+        function getFormData(form) {
+            let data = form.serialize();
+            data = decodeURI(data);
+            let arr = data.split('&');
+            let item, key, value, newData = {};
+            for (let i = 0; i < arr.length; i++) {
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if (key.indexOf('[]') != -1) {
+                    key = key.replace('[]', '');
+                    if (!newData[key]) {
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                } else {
+                    newData[key] = value;
+                }
+            }
+            return newData;
+        }
+
+        $("#frm_ra_new").submit(function (e) {
+            e.preventDefault();//不执行原来的submit提交
+            $("#receipt_submit").prop("disabled", true);
+            var _self = $(this);
+            var form_data = getFormData(_self);
+            //form_data["sku_select"] = form_data["sku_select"].toUpperCase();//转换字符串为大写
+
+            if (form_data["order_number"] == ""
+                && form_data["customer_name"] == ""
+                && form_data["frame"] == ""
+                && form_data["state"] == ""
+                && form_data["city"] == ""
+                && form_data["email"] == ""
+            ) {
+                layer.alert("请至少输入一个条件!", {
+                    yes: function () {
+                        $("#order_number").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                return false;
+            }
+
+            $.ajax({
+                url: "{% url 'ra_new' %}",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                success: function (res) {
+                    if (res.code == -1) {
+                        layer.msg(res.error);
+                    } else {
+                        $("#list_body").prepend(res);
+                        layer.msg("添加成功");
+                        $("#sku").val("");
+                        $("#quantity").val("1");
+                        $("#skpriceu").val("");
+                        $("#comments").val("");
+                    }
+                    $("#receipt_submit").prop("disabled", false);
+                }
+            });
+        });
+    </script>
+{% endblock %}

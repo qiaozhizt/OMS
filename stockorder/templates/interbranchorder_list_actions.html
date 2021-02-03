@@ -1,0 +1,19 @@
+<div class="col-xs-12">
+    <script type="text/html" id="toolbarDemo">
+        {% if flag == 'list' %}
+            <button id="btn_Cancel" type="button" class="btn btn-primary" lay-event="new">新建</button>
+            <button id="btn_Close" type="button" class="btn btn-primary" lay-event="print">打印</button>
+            <button id="btn_Confirm" type="button" class="btn btn-primary" lay-event="cancel">取消</button>
+            <button id="btn_Create_lab_order" type="button" class="btn btn-primary" lay-event="fulfill">调出</button>
+{#            <button id="btn_Create_lab_order" type="button" class="btn btn-primary" lay-event="receive">Receive</button>#}
+        {% elif flag == 'print' %}
+            <button id="btn_Confirm" type="button" class="btn btn-primary" lay-event="print">打印</button>
+        {% elif flag == 'cancel' %}
+            <button id="btn_Cancel" type="button" class="btn btn-primary" lay-event="cancel">取消</button>
+        {% elif flag == 'fulfill' %}
+            <button id="btn_Close" type="button" class="btn btn-primary" lay-event="fulfill">调出</button>
+{#        {% elif flag == 'receive' %}#}
+{#            <button id="btn_Close" type="button" class="btn btn-primary" lay-event="receive">Receive</button>#}
+        {% endif %}
+    </script>
+</div>

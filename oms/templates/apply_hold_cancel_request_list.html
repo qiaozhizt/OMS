@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .reportList {
+            overflow: auto;
+        }
+
+        #tabs {
+            overflow: auto;
+        {#            display: block;#}
+        }
+
+        .trDetail {
+            display: none;
+        }
+
+        .trDetail div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .trDetail span {
+            margin-right: 10px;
+        }
+
+        .divDetail {
+            display: inline-block;
+        }
+
+        thead th {
+            text-align: center;
+        }
+
+        tbody td {
+            text-align: center;
+        }
+
+        {#     @media screen and (max-width: 800px) {#}
+        {##}
+        {#            #tabs{#}
+        {#                display: none;#}
+        {#            }#}
+        {#        }#}
+    </style>
+{% endblock %}
+{% block h1 %}Lab Orders{% endblock %}
+{% block small %}申请暂停&取消订单清单{% endblock %}
+{% block content %}
+    <div>
+        <div style="float: left;">{% include 'search.html' %}</div>
+        <!--Search-->
+
+        <div class="btn-group" style="float: left;margin-left: 10px;">
+            <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+                申请类型 <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href={{ requestUrl }}?action_filter=all>
+                    {% ifequal form_data.action_filter 'all' %}
+                        *{% endifequal %}全部</a></li>
+                <li>&nbsp</li>
+                <li><a href={{ requestUrl }}?action_filter=R2HOLD>
+                    {% ifequal form_data.action_filter 'R2HOLD' %}
+                        *{% endifequal %}申请暂停</a></li>
+                <li><a href={{ requestUrl }}?action_filter=R2CANCEL>
+                    {% ifequal form_data.action_filter 'R2CANCEL' %}*{% endifequal %}申请取消</a></li>
+            </ul>
+        </div>
+
+
+        <div class="c1">
+            <table class="table table-striped" id="tab">
+                <thead>
+                <tr>
+                    <th>
+                        工厂单号
+                    </th>
+                    <th>
+                        PG单号
+                    </th>
+                    <th>
+                        创建时间
+                    </th>
+                    <th>
+                        更新时间
+                    </th>
+                    <th>
+                        当前状态
+                    </th>
+                    <th>
+                        处理的状态
+                    </th>
+
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in list %}
+                    <tr>
+                        <td>
+                            {{ item.lab_number }}
+                        </td>
+                        <td>
+                            {{ item.order_number }}
+                        </td>
+
+                        <td>
+                            {{ item.create_at }}
+                        </td>
+                        <td>
+                            {{ item.update_at }}
+                        </td>
+
+                        {% if item.status == 'R2HOLD' %}
+                        <td>申请暂停</td>
+                        {% else %}
+                            {% if item.status == 'R2CANCEL' %}
+                            <td>申请取消</td>
+                            {% endif %}
+                        {% endif %}
+
+
+                        {% if item.status == 'R2HOLD' %}
+                        <td>暂停</td>
+                        {% else %}
+                            {% if item.status == 'R2CANCEL' %}
+                            <td>取消</td>
+                            {% endif %}
+                        {% endif %}
+
+                        <td>
+                            {% if perms.oms.HOLD_CANCEL_REQUEST_HANDLE %}
+                                <input type="button" class="btn-primary handle_application" value="处理" lab_number="{{ item.lab_number }}" status_now="{{ item.status }}">
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="callBackPager" style="text-align: center;width: 100%">
+            {% include 'page_number.html' %}
+        </div>
+    </div>
+<!--    <div id="handle_div" style="display: none;" class="text-center">-->
+<!--        <p>答复内容</p>-->
+<!--        <textarea rows="6" cols="40" name="message" id="reply_text"></textarea>-->
+<!--    </div>-->
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+         <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">处理申请</h4>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_lab_number" class="col-sm-4 control-label">订单号</label>
+                        <div class="col-sm-8">
+                            <input name="e_lab_number" type="text" class="form-control" id="e_lab_number" readonly="readonly"/>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_is_handle" class="col-sm-4 control-label">是否处理</label>
+                        <div class="col-sm-8">
+                            <input name="e_is_handle" type="text" class="form-control" id="e_is_handle" value="0" readonly="readonly"/>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_status_now" class="col-sm-4 control-label">当前状态</label>
+                        <div class="col-sm-8">
+                            <input name="e_status_now" type="text" class="form-control" id="e_status_now" value="" readonly="readonly">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_status_future" class="col-sm-4 control-label">处理的状态</label>
+                        <div class="col-sm-8">
+                            <input name="e_status_future" type="text" class="form-control" id="e_status_future" value="" readonly="readonly">
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_reason" class="col-sm-4 control-label">处理理由</label>
+                        <div class="col-sm-8">
+                            <textarea maxlength="128" class="form-control" id="e_reason" placeholder="请输入理由"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="save_btn">确认</button>
+                </div>
+            </div><!-- /.modal -->
+        </div>
+    </div>
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+
+        //按照单号搜索
+        $("#btnSearch").on("click", function () {
+            var order_number = $("#number").val();
+            var url = "/oms/apply_hold_cancel_request/";
+
+            if (order_number == "") {
+                layer.msg('请输入订单号', {time: 3000, icon: 7});
+            } else {
+                url = url + "?lab_number=" + order_number
+                location.href = url;
+            }
+        })
+
+        // 处理按钮
+        $(".handle_application").click(function () {
+
+            var lab_number = $(this).attr("lab_number")
+            var status = $(this).attr("status_now")
+
+            var url = "{% url 'edit_apply_hold_cancel_request' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "lab_number": lab_number,
+                    "status":status,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#e_lab_number").val(arg.data.lab_number);
+                        $("#e_is_handle").val(arg.data.is_handle);
+                        $("#e_status_now").val(arg.data.status);
+                        $("#e_status_future").val(arg.data.status_future);
+                        $("#myModal").modal('show');
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+
+
+
+         $("#save_btn").click(function () {
+
+            var lab_number = $("#e_lab_number").val();
+            var is_handle = $("#e_is_handle").val();
+            var status_now = $("#e_status_now").val();
+            var status_future = $("#e_status_future").val();
+            var reason = $("#e_reason").val();
+
+            var url = "{% url 'apply_hold_cancel_request' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "lab_number": lab_number,
+                    "is_handle": is_handle,
+                    "status_now":status_now,
+                    "status_future":status_future,
+                    "reason":reason,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#myModal").modal('hide');
+                        layer.msg(arg.msg, {time: 3000, icon: 6});
+                        location.reload();
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+
+
+
+
+    </script>
+{% endblock %}

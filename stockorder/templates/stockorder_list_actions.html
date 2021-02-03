@@ -1,0 +1,18 @@
+<div class="col-xs-12">
+    <script type="text/html" id="toolbarDemo">
+        {% if flag == 'list' %}
+            <button id="btn_Cancel" type="button" class="btn btn-primary" lay-event="cancel">STKO 取消</button>
+            <button id="btn_Close" type="button" class="btn btn-primary" lay-event="close">STKO 关闭</button>
+            <button id="btn_Confirm" type="button" class="btn btn-primary" lay-event="confirm">STKO 确认</button>
+            <button id="btn_Create_lab_order" type="button" class="btn btn-primary" lay-event="create">生成Lab Order</button>
+        {% elif flag == 'confirm' %}
+            <button id="btn_Confirm" type="button" class="btn btn-primary" lay-event="confirm">STKO 确认</button>
+        {% elif flag == 'cancel' %}
+            <button id="btn_Cancel" type="button" class="btn btn-primary" lay-event="cancel">STKO 取消</button>
+        {% elif flag == 'close' %}
+            <button id="btn_Close" type="button" class="btn btn-primary" lay-event="close">STKO 关闭</button>
+        {% elif flag == 'create' %}
+            <button id="btn_Create_lab_order" type="button" class="btn btn-primary" lay-event="create">生成Lab Order</button>
+        {% endif %}
+    </script>
+</div>

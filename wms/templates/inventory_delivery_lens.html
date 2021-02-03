@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}WMS {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}出库-镜片{% endblock %}
+{% block content %}
+
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <form class="form-horizontal box box-default" role="form" id="inventory_form" method="POST">
+                {% csrf_token %}
+                <h4 class="box-header">&nbsp;&nbsp;输入产品信息</h4>
+                <div class="form-group">
+                    <label for="doc_number" class="col-sm-2 control-label">单号</label>
+                    <div class="col-sm-4">
+                        <input name="doc_number" type="text" class="form-control" id="doc_number" value="{{ time_now }}"
+                               readonly="readonly"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="doc_type" class="col-sm-2 control-label">出库类型</label>
+                    <div class="col-sm-4">
+                        <select name="doc_type" id="doc_type" class="form-control">
+                            {% for key, value in idlc_dict.items %}
+                                <option value="{{ key }}" class="doc_type_select"
+                                        {% ifequal key parameter_list.doc_type_key %}selected="selected"{% endifequal %}>{{ value }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="wh_number" class="col-sm-2 control-label">仓库</label>
+                    <div class="col-sm-4">
+                        <select name="wh_number" id="wh_number" class="form-control">
+                            {% for wh in all_wh %}
+                                {% if wh.is_enabled == 1 and wh.used_to == 'LENS' %}
+                                    <option value="{{ wh.code }}"
+                                        {% ifequal wh.code parameter_list.wh_code  %}selected="selected"{% endifequal %}>
+                                    {{ wh.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sku_select" class="col-sm-2 control-label">镜片</label>
+                    <div class="col-sm-4">
+                        <select name="sku_select" id="sku_select" class="form-control">
+                            <option class="parameter" value="">镜片</option>
+                            {% for bsl in sku_list %}
+                                <option class="parameter" value="{{ bsl.sku }}"
+                                        {% ifequal parameter_list.sku bsl.sku %}
+                                        selected="selected"
+                                        {% endifequal %}
+                                >{{ bsl.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sph_select" class="col-sm-2 control-label">参数</label>
+                    <div class="col-sm-2">
+                        <select name="sph_select" id="sph_select" class="form-control">
+                            <option style="display: none" selected="" value="">SPH</option>
+                            {% for bsl in list_from.sph_list %}
+                                <option class="parameter" value="{{ bsl.sph }}"
+                                        {% ifequal parameter_list.sph bsl.sph %}
+                                        selected="selected"
+                                        {% endifequal %}
+                                >{{ bsl.sph }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-2">
+                        <select name="cyl_select" id="cyl_select" class="form-control">
+                            <option style="display: none" selected="selected" value="">CYL</option>
+                            {% for bsl in list_from.cyl_list %}
+                                <option class="parameter" value="{{ bsl.cyl }}"
+                                        {% ifequal parameter_list.cyl bsl.cyl %}
+                                        selected="selected"
+                                        {% endifequal %}
+                                >{{ bsl.cyl }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <!-- add 默认为0 -->
+                    <div class="col-sm-2" style="display: none">
+                        <select name="add_select" id="add_select" class="form-control">
+                            <option style="display: none" selected="selected" value="0">ADD</option>
+                            {% for bsl in list_from.add_list %}
+                                <option class="parameter" value="{{ bsl.add }}"
+                                        {% ifequal parameter_list.add bsl.add %}
+                                        selected="selected"
+                                        {% endifequal %}
+                                >{{ bsl.add }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="lab_number_div" >
+                    <label for="lab_number_select" class="col-sm-2 control-label" >手动输入工厂单号</label>
+                    <div class="col-sm-4">
+                        <input name="lab_number_select" type="text" class="form-control" id="lab_number_select" value="" placeholder="订单报损出库必填"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="quantity" class="col-sm-2 control-label">数量</label>
+                    <div class="col-sm-4">
+                        <input name="quantity" type="number" class="form-control" id="quantity" placeholder="产品数量"
+                               value="1"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="price" class="col-sm-2 control-label">价格</label>
+                    <div class="col-sm-4">
+                        <input name="price" type="number" class="form-control" id="price" placeholder="产品单价" value="0"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="comments" class="col-sm-2 control-label">备注</label>
+                    <div class="col-sm-4">
+                        <textarea name="comments" maxlength="128" class="form-control" id="comments" placeholder="请输入备注"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-4">
+                        <button id="receipt_submit" type="submit" class="btn btn-default" style="width:50%">确认出库
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <table class="table table-hover box box-default">
+                <thead>
+                <tr>
+                    <th style="padding-left:20px">编号</th>
+                    <th>名称</th>
+                    <th>SPH</th>
+                    <th>CYL</th>
+                    <th>数量</th>
+                    <th>仓库</th>
+                    <th>创建时间</th>
+                    <th>出库类型</th>
+                    <th>用户</th>
+                    <th>单号</th>
+                    <th>备注</th>
+                </tr>
+                </thead>
+                <tbody id="list_body">
+                {% for invr in list %}
+                    <tr>
+                        <td style="padding-left:20px">{{ invr.doc_number }}</td>
+                        <td>{{ invr.name }}</td>
+                        <td>{{ invr.sph }}</td>
+                        <td>{{ invr.cyl }}</td>
+                        <td>{{ invr.quantity }}</td>
+                        <td>{{ invr.warehouse.name }}</td>
+                        <td>{{ invr.created_at }}</td>
+                        <td>{{ invr.get_doc_type_display }}</td>
+                        <td>{{ invr.user_name }}</td>
+                        <td>{{ invr.lab_number }}</td>
+                        <td>{{ invr.comments }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 获取表单数据
+        function getFormData(form) {
+            let data = form.serialize();
+            data = decodeURI(data);
+            let arr = data.split('&');
+            let item, key, value, newData = {};
+            for (let i = 0; i < arr.length; i++) {
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if (key.indexOf('[]') != -1) {
+                    key = key.replace('[]', '');
+                    if (!newData[key]) {
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                } else {
+                    newData[key] = value;
+                }
+            }
+            return newData;
+        }
+
+        $("#inventory_form").submit(function (e) {
+            e.preventDefault();//不执行原来的submit提交
+            $("#receipt_submit").prop("disabled", true);
+            var _self = $(this);
+            var form_data = getFormData(_self);
+            //form_data["sku_select"] = form_data["sku_select"].toUpperCase();//转换字符串为大写
+            if (form_data["quantity"] == ""||form_data["quantity"] == '0') {
+                layer.alert("请输入数量", {
+                    yes: function () {
+                        $("#quantity").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+            if (form_data["price"] == "") {
+                layer.alert("请输入商品价格", {
+                    yes: function () {
+                        $("#price").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+            //检查参数是否选择
+            if (form_data["cyl_select"] == "") {
+                layer.alert("请选择完整的镜片参数", {
+                    yes: function () {
+                        $("#price").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+
+            //订单退货出库，必填备注
+            if (form_data["doc_type"] == "REFUNDS_OUT" && form_data["comments"] == "") {
+                layer.alert("请输入退货原因", {
+                    yes: function () {
+                        $("#price").focus().select();
+                        layer.closeAll()
+                    }
+                });
+                $("#receipt_submit").prop("disabled", false);
+                return false;
+            }
+
+            $.ajax({
+                url: "/wms/inventory_delivery_lens_submit/",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                success: function (res) {
+                    if (res.code == -1) {
+                        layer.msg(res.error);
+                    } else {
+                        $("#list_body").prepend(res);
+                        layer.msg("添加成功");
+                        $("#sku").val("");
+                        $("#quantity").val("1");
+                        $("#skpriceu").val("");
+                        $("#comments").val("");
+                    }
+                    $("#receipt_submit").prop("disabled", false);
+                }
+            });
+
+        });
+        //切换镜片
+        $("#sku_select").change(function () {
+            var sku = $(this).val();
+            var url = "{% url 'get_product_lens_sph' %}";
+            if(sku == ''){
+                alert('请选择镜片')
+                return
+            }
+            $.ajax({
+                url: url,
+                type: "GET",
+                data: {
+                    'sku': sku
+                },
+                dataType: 'json',
+                success: function (arg) {
+                    if (arg.code == 0) {
+                        $("#sph_select").empty();
+                        var html = '<option selected="" value="">SPH</option>';
+                        for (i=0;i<arg.data.length;i++){
+                            html = html + '<option class="parameter" value="'+arg.data[i]+'" >'+arg.data[i]+'</option>'
+                        }
+                        $("#sph_select").append(html);
+                    }
+                    else {
+                        alert(arg.message)
+                    }
+                }
+            })
+        });
+        //切换 cyl
+        $("#sph_select").change(function () {
+            var sku = $("#sku_select").val();
+            var sph = $(this).val();
+            var url = "{% url 'get_product_lens_cyl' %}";
+            if(sku == ''){
+                alert('请选择SKU')
+                return
+            }
+
+            if(sph == ''){
+                alert('请选择SPH')
+                return
+            }
+
+            $.ajax({
+                url: url,
+                type: "GET",
+                data: {
+                    'sku': sku,
+                    'sph': sph
+                },
+                dataType: 'json',
+                success: function (arg) {
+                    if (arg.code == 0) {
+                        $("#cyl_select").empty();
+                        var html = '<option selected="" value="">CYL</option>';
+                        for (i=0;i<arg.data.length;i++){
+                            html = html + '<option class="parameter" value="'+arg.data[i]+'" >'+arg.data[i]+'</option>'
+                        }
+                        $("#cyl_select").append(html);
+                    }
+                    else {
+                        alert(arg.message)
+                    }
+                }
+            })
+        });
+    </script>
+{% endblock %}

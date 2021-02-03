@@ -1,0 +1,54 @@
+<div id="div_confirm" class="box box-info"
+     style="display: none;padding-left: 10px;padding-top: 10px;padding-right: 10px;padding-bottom: 10px; overflow-x: hidden">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">RA Detail</h3>
+                </div>
+                <div id="div_content" class="box-body">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Order Number</th>
+                            <th>Customer</th>
+                            <th>Quantity</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Label ID</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="div_content_tr">
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="box-body">
+                    <div id="div_location">
+                        Warehouse Location:<input type="text" id="txt_location" placeholder="Location" value="staging"
+                                        style="width:100%;margin-bottom: 5px;"></input>
+                    </div>
+                    <div id="div_email">
+                        Email To:<input type="text" id="txt_email" placeholder="" value="ychen@payneglasses.com"
+                                        style="width:100%;margin-bottom: 5px;"></input>
+                    </div>
+                    <div id="div_tracking_code">
+                        Tracking Code:<input type="text" id="txt_tracking_code" placeholder="Tracking Code"
+                                             style="width:100%;margin-bottom: 5px;"></input>
+                    </div>
+                    <div id="div_transaction_id">
+                        Transaction Id:<input type="text" id="txt_transaction_id" placeholder="Transaction Id"
+                                             style="width:100%;margin-bottom: 5px;"></input>
+                    </div>
+                    <textarea id="txt_comments" placeholder="Commments" style="height:100px; width:100%;"></textarea>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+</div>

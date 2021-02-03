@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Inventory{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}镜片出库{% endblock %}
+{% block content %}
+    <!-- Content Wrapper. Contains page content -->
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div id="div_tip" class="callout callout-default" style="display: none;">
+            <h4>Tips!</h4>
+            <p>This is only beta version.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">Actions</h3>
+                    </div>
+                    <div class="box-body">
+                        <div style="float: left;">{% include 'search.html' %}</div>
+
+                        <div class="cl">
+                            <div style="float: left;margin-right: 0px;display:none">
+                                <button id="backPrev" type="button" class="btn btn-default btn active" role="button"
+                                        onClick="javascript :history.back(-1);">Back
+                                </button>
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.wms.DELIVERY_FRAME %}
+
+                                    <div style="float: left;margin-left: 5px;">
+                                        <button id="btn_delivery"
+                                                order_number="{{ form_data.laborder.lab_number }}"
+                                                type="button"
+                                                class="btn btn-default">确认出库
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                             {# 暂时写死  右眼#}
+                            <!-- 2019.10.05 暂停使用直径参数，改后台判断光型
+                            <span>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp右眼:</span>
+                            <div class="btn-group" style="margin-left:10px;">
+                                <button id="od_diameter_btn" class="btn btn-default"
+                                        od_diameter="">直径
+                                </button>
+                                <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span
+                                        class="caret"></span></button>
+                                <ul class="dropdown-menu" id="od_diameter_ul">
+                                    <li>
+                                        <a class="od_diameter_li" href="javascript:void(0);" od_diameter="50">50</a>
+                                    </li>
+                                    <li>
+                                        <a class="od_diameter_li" href="javascript:void(0);" od_diameter="55">55</a>
+                                    </li>
+                                    <li>
+                                        <a class="od_diameter_li" href="javascript:void(0);" od_diameter="60">60</a>
+                                    </li>
+                                    <li>
+                                        <a class="od_diameter_li" href="javascript:void(0);" od_diameter="65">65</a>
+                                    </li>
+                                    <li>
+                                        <a class="od_diameter_li" href="javascript:void(0);" od_diameter="70">70</a>
+                                    </li>
+                                    <li>
+                                        <a class="od_diameter_li" href="javascript:void(0);" od_diameter="75">75</a>
+                                    </li>
+                                    <li>
+                                        <a class="od_diameter_li" href="javascript:void(0);" od_diameter="80">80</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            {# 左眼 #}
+                            <span>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp左眼:</span>
+                            <div class="btn-group" style="margin-left:10px;">
+                                <button id="os_diameter_btn" class="btn btn-default"
+                                        os_diameter="">直径
+                                </button>
+                                <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span
+                                        class="caret"></span></button>
+                                <ul class="dropdown-menu" id="os_diameter_ul">
+                                    <li>
+                                        <a class="os_diameter_li" href="javascript:void(0);" os_diameter="50">50</a>
+                                    </li>
+                                    <li>
+                                        <a class="os_diameter_li" href="javascript:void(0);" os_diameter="55">55</a>
+                                    </li>
+                                    <li>
+                                        <a class="os_diameter_li" href="javascript:void(0);" os_diameter="60">60</a>
+                                    </li>
+                                    <li>
+                                        <a class="os_diameter_li" href="javascript:void(0);" os_diameter="65">65</a>
+                                    </li>
+                                    <li>
+                                        <a class="os_diameter_li" href="javascript:void(0);" os_diameter="70">70</a>
+                                    </li>
+                                    <li>
+                                        <a class="os_diameter_li" href="javascript:void(0);" os_diameter="75">75</a>
+                                    </li>
+                                    <li>
+                                        <a class="os_diameter_li" href="javascript:void(0);" os_diameter="80">80</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            -->
+                            <div class="btn-group" style="margin-left:10px;">
+                                <button id="wh_btn" class="btn btn-default"
+                                        data-warehouse="{{ form_data.def_wh_code }}">{{ form_data.def_wh_name }}</button>
+                                <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span
+                                        class="caret"></span></button>
+                                <ul class="dropdown-menu" id="wh_ul">
+                                    {% for wh in wh_all %}
+                                        {% if wh.is_enabled == 1 and wh.used_to == 'LENS' %}
+                                            <li>
+                                                <a class="wh_li" href="javascript:void(0);"
+                                                   data-warehouse="{{ wh.code }}">{{ wh.name }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="btn-group" style="margin-left:5px;">
+                                <button class="btn btn-default">自动出库</button>
+                                <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span
+                                        class="caret"></span></button>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">自动出库</a></li>
+                                </ul>
+                            </div>
+                            {# 暂时写死 #}
+
+                        </div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+
+        <div id="delivery_pspf">
+            {% include 'delivery_detail_part.html' %}
+        </div>
+
+    </section>
+    <!-- /.content -->
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        function delivery_post(url, is_search, is_force) {
+            var btn_delivery = $("#btn_delivery");
+            var lab_number = $("#number").val();
+            if (lab_number == '' || lab_number == null ) {
+                lab_number = $("#lbo_num_td").attr("lab_num_td");
+            }
+            if (lab_number == '' || lab_number == null) {
+                layer.msg('Please enter a order number', {icon: 7});
+            } else {
+                if (!is_search) {
+                    btn_delivery.attr("disabled", 'disabled');
+                }
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        'lab_nubmer': lab_number,
+                        'is_force': is_force,
+                        'def_wh_code':
+                            $("#wh_btn").attr("data-warehouse"),
+                        //'od_diameter':
+                        //    $("#od_diameter_btn").attr("od_diameter"),
+                        //'os_diameter':
+                        //    $("#os_diameter_btn").attr("os_diameter"),
+                    },
+                    success: function (res) {
+                        if (!is_search) {
+                            btn_delivery.removeAttr("disabled");
+                            $("#number").val('');
+                            $("#number").focus();
+                        }
+                        layer.close(index);
+                        if (res.code == '-1') {
+                            layer.msg(res.message, {
+                                icon: 4,
+                                shadeClose: true,
+                                time: false,
+                                shade: 0.7
+                            });
+                        } else if (res.code == '-200') {
+                            var chose = confirm("该订单已出库，是否强制出库");
+                            if (chose) {
+                                delivery_post("{% url 'wms_delivery_frame_lens_post' %}", false, 1);
+                            }
+
+                        } else {
+                            if (!is_search) {
+                                layer.msg("已成功出库!", {icon: 1});
+                            }
+                            $("#delivery_pspf").html(res);
+                        }
+                    }
+                })
+                ;
+            }
+        }
+
+        $("#btnSearch").on("click", function () {
+            delivery_post("{% url 'wms_delivery_frame_lens' %}", true, 0);
+        });
+
+        // dilivery
+        $("#btn_delivery").on('click', function () {
+            delivery_post("{% url 'wms_delivery_frame_lens_post' %}", false, 0);
+        });
+
+        $("#wh_ul a.wh_li").click(function () {
+            var _self = $(this);
+            var wh_btn = $("#wh_btn");
+            wh_btn.attr("data-warehouse", _self.attr("data-warehouse"));
+            wh_btn.text(_self.text());
+        });
+
+        //左眼跟着右眼变 2019.10.05 暂停使用直径参数
+        $("#od_diameter_ul a.od_diameter_li").click(function () {
+            var _self = $(this);
+            var od_diameter_btn = $("#od_diameter_btn");
+            od_diameter_btn.attr("od_diameter", _self.attr("od_diameter"));
+            od_diameter_btn.text(_self.text());
+            //左眼
+            var os_diameter_btn = $("#os_diameter_btn");
+            os_diameter_btn.attr("os_diameter", _self.attr("od_diameter"));
+            os_diameter_btn.text(_self.text());
+        });
+        //左眼自己变
+        $("#os_diameter_ul a.os_diameter_li").click(function () {
+            var _self = $(this);
+            var os_diameter_btn = $("#os_diameter_btn");
+            os_diameter_btn.attr("os_diameter", _self.attr("os_diameter"));
+            os_diameter_btn.text(_self.text());
+        });
+    </script>
+{% endblock %}

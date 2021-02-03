@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+    .el-collapse-item__header,.el-collapse-item__content{
+        padding-left:30px;
+    }
+    .el-collapse-item__header{
+        font-weight: bold;
+
+    }
+    #sub{
+        float: right;
+    }
+    .btn-c{
+        margin-bottom: 10px;
+    }
+    </style>
+{% endblock %}
+{% block h1 %}Purchase{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}采购收货{% endblock %}
+{% block content %}
+<div id="app" v-cloak>
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header">
+
+                    <div style="float: left;">
+                        <div class="input-group input-group" style="width: 200px;">
+                            <input type="text" class="form-control" id="number" placeholder="Please enter the order number"
+                               autofocus="autofocus" {% if form_data.search_entity %}value="{{ form_data.search_entity }}"{% endif %} @keyup.enter="btnSearch">
+                            <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default btn-flat" @click="btnSearch">Search</button>
+                            </span>
+
+                        </div>
+                    </div>
+                    <div style="float: right;">
+                        <a href="{% url 'purchase_receipt_order_new' %}" target="_blank"><el-button type="primary">采购收货</el-button></a>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <!--<div class="box-header">
+                    <h3 class="box-title"></h3>
+                </div>-->
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <el-table
+                        :data="tableData"
+                        style="width: 100%">
+                        <el-table-column type="expand">
+                            <template scope="props">
+                                <el-table :data="props.row.activities"
+                                    style="width: 100%">
+                                    <el-table-column
+                                        v-if="show"
+                                        label="ID"
+                                        prop="item_id"
+                                        width="80">
+                                    </el-table-column>
+                                    <el-table-column
+                                        v-if="show"
+                                        label="采购单号"
+                                        prop="plan_number"
+                                        width="200">
+                                    </el-table-column>
+                                    <el-table-column
+                                        label="SKU"
+                                        prop="sku"
+                                        width="80">
+                                    </el-table-column>
+                                    <el-table-column
+                                        label="数量"
+                                        prop="quantity"
+                                        width="80">
+                                    </el-table-column>
+                                    <el-table-column
+                                        label="单价"
+                                        prop="price"
+                                        width="80">
+                                    </el-table-column>
+                                    <el-table-column
+                                        label="小计"
+                                        prop="subtotal"
+                                        width="80">
+                                    </el-table-column>
+                                </el-table>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                            label="采购收货单号"
+                            prop="plan_number"
+                            width="200">
+                        </el-table-column>
+                        <el-table-column
+                            prop="plan_vendor_num"
+                            label="供应商"
+                            width="80">
+                        </el-table-column>
+                        <el-table-column
+                            prop="plan_total_quantity"
+                            label="总数量"
+                            width="80">
+                        </el-table-column>
+                        <el-table-column
+                            prop="plan_grand_total"
+                            label="总金额"
+                            width="80">
+                        </el-table-column>
+                        <el-table-column
+                            prop="plan_batch"
+                            label="批次"
+                            width="80">
+                        </el-table-column>
+                        <el-table-column
+                            prop="plan_create_at"
+                            label="创建时间"
+                            width="200">
+                        </el-table-column>
+                        <el-table-column
+                            prop="plan_comments"
+                            label="说明"
+                            >
+                        </el-table-column>
+                         <el-table-column label="操作">
+                          <template slot-scope="scope">
+                            <el-button
+                              class="btn-c"
+                              style="margin-left:0px;"
+                              size="mini"
+                              type="danger"
+                              @click="handleViewEdit(scope.$index, scope.row)"
+                              >查看</el-button>
+                          </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+</div>
+    <!--paginator-->
+<div style="width: 100%;text-align: center;">
+    {% include 'page_number.html' %}
+</div>
+{% endblock %}
+{% block jquery %}
+    <script src={% static "js/vue.js" %}></script>
+    <script src={% static "js/element.js" %}></script>
+    <!--<script src={% static "js/axios.min.js" %}></script>-->
+    <script src={% static "js/qs.min.js" %}></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                reverse: false,
+                show:false,
+                tableData: [],
+            },
+            beforeMount(){
+            },
+            created(){
+                this.tableData = [
+                    {% for item in data_list %}
+                        {
+                            plan_number: "{{ item.plan_number  }}",
+                            plan_vendor_num: "{{ item.plan_vendor_num  }}",
+                            plan_create_at:"{{ item.plan_created_at  }}",
+                            plan_status: "{{ item.plan_status  }}",
+                            plan_comments:"{{ item.plan_comments  }}",
+                            plan_vendor_doc_number:"{{ item.plan_vendor_doc_number }}",
+                            plan_arrival_date:"{{ item.plan_arrival_date }}",
+                            plan_grand_total: "{{ item.plan_grand_total }}",
+                            plan_total_paid: "{{ item.plan_total_paid }}",
+                            plan_discount_amount_order: "{{ item.plan_discount_amount_order }}",
+                            plan_total_quantity: "{{ item.plan_total_quantity }}",
+                            plan_actual_quantity: "{{ item.plan_total_quantity }}",
+                            plan_opening_quantity: "{{ item.plan_total_quantity }}",
+                            plan_pay_date: "{{ item.plan_pay_date }}",
+                            plan_batch: "{{ item.plan_batch }}",
+                            activities:[
+                                {% for item_ac in item.plan_items %}
+                                    {
+                                        plan_number: "{{ item_ac.plan_number  }}",
+                                        sku: "{{ item_ac.sku  }}",
+                                        price: "{{ item_ac.price }}",
+                                        quantity: "{{ item_ac.quantity  }}",
+                                        subtotal: "{{ item_ac.subtotal  }}",
+                                        item_status: "{{ item_ac.item_status  }}",
+                                        item_id: "{{ item_ac.item_id  }}",
+                                        request_edit_flag:eval("{{ item_ac.request_edit_flag }}")
+                                    },
+                                 {% endfor %}
+                            ],
+                        },
+                    {% endfor %}
+                ]
+            },
+            methods:{
+                btnSearch(){
+                    order_number = $("#number").val();
+                    url = "{% url 'purchase_receipt_order_list' %}";
+                    if (order_number == '' || order_number == null) {
+                        layer.msg('请输入单号或SKU!', {time: 3000, icon: 7});
+                    }
+                    else {
+                        location.href = url + '?filter=' + order_number;
+                    }
+                },
+                //查看与编辑
+                handleViewEdit(index, row){
+                    url = "{% url 'purchase_receipt_order_view_edit' %}"
+                    window.open(url + "?doc_number=" + row.plan_number)
+                },
+            }
+        });
+    </script>
+{% endblock %}

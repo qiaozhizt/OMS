@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}WMS{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}镜片库存结构表{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header">
+                    <div style="float: left;">{% include 'search.html' %}</div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+
+    <div class="row">
+        {% for item in list %}
+
+                <div class="col-md-3" >
+                    <div class="box box-solid" >
+                        <a href="{% url 'wms_inventory_struct_lens_detail' %}?sku={{ item.sku }}">
+                            <div class="box-header with-border label-primary" style="height: 75px">
+                                <i class="fa fa-hand-o-right"></i><br/>
+                                <h3 class="box-title">{{ item.name }}</h3>
+                            </div>
+                        </a>
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                            <ul>
+                                <li>
+                                    SKU:{{ item.base_sku }}
+                                </li>
+                                <li>
+                                    光度类型:{{ item.luminosity_type }}
+                                </li>
+                                <li>
+                                    直径:{{ item.diameter }}
+                                </li>
+                                <li>
+                                    直射率:{{ item.index }}
+                                </li>
+                                <li>
+                                    仓库:{{ item.vendor_name }}
+                                </li>
+                                <li>
+                                    总数:{{ item.sum }}
+                                </li>
+                                <li>
+                                    是否启用:{{ item.is_enabled }}
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                    <!-- /.box -->
+                </div>
+            <!-- ./col -->
+        {% endfor %}
+    </div>
+    <!-- /.row -->
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+
+            url = "{% url 'wms_inventory_struct_lens' %}";
+
+            if (sku == '' || sku == null) {
+                layer.msg('Please enter a sku', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = url + '?sku=' + sku;
+            }
+        });
+
+
+
+    </script>
+{% endblock %}

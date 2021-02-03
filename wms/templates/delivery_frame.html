@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Inventory{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}镜架出库{% endblock %}
+{% block content %}
+    <!-- Content Wrapper. Contains page content -->
+    <!-- Content Header (Page header) -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div id="div_tip" class="callout callout-default" style="display: none;">
+            <h4>Tips!</h4>
+            <p>This is only beta version.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+
+                <div class="box box-default">
+                    <div class="box-header">
+                        <h3 class="box-title">Actions</h3>
+                    </div>
+                    <div class="box-body">
+                        <div style="float: left;">{% include 'search.html' %}</div>
+
+                        <div class="cl">
+                            <div style="float: left;margin-right: 0px;display:none">
+                                <button id="backPrev" type="button" class="btn btn-default btn active" role="button"
+                                        onClick="javascript :history.back(-1);">Back
+                                </button>
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                {% if perms.wms.DELIVERY_FRAME %}
+                                    <div style="float: left;margin-left: 5px;">
+                                        <button id="btn_delivery"
+                                                order_number="{{ form_data.laborder.lab_number }}"
+                                                type="button"
+                                                class="btn btn-default">确认出库
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {# 暂时写死 #}
+                            <div class="btn-group" style="margin-left:10px;">
+                                <button id="wh_btn" class="btn btn-default"
+                                        data-warehouse="{{ form_data.def_wh_code }}">{{ form_data.def_wh_name }}</button>
+                                <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span
+                                        class="caret"></span></button>
+                                <ul class="dropdown-menu" id="wh_ul">
+                                    {% for wh in wh_all %}
+                                        {% if wh.is_enabled == 1 and wh.used_to == 'FRAME'%}
+                                            <li>
+                                                <a class="wh_li" href="javascript:void(0);"
+                                                   data-warehouse="{{ wh.code }}">{{ wh.name }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="btn-group" style="margin-left:5px;">
+                                <button class="btn btn-default">自动出库</button>
+                                <button data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span
+                                        class="caret"></span></button>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">自动出库</a></li>
+                                </ul>
+                            </div>
+                            {# 暂时写死 #}
+
+                        </div>
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+        </div>
+
+        <div id="delivery_pspf">
+            {% include 'delivery_detail_part.html' %}
+        </div>
+
+    </section>
+    <!-- /.content -->
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == 13) {
+                $("#btnSearch").click();
+            }else if(event.keyCode == 32){
+                $("#btn_delivery").click();
+            }
+        });
+
+        function delivery_post(url, is_search) {
+            var btn_delivery = $("#btn_delivery");
+            var lab_number = $("#number").val();
+            if (lab_number == '' || lab_number == null) {
+                layer.msg('Please enter a order number', {icon: 7});
+            } else {
+                if (!is_search) {
+                    btn_delivery.attr("disabled", 'disabled');
+                }
+                var index = layer.load(2); //换了种风格
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        'lab_nubmer': lab_number,
+                        'def_wh_code': $("#wh_btn").attr("data-warehouse")
+                    },
+                    success: function (res) {
+                        if (!is_search) {
+                            btn_delivery.removeAttr("disabled");
+                            $("#number").val('');
+                            $("#number").focus();
+                        }
+                        layer.close(index);
+                        if (res.code == '-1') {
+                            layer.msg(res.message, {
+                                icon: 4,
+                                shadeClose: true,
+                                time: false,
+                                shade: 0.7
+                            });
+                        } else {
+                            if (!is_search) {
+                                layer.msg("已成功出库!", {icon: 1});
+                            }
+                            $("#delivery_pspf").html(res);
+                        }
+                    }
+                });
+            }
+        }
+
+        $("#btnSearch").on("click", function () {
+            delivery_post("{% url 'wms_delivery_frame' %}", true);
+        });
+
+        // dilivery
+        $("#btn_delivery").on('click', function () {
+            delivery_post("{% url 'wms_delivery_frame_post' %}", false);
+        });
+
+        $("#wh_ul a.wh_li").click(function () {
+            var _self = $(this);
+            var wh_btn = $("#wh_btn");
+            wh_btn.attr("data-warehouse", _self.attr("data-warehouse"));
+            wh_btn.text(_self.text());
+        });
+
+    </script>
+{% endblock %}

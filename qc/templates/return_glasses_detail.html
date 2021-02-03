@@ -1,0 +1,475 @@
+<!-- /.box-body -->
+<!-- /.box-footer -->
+<div class="container-fluid">
+
+    <div class="row detail_head">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-body">
+                    <div style="float: left;margin-left: 5px;">
+                        <span class="input-group-btn" style="float: left;">
+                            <button type="button"
+                                    class="btn btn-default btn-flat"
+                                    name="btn_add_comments"
+                                    id="btn_frame_dev"
+                                    data-toggle="modal"
+                                    data-target="#myModal"
+                            >镜架报损出库</button>
+                        </span>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;">
+                        <span class="input-group-btn" style="float: left;">
+                            <button type="button"
+                                    class="btn btn-default btn-flat btn_lens_dev"
+                                    name="btn_add_comments_inner"
+                                    id="btn_lens_dev"
+                                    data-toggle="modal"
+                                    data-target="#myLens"
+                            >镜片报损出库</button>
+                        </span>
+                    </div>
+                    <!-- add hold -->
+
+                    <!-- /.box-body -->
+                    <!-- /.box -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Line chart -->
+            <div class="box box-default">
+                <div class="box-header with-border">
+                    <i class="fa fa-hourglass-half"></i>
+                    <h3 class="box-title">成镜退货详情</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <table class="table table-hover">
+                        <tr>
+                            <th>订单号</th>
+                            <td><span id="spn_lab_number" class="label label-default spn_lab_number"
+                                      style="font-size:small"> {{ item.lab_number }}</span>
+                                <button type="button" class="btn btn-link"
+                                        data-clipboard-action="copy"
+                                        data-clipboard-text="{{ item.lab_number }}"><i class="fa fa-copy"></i>
+                                </button>
+                            </td>
+                            <th>退片位置</th>
+                            <td>{{ item.get_lens_return_display }}</td>
+                            <th>退片类型</th>
+                            <td>{{ item.get_reason_code_display }}</td>
+                            <th>退片数量</th>
+                            <td>{{ item.lens_return_qty }}</td>
+                        </tr>
+                        <tr>
+                            <th>原因</th>
+                            <td colspan="7">{{ item.reason }}</td>
+                        </tr>
+                        <tr>
+                            <th>备注</th>
+                            <td colspan="7">{{ item.comments }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <!-- /.box-body-->
+            </div>
+            <!-- /.box -->
+
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">镜架报损出库</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="p_number" class="col-sm-4 control-label">单号</label>
+                        <div class="col-sm-8">
+                            <input name="p_number" type="text" class="form-control" id="p_number" value="{{ time_now }}"
+                                   readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="doc_type" class="col-sm-4 control-label">出库类型</label>
+                        <div class="col-sm-8">
+                            <select name="doc_type" id="doc_type" class="form-control" disabled="disabled">
+                                    <option value="FAULTY">报损出库</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="wh_number" class="col-sm-4 control-label">仓库</label>
+                        <div class="col-sm-8">
+                            <select name="wh_number" id="wh_number" class="form-control">
+                                {% for wh in all_wh %}
+                                    {% if wh.is_enabled == 1 and wh.used_to == 'FRAME' %}
+                                        <option value="{{ wh.code }}">{{ wh.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" id="channel_box" style="height: 40px;line-height: 40px;">
+                        <label for="wh_channel" class="col-sm-4 control-label">渠道</label>
+                        <div class="col-sm-8">
+                            <select name="wh_channel" id="wh_channel" class="form-control">
+                                <option value="None">请选择</option>
+                                {% for ch in all_channel %}
+                                    {% if ch.is_enabled == 1 %}
+                                        <option value="{{ ch.code }}">{{ ch.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="sku" class="col-sm-4 control-label">SKU</label>
+                        <div class="col-sm-8">
+                            <input name="sku" type="text" class="form-control" id="sku" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="quantity" class="col-sm-4 control-label">数量</label>
+                        <div class="col-sm-8">
+                            <input name="quantity" type="number" class="form-control" id="quantity" placeholder="产品数量"
+                                   value="1"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="comments" class="col-sm-4 control-label">备注</label>
+                        <div class="col-sm-8">
+                            <textarea maxlength="128" class="form-control" id="comments" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px; display: none;">
+                        <label for="comments" class="col-sm-4 control-label">备注</label>
+                        <div class="col-sm-8">
+                            <input name="lab_number" type="text" class="form-control" id="lab_number" value="{{ lbo.lab_number }}"
+                                   readonly="readonly"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="frame_delivery">确认</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myLens" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">镜片报损出库</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_doc_number" class="col-sm-4 control-label">单号</label>
+                        <div class="col-sm-8">
+                            <input name="lens_doc_number" type="text" class="form-control" id="lens_doc_number" value="{{ time_now }}"
+                                   readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_doc_type" class="col-sm-4 control-label">出库类型</label>
+                        <div class="col-sm-8">
+                            <select name="lens_doc_type" id="lens_doc_type" class="form-control" disabled="disabled">
+                                    <option value="FAULTY">报损出库</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_wh_number" class="col-sm-4 control-label">仓库</label>
+                        <div class="col-sm-8">
+                            <select name="lens_wh_number" id="lens_wh_number" class="form-control">
+                                {% for wh in all_wh %}
+                                    {% if wh.is_enabled == 1 and wh.used_to == 'LENS' %}
+                                        <option value="{{ wh.code }}"
+                                            {% ifequal wh.code parameter_list.wh_code  %}selected="selected"{% endifequal %}>
+                                        {{ wh.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_position" class="col-sm-4 control-label">左/右镜片</label>
+                        <div class="col-sm-8">
+                            <select name="lens_position" id="lens_position" class="form-control">
+                                    <option value="">请选择左右片</option>
+                                    <option value="R">右片</option>
+                                    <option value="L">左片</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_sku_select" class="col-sm-4 control-label">镜片</label>
+                        <div class="col-sm-8">
+                            <select name="lens_sku_select" id="lens_sku_select" class="form-control">
+                                <option value="">请选择sku</option>
+                                {% for bsl in sku_list %}
+                                    <option class="parameter" value="{{ bsl.sku }}"
+                                            {% ifequal parameter_list.sku bsl.sku %}
+                                            selected="selected"
+                                            {% endifequal %}
+                                    >{{ bsl.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_sph_select" class="col-sm-4 control-label">参数</label>
+                        <div class="col-sm-4">
+                            <select name="lens_sph_select" id="lens_sph_select" class="form-control">
+                                <option style="display: none" selected="" value="">SPH</option>
+                                {% for bsl in list_from.sph_list %}
+                                    <option class="parameter" value="{{ bsl.sph }}"
+                                            {% ifequal parameter_list.sph bsl.sph %}
+                                            selected="selected"
+                                            {% endifequal %}
+                                    >{{ bsl.sph }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <select name="lens_cyl_select" id="lens_cyl_select" class="form-control">
+                                <option class="lens_cyl_select_first" style="display: none" selected="selected" value="">CYL</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_lab_number_select" class="col-sm-4 control-label" >工厂单号</label>
+                        <div class="col-sm-8">
+                            <input name="lens_lab_number_select" type="text" class="form-control" id="lens_lab_number_select" value="" readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_quantity" class="col-sm-4 control-label">数量</label>
+                        <div class="col-sm-8">
+                            <input name="lens_quantity" type="number" class="form-control" id="lens_quantity" placeholder="产品数量"
+                                   value="1"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_price" class="col-sm-4 control-label">价格</label>
+                        <div class="col-sm-8">
+                            <input name="lens_price" type="number" class="form-control" id="lens_price" placeholder="产品单价" value="0"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="lens_comments" class="col-sm-4 control-label">备注</label>
+                        <div class="col-sm-8">
+                            <textarea name="lens_comments" maxlength="128" class="form-control" id="lens_comments" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="lens_delivery">确认</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+</div>
+
+{% block jquery %}
+    <script>
+
+        var clipboard = new ClipboardJS('.btn');
+        clipboard.on('success', function (e) {
+            console.info('Action:', e.action);
+            console.info('Text:', e.text);
+            console.info('Trigger:', e.trigger);
+            layer.msg('订单号已复制 ....');
+            e.clearSelection();
+        });
+
+        clipboard.on('error', function (e) {
+            console.error('Action:', e.action);
+            console.error('Trigger:', e.trigger);
+        });
+        $(".btn_lens_dev").click(function () {
+            var lab_number = $(".vorder_number").val();
+            $("#lens_lab_number_select").val(lab_number);
+            $("#lab_number").val(lab_number);
+        });
+        $("#frame_delivery").click(function () {
+            var p_number = $("#p_number").val();
+            var doc_type = $("#doc_type").val();
+            var wh_number = $("#wh_number").val();
+            var wh_channel = $("#wh_channel").val();
+            var sku = $("#sku").val();
+            var quantity = $("#quantity").val();
+            var comments = $("#comments").val();
+            var lab_number = $("#lab_number").val();
+            if(wh_channel == "None"){
+                alert("请选择渠道！")
+                return false
+            }
+            if(sku == ''){
+                alert("请选sku！")
+                return false
+            }
+            form_data ={
+                "p_number":p_number,
+                "doc_type":doc_type,
+                "wh_number":wh_number,
+                "wh_channel":wh_channel,
+                "sku":sku,
+                "quantity":quantity,
+                "comments":comments,
+                "lab_number": lab_number
+            }
+            $.ajax({
+                url: "{% url 'qc_frame_delivery_submit' %}",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                success: function (res) {
+                    if(res.code == 0){
+                        layer.msg('出库成功', {time: 3000, icon: 6});
+                        //$("#btn_frame_dev").attr("disabled", "disabled");
+                        //$("#btn_lens_dev").attr("disabled", "disabled");
+                        $("#myModal").modal('hide');
+                    }else{
+                        layer.msg(res.error, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+        $("#lens_sku_select").change(function () {
+            var sku = $(this).val();
+            var lens_position = $("#lens_position").val();
+            var lab_number = $("#lens_lab_number_select").val();
+            if(lens_position == ''){
+                alert("请选择左右片!")
+                return false
+            }
+            form_data = {
+                "sku": sku,
+                "lens_position": lens_position,
+                "lab_number":lab_number,
+            }
+            $.ajax({
+                url: "{% url 'qc_get_lens_sph' %}",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                dataType:"json",
+                success: function (res) {
+                    if(res.code == 0){
+                        html = "<option selected='selected' value=''>SPH</option>"
+                        $("#lens_sph_select").empty();
+                        for (i=0; i<res.sph_list.length; i++){
+                            html = html + "<option value='"+res.sph_list[i].sph+"'>"+res.sph_list[i].sph+"</option>"
+                        }
+                        $("#lens_sph_select").html(html);
+                    }
+                }
+            });
+        });
+        $("#lens_sph_select").change(function () {
+            var sph = $(this).val();
+            var lab_number = $("#lens_lab_number_select").val();
+            var sku = $("#lens_sku_select").val();
+            form_data = {
+                "sku": sku,
+                "sph": sph,
+                "lab_number":lab_number,
+            }
+            $.ajax({
+                url: "{% url 'qc_get_lens_cyl' %}",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                dataType:"json",
+                success: function (res) {
+                    if(res.code == 0){
+                        html = "<option selected='selected' value=''>CYL</option>"
+                        $("#lens_cyl_select").empty();
+                        for (i=0; i<res.cyl_list.length; i++){
+                            html = html + "<option value='"+res.cyl_list[i].cyl+"'>"+res.cyl_list[i].cyl+"</option>"
+                        }
+                        $("#lens_cyl_select").html(html);
+                    }
+                }
+            });
+        });
+        $("#lens_delivery").click(function () {
+            var p_number = $("#lens_doc_number").val();
+            var doc_type = $("#lens_doc_type").val();
+            var wh_number = $("#lens_wh_number").val();
+            var sku = $("#lens_sku_select").val();
+            var sph = $("#lens_sph_select").val();
+            var cyl = $("#lens_cyl_select").val();
+            var quantity = $("#lens_quantity").val();
+            var price = $("#lens_price").val();
+            var comments = $("#lens_comments").val();
+            var lab_number = $("#lens_lab_number_select").val();
+            var lens_position = $("#lens_position").val();
+            if(sph == ''){
+                alert("请选择sph!")
+                return false
+            }
+            if(cyl == ''){
+                alert("请选择cyl!")
+                return false
+            }
+            if(lens_position == ''){
+                alert("请选择左右片!")
+                return false
+            }
+            form_data ={
+                "p_number":p_number,
+                "doc_type":doc_type,
+                "wh_number":wh_number,
+                "quantity":quantity,
+                "comments":comments,
+                "lab_number": lab_number,
+                "sku":sku,
+                "sph":sph,
+                "cyl":cyl,
+                "price":price,
+                "lens_position":lens_position,
+            }
+            $.ajax({
+                url: "{% url 'qc_lens_delivery_submit' %}",
+                type: "POST",
+                data: {
+                    "form_data": JSON.stringify(form_data)
+                },
+                success: function (res) {
+                    if(res.code == 0){
+                        layer.msg('出库成功', {time: 3000, icon: 6});
+                        $("#myLens").modal('hide');
+                        window.location.reload();
+                    }else{
+                        layer.msg(res.error, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

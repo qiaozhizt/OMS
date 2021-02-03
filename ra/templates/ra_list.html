@@ -1,0 +1,439 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}{{ form_data.model }} {% if form_data.total %}<span class="label label-info">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}{{ form_data.function }}{% endblock %}
+{% block content %}
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                {% include 'ra_list_search_form.html' %}
+            </div>
+
+            <!-- /.box-body -->
+            {% include 'ra_list_actions.html' %}
+            <!-- /.box-body -->
+        </div>
+    </div>
+
+    <div class="row">
+        {% include 'ra_list_ras.html' %}
+    </div>
+
+    <div class="row">
+        {% include 'ra_list_confirm.html' %}
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 为十月下的的月份加0
+        function ad_0(s) {
+            return s < 10 ? '0' + s : s;
+        }
+
+        // 获取表单数据
+        function getFormData(form) {
+            let data = form.serialize();
+            data = decodeURI(data);
+            let arr = data.split('&');
+            let item, key, value, newData = {};
+            for (let i = 0; i < arr.length; i++) {
+                item = arr[i].split('=');
+                key = item[0];
+                value = item[1];
+                if (key.indexOf('[]') != -1) {
+                    key = key.replace('[]', '');
+                    if (!newData[key]) {
+                        newData[key] = [];
+                    }
+                    newData[key].push(value);
+                } else {
+                    newData[key] = value;
+                }
+            }
+            return newData;
+        }
+
+        $(document).ready(function () {
+            // 日期需要的变量
+            var m_dt = new Date();
+            var sdate = '2018-01-01'; // 开始时间
+            var edate = ad_0(m_dt.getFullYear()) + '-' + ad_0(m_dt.getMonth() + 1) + '-' + ad_0(m_dt.getDate());
+            var _date_end = $('#endDate'); // 结束时间文本框
+            var _date_start = $('#startDate'); // 开始时间文本框
+            var s_form = $('#inventory_form');
+
+            _date_end.click(function () {
+                $(this).val('');
+            });
+            _date_start.click(function () {
+                $(this).val('');
+                _date_end.datetimepicker('setStartDate', sdate);
+            });
+            $("#s_submit").click(function () {
+                s_form.attr('data-page', 1);
+            });
+            // 格式化日历显示
+            $.fn.datetimepicker.dates['zdy'] = {
+                days: ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"],
+                daysShort: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+                daysMin: ["日", "一", "二", "三", "四", "五", "六"],
+                months: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+                monthsShort: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
+                today: "今天",
+                format: "yyyy-mm-dd",
+                meridiem: ["上午", "下午"]
+            };
+            // 初始化开始时间的日历框
+            _date_start.datetimepicker({
+                language: 'zdy', weekStart: 1, todayBtn: 1, autoclose: 1,
+                startDate: sdate, endDate: edate, minView: 2, maxView: 3
+            }).on('changeDate', function (ev) {
+                s_form.attr('data-page', 1);
+                _date_end.datetimepicker('setStartDate', ev.date);
+                _date_end.val('');
+            });
+            // 初始化结束时间的日历框
+            _date_end.datetimepicker({
+                language: 'zdy', weekStart: 1, todayBtn: 1, autoclose: 1,
+                startDate: sdate, endDate: edate, minView: 2, maxView: 3
+            }).on('changeDate', function () {
+                s_form.attr('data-page', 1);
+            });
+            // 提交表单
+            s_form.submit(function (e) {
+                e.preventDefault(); // 取消默认操作
+                var _self = $(this);
+                var reg = new RegExp("^[0-9][0-9][0-9][0-9][A-Z][A-Z0-9][0-9]$");
+                var form_data = getFormData(_self);
+                form_data["sku"] = form_data["sku"].toUpperCase();
+                if (form_data["sku"] != '' && !reg.test(form_data["sku"])) {
+                    layer.alert("SKU格式不正确", {
+                        yes: function () {
+                            $("#sku").focus().select();
+                            layer.closeAll();
+                        }
+                    });
+                    return false;
+                }
+                layer.load(1);
+                $.ajax({
+                    url: "{% url 'shipments_index' %}",
+                    type: 'post',
+                    data: {
+                        "info": JSON.stringify(form_data),
+                        "page": _self.attr('data-page')
+                    },
+                    success: function (res) {
+                        var res_doc = $(res);
+                        $("#content").html(res_doc);
+                        $("#spn_data_total").text(res_doc.eq(0).text());
+                        layer.closeAll();
+                    }
+                });
+            });
+        });
+
+        function RaTypeChoiced(obj) {
+            key = obj.attr('data')
+            value = "";
+            switch (key) {
+                case "CPN":
+                    value = "Return Coupon";
+                    break;
+                case "RFD":
+                    value = "Return Refund";
+                    break;
+                case "INS":
+                    value = "Inspection";
+                    break;
+                case "DMG":
+                    value = "Damaged";
+                    break;
+                case "RFW":
+                    value = "Risk Free Warranty";
+                    break;
+                case "RMK":
+                    value = "Internal Remake";
+                    break;
+                default:
+                    value = "Please Select One.";
+            }
+            //$('#ra_type').value=value;
+            document.getElementById("ra_type").value = key;
+            document.getElementById("txt_ra_type").value = value;
+
+            formSubmit();
+        }
+
+        $("#ra_type_cpn").on("click", function () {
+                obj = $("#ra_type_cpn");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_rfd").on("click", function () {
+                obj = $("#ra_type_rfd");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_ins").on("click", function () {
+                obj = $("#ra_type_ins");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_dmg").on("click", function () {
+                obj = $("#ra_type_dmg");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_rfw").on("click", function () {
+                obj = $("#ra_type_rfw");
+                RaTypeChoiced(obj);
+            }
+        );
+        $("#ra_type_rmk").on("click", function () {
+                obj = $("#ra_type_rmk");
+                RaTypeChoiced(obj);
+            }
+        );
+        $(".state_item").click(function () {
+            var data = $(this).attr('data');
+            document.getElementById("state").value = data;
+
+            formSubmit();
+        });
+
+         $(".status_item").click(function () {
+            var data = $(this).attr('data');
+            document.getElementById("status").value = data;
+
+            formSubmit();
+        });
+
+        var cur_entity_id = 0;
+        var cur_entity ={};
+
+        $(".chk_items").click(function () {
+            var item_id = $(this).attr("data_item_id");
+            if ($(this).is(':checked')) {
+                cur_entity_id = item_id;
+                cur_entity.id = item_id;
+
+                cur_entity.order_number = $(this).attr("order_number");
+                cur_entity.customer_name = $(this).attr("customer_name");
+                cur_entity.ra_type = $(this).attr("ra_type");
+                cur_entity.quantity = $(this).attr("quantity");
+                cur_entity.amount = $(this).attr("amount");
+                cur_entity.status = $(this).attr("status");
+                cur_entity.label_id = $(this).attr("label_id");
+                cur_entity.created_at = $(this).attr("created_at");
+
+                console.log(cur_entity);
+            }
+        });
+
+        function  formSubmit(){
+            var form = document.getElementById('ra_search');
+            form.submit();
+        }
+
+        $("#btnApprove").click(function () {
+            var action = "APPROVE";
+            actions(action);
+        });
+
+        $("#btnBuyLabel").click(function () {
+            var action = "BUY_LABEL";
+            actions(action);
+        });
+
+        $("#btnStockIn").click(function () {
+            var action = "STOCK_IN";
+            actions(action);
+        });
+
+        $("#btnRefund").click(function () {
+            var action = 'REFUND';
+            actions(action);
+        });
+
+        $("#btnCoupon").click(function () {
+            var action = 'COUPON';
+            actions(action);
+        });
+
+        $("#btnClose").click(function () {
+            var action = 'CLOSE';
+            actions(action);
+        });
+
+        $("#btnCancel").click(function () {
+            var action = 'CANCEL';
+            actions(action);
+        });
+
+        function set_values() {
+            // $("#div_content_tr").empty();
+            var html = '';
+            html = html + "<td>" + cur_entity.id + "</td>";
+            html = html + "<td>" + cur_entity.order_number + "</td>";
+            html = html + "<td>" + cur_entity.customer_name + "</td>";
+            html = html + "<td>" + cur_entity.quantity + "</td>";
+            html = html + "<td>" + cur_entity.amount + "</td>";
+            html = html + "<td>" + cur_entity.status + "</td>";
+            html = html + "<td>" + cur_entity.label_id + "</td>";
+            $("#div_content_tr").html(html);
+        }
+
+        function actions(action) {
+            if (cur_entity_id == 0) {
+                alert('RA Missed!');
+                return false;
+            }
+            set_values();
+
+            var form_data={};
+            form_data.id=cur_entity_id;
+            form_data.entity = cur_entity;
+            form_data.action = action;
+
+            // 当做批准时，如果ra type 是CPN，则自动触发邮件，目前邮件地址可以修改
+            // 以后做成配置文件的时候，邮件地址不允许修改
+            if (action == 'APPROVE' && cur_entity.ra_type == 'CPN'){
+                $('#div_email').show();
+            } else {
+                $('#div_email').hide();
+            }
+
+            // 当 buy label 时，需要输入 tracking code
+            if (action!='BUY_LABEL'){
+                $('#div_tracking_code').hide();
+            } else {
+                $('#div_tracking_code').show();
+            }
+
+            if (action == 'STOCK_IN') {
+                $('#div_location').show();
+                if (cur_entity.ra_type != 'CPN') {
+                    $('#div_email').show();
+                }
+                else{
+                     $('#div_email').hide();
+                }
+            } else {
+                $('#div_location').hide();
+                if (cur_entity.ra_type != 'CPN'){
+                    $('#div_email').hide();
+                }
+            }
+
+            if (action == 'REFUND' || action == 'COUPON'){
+                $('#div_transaction_id').show();
+            }
+            else{
+                $('#div_transaction_id').hide();
+            }
+
+            layer.open({
+                type: 1,
+                title: action,
+                closeBtn: 1,
+                area: "800px",
+                // skin:'layui-layer-lan',
+                shadeClose: false,
+                shade: 0.7,
+                shift: 1,
+                content: $('#div_confirm'),
+                btn: ['Submit', 'Close'],
+                success: function () {
+                    $(':focus').blur();
+                },
+                cancel: function () {
+                    layer.msg('Nothing to do, EXIT!', {time: 5000});
+                },
+                yes: function () {
+                    form_data.location = document.getElementById("txt_location").value;
+                    form_data.email = document.getElementById("txt_email").value;
+                    form_data.tracking_code  = document.getElementById("txt_tracking_code").value;
+                    form_data.transaction_id = document.getElementById("txt_transaction_id").value;
+
+                    form_data.comments = document.getElementById('txt_comments').value;
+                    layer.load(1);
+                    submitForm(form_data);
+                }
+            });
+        }
+
+        function submitForm(form_data) {
+
+            console.log(form_data.id);
+                data = JSON.stringify(form_data);
+                $.ajax({
+                url: "{% url 'ra_action' %}",
+                type: "POST",
+                data: {
+                    "form_data": data,
+                },
+                success: function (arg) {
+                    var res = JSON.parse(arg);
+                    if (res.code != 0) {
+                        layer.closeAll();
+                        layer.open({
+                            type: 1,
+                            title: "Error",
+                            closeBtn: 1,
+                            // area: "998px",
+                            // skin:'layui-layer-lan',
+                            shadeClose: false,
+                            shade: 0.7,
+                            // shift: 1,
+                            content: res.code + " - "+res.message,
+                            btn: ['Close'],
+                            success: function () {
+                                $(':focus').blur();
+                            },
+                        });
+
+                    } else {
+                        layer.msg("Successful!");
+                        layer.open({
+                            type: 1,
+                            title: "Confirm",
+                            closeBtn: 1,
+                            // area: "998px",
+                            // skin:'layui-layer-lan',
+                            shadeClose: false,
+                            shade: 0.7,
+                            // shift: 1,
+                            content: " Successful!",
+                            btn: ['Close'],
+                            success: function () {
+                                $(':focus').blur();
+                            },
+                            cancel: function () {
+                                layer.msg('Nothing to do, EXIT!', {time: 5000});
+                            },
+                            yes: function () {
+                                location.reload();
+                                layer.closeAll();
+                                // window.open("about:blank","_self").close();
+                            }
+                        });
+                    }
+                },
+                error: function () {
+                    alert("error occured!");
+                }
+            });
+        }
+    </script>
+{% endblock %}

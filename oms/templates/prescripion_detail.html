@@ -1,0 +1,212 @@
+<form style="padding-left:20px;" class="edit_form">
+    <table class="table table-hover">
+        <tr>
+            <th>#</th>
+            <th>SPH</th>
+            <th>CYL</th>
+            <th>AXIS</th>
+            <th>ADD</th>
+            <th>PD</th>
+            <th>IS_SINGGLE_PD</th>
+        </tr>
+
+        <tr>
+            <th>OD</th>
+            <td>
+                <select name="od_sph" class="id_od_sph">
+                    {% for it in prescripion_num.t_sph %}
+                        <option value="{{ it }}"
+                                {% ifequal item.od_sph.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="od_cyl" class="id_od_cyl">
+                    {% for it in prescripion_num.t_cyl %}
+                        <option value="{{ it }}"
+                                {% ifequal item.od_cyl.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="od_axis" class="id_od_axis">
+                    {% for it in prescripion_num.t_axis %}
+                        <option value="{{ it }}"
+                                {% ifequal item.od_axis.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="od_add" class="id_od_add">
+                    {% for it in prescripion_num.t_add %}
+                        <option value="{{ it }}"
+                                {% ifequal item.od_add.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="pd" class="id_pd"
+                        {% ifequal item.is_singgle_pd.value 0 %}style="display:none"{% endifequal %}>
+                    {% for it in prescripion_num.binocularPD %}
+                        <option value="{{ it }}"
+                                {% ifequal item.pd.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+                <select name="od_pd" class="id_od_pd"
+                        {% ifequal item.is_singgle_pd.value 1 %}style="display:none"{% endifequal %}>
+                    {% for it in prescripion_num.monocularPD %}
+                        <option value="{{ it }}"
+                                {% ifequal item.od_pd.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input name="is_singgle_pd" type="checkbox" value="{{ item.is_singgle_pd.value }}"
+                       {% ifequal item.is_singgle_pd.value 1 %}checked="checked"{% endifequal %}/></td>
+        </tr>
+        <tr>
+            <th>OS</th>
+            <td>
+                <select name="os_sph" class="id_os_sph">
+                    {% for it in prescripion_num.t_sph %}
+                        <option value="{{ it }}"
+                                {% ifequal item.os_sph.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="os_cyl" class="id_os_cyl">
+                    {% for it in prescripion_num.t_cyl %}
+                        <option value="{{ it }}"
+                                {% ifequal item.os_cyl.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="os_axis" class="id_os_axis">
+                    {% for it in prescripion_num.t_axis %}
+                        <option value="{{ it }}"
+                                {% ifequal item.os_axis.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="os_add" class="id_os_add">
+                    {% for it in prescripion_num.t_add %}
+                        <option value="{{ it }}"
+                                {% ifequal item.os_add.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="os_pd" class="id_os_pd"
+                        {% ifequal item.is_singgle_pd.value 1 %}style="display:none"{% endifequal %}>
+                    {% for it in prescripion_num.monocularPD %}
+                        <option value="{{ it }}"
+                                {% ifequal item.os_pd.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+    </table>
+    <table class="table table-hover">
+        <tr>
+            <th>#</th>
+            <th>Prism-H</th>
+            <th>Base-H</th>
+            <th>Prism-V</th>
+            <th>Base-V</th>
+        </tr>
+        <tr>
+            <th>OD</th>
+            <td>
+                <select name="od_prism" class="id_od_prism">
+                    {% for it in prescripion_num.t_prism %}
+                        <option value="{{ it }}"
+                                {% ifequal item.od_prism.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="od_base" class="id_od_base">
+                    {% for it in prescripion_num.t_base %}
+                        <option value="{{ it }}"
+                                {% ifequal item.od_base.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="od_prism1" class="id_od_prism1">
+                    {% for it in prescripion_num.t_prism %}
+                        <option value="{{ it }}"
+                                {% ifequal item.od_prism1.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="od_base1" class="id_od_base1">
+                    {% for it in prescripion_num.t_base1 %}
+                        <option value="{{ it }}"
+                                {% ifequal item.od_base1.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th>OS</th>
+            <td>
+                <select name="os_prism" class="id_os_prism">
+                    {% for it in prescripion_num.t_prism %}
+                        <option value="{{ it }}"
+                                {% ifequal item.os_prism.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="os_base" class="id_os_base">
+                    {% for it in prescripion_num.t_base %}
+                        <option value="{{ it }}"
+                                {% ifequal item.os_base.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="os_prism1" class="id_os_prism1">
+                    {% for it in prescripion_num.t_prism %}
+                        <option value="{{ it }}"
+                                {% ifequal item.os_prism1.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="os_base1" class="id_os_base1">
+                    {% for it in prescripion_num.t_base1 %}
+                        <option value="{{ it }}"
+                                {% ifequal item.os_base1.value it %}selected="selected"{% endifequal %}>{{ it }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+    </table>
+    <table class="table table-hover">
+        <tr>
+            <th>{{ item.frame.label }}</th>
+            <th>{{ item.name.label }}</th>
+            <th>{{ item.size.label }}</th>
+        </tr>
+        <tr>
+            <td><input type="text" name="frame" class="id_frame" value="{{ item.frame.value }}"/></td>
+            <td><input type="text" name="name" class="id_name" value="{{ item.name.value }}"/></td>
+            <td><input type="text" name="size" class="id_size" value="{{ item.size.value }}"/></td>
+        </tr>
+        <tr>
+            <th>{{ item.lens_width.label }}</th>
+            <th>{{ item.lens_height.label }}</th>
+        </tr>
+        <tr>
+            <td><input type="number" name="lens_width" class="id_lens_width"
+                       value="{{ item.lens_width.value }}"/></td>
+            <td><input type="number" name="lens_height" class="id_lens_height"
+                       value="{{ item.lens_height.value }}"/></td>
+        </tr>
+    </table>
+</form>

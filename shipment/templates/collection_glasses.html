@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Shipments {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}归集{% endblock %}
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<!-- Content Header (Page header) -->
+
+<!-- Main content -->
+<section class="content">
+    <div id="div_tip" class="callout callout-default" style="display: none;">
+        <h4>Tips!</h4>
+        <p>This is only beta version.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-body">
+                    <div style="float: left;">{% include 'search.html' %}</div>
+
+{#                    {% if form_data.laborder.ship_direction %}#}
+{#                        <div style="float:left;font-size:20px;margin-left:10px;padding:0 6px;line-height:34px;text-align:center;"><span#}
+{#                                class="label                     {% if form_data.laborder.ship_direction == 'EXPRESS' %}#}
+{#                                                                    label-danger#}
+{#                                                                 {% elif form_data.laborder.ship_direction == 'CA_EXPRESS' %}#}
+{#                                                                    label-danger#}
+{#                                                                 {% elif form_data.laborder.ship_direction == 'EMPLOYEE' %}#}
+{#                                                                    label-info#}
+{#                                                                 {% elif form_data.laborder.ship_direction == 'FLATRATE' %}#}
+{#                                                                    label-warning#}
+{#                                                                 {% elif form_data.laborder.ship_direction == 'FLATRATE' %}#}
+{#                                                                    label-warning#}
+{#                                                                 {% else %}#}
+{#                                                                    label-success#}
+{#                                                                 {% endif %}#}
+{#                            ">发货方式: {{ form_data.laborder.ship_direction }}</span></div>#}
+{#                    {% endif %}#}
+                    {% if form_data.one_order_num %}
+
+                    <div style="float:left;font-size:20px;margin-left:10px;padding:0 6px;line-height:34px;text-align:center;">
+                        <span class="label {% ifequal form_data.one_order_num '1' %} label-success {% else %} label-danger {% endifequal %}">  {{ form_data.one_order_num }}  </span>
+                    </div>
+                    {% endif %}
+                    <div class="cl" style="float:left;">
+                        <table style=" margin-left: 20px;margin-top: 0px;">
+                            <tr>
+                                <td>
+                                    <label>归集来源：</label>
+                                    <select id="send_from_select">
+                                        <option value="DANYANG">丹阳</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label>归集去向：</label>
+                                    <select id="send_to_select">
+                                        <option value="SHANGHAI">上海</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="cl" style="float:left;margin-left: 10px;">
+                        <div>
+                            <label style="float:left;margin-left: 10px;">生成单号:</label>
+                            <div style="float:left;margin-left: 10px;">
+                                <input name="p_number" type="text" class="form-control" id="p_number"
+                                       value="{{ time_now }}" readonly="readonly"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    {% include 'shipment_laborder_detail_mini.html' %}
+
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <table class="table table-hover box box-default">
+                <thead>
+                <tr>
+                    <th style="padding-left:20px">编号</th>
+                    <th>来源</th>
+                    <th>去向</th>
+                    <th>订单号</th>
+                    <th>工厂单号</th>
+                    <th>创建时间</th>
+                    <th>用户</th>
+                    <th>当前状态</th>
+                    <th>备注</th>
+                </tr>
+                </thead>
+                <tbody id="list_body">
+                {% for invd in list %}
+                    <tr>
+                        <td style="padding-left:20px">{{ invd.collection_number }}</td>
+
+                        {% if invd.send_from == 'SHANGHAI' %}
+                            <td>上海</td>
+                        {% else %}
+                            <td>丹阳</td>
+                        {% endif %}
+
+                        {% if invd.send_to == 'SHANGHAI' %}
+                            <td>上海</td>
+                        {% else %}
+                            <td>丹阳</td>
+                        {% endif %}
+
+                        <td>{{ invd.lab_number }}</td>
+                        <td>{{ invd.lab_order_entity }}</td>
+                        <td>{{ invd.created_at }}</td>
+                        <td>{{ invd.user_name }}</td>
+
+                        {% if invd.status == 'IN_TRANSIT' %}
+                            <td>运输中</td>
+                        {% else %}
+                            <td>到达</td>
+                        {% endif %}
+                        <td>{{ invd.comments }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+</section>
+<!-- /.content -->
+
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        url = "{% url 'wms_delivery_frame' %}";
+
+        $("#btnSearch").on("click", function () {
+            entity = $("#number").val();
+            if (entity == '' || entity == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                //location.href = url + '?entity_id=' + entity;
+                url = "{% url 'collection_glasses' %}";
+                obj = $("#btn_delivery");
+                // var order_number = obj.attr("order_number");
+                var order_number = $("#number").val();
+                var send_to = $("#send_to_select").val();
+                var send_from = $("#send_from_select").val();
+                var time_now = $("#p_number").val()
+                obj.attr("disabled", 'disabled');
+                var index = layer.load(2); //换了种风格
+
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        'lab_nubmer': order_number,
+                        'send_to': send_to,
+                        'send_from': send_from,
+                        'time_now': time_now
+                    },
+                    success: function (arg) {
+                        layer.close(index);
+                        var obj = JSON.parse(arg);
+                        if (obj.code == 0) {
+                            layer.msg(obj.message, {time: 5000, icon: 6});
+                        } else {
+                            alert(obj.message);
+                        }
+                        window.location.href = url + '?entity_id=' + order_number + '&send_to=' + send_to + '&send_from=' + send_from;
+                    }
+                });
+            }
+        });
+
+        // dilivery暂时不用
+        $("#btn_delivery").on('click', function () {
+            url = "{% url 'collection_glasses' %}";//与查询同一个views
+
+            var order_number = $(this).attr("order_number");
+            $(this).attr("disabled", 'disabled');
+            var index = layer.load(2); //换了种风格
+
+            $.ajax({
+                url: url,
+
+                type: "POST",
+                data: {
+                    'lab_nubmer': order_number,
+                },
+                success: function (arg) {
+                    layer.close(index);
+                    var obj = JSON.parse(arg);
+                    if (obj.code == 0) {
+                        layer.msg(obj.message, {time: 3000, icon: 6});
+                    } else {
+                        alert(obj.message);
+                    }
+                    window.location.href = url;
+                }
+            });
+        });
+    </script>
+{% endblock %}

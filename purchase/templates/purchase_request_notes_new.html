@@ -1,0 +1,418 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+    {#.pur_plan{display: none;}#}
+    .order_label{float: left;line-height: 40px;}
+    .form-group .el-input{float: left;width: 200px;height: 40px;}
+    .el-textarea{width: 800px;}
+    .submit_plan{float: right;margin-top: 20px;}
+    {#.el-table .warning-row {#}
+    {#    background: #f8e3b2;#}
+    {#}#}
+    </style>
+{% endblock %}
+{% block h1 %}Purchase{% if form_data.total %}<span class="label label-default"></span>
+{% endif %} {% endblock %}
+{% block small %}采购申请{% endblock %}
+{% block content %}
+<div id="app" v-cloak>
+    <div class="row pur_plan">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">采购申请</h3>
+                </div>
+                <div class="box-header">
+                    <el-row>
+                        <el-col :span="8">
+                          <div class="form-group">
+                            <label for="plan_number" class="order_label">采购申请单号:</label>
+                            <el-input v-model="plan_number" placeholder="请输入内容" v-bind:disabled="true"></el-input>
+                          </div>
+                        </el-col>
+                        <el-col :span="8">
+                          <div class="form-group">
+                                <label for="create_at" class="order_label">选择日期时间:</label>
+                                <el-date-picker
+                                  v-model="create_at"
+                                  type="datetime"
+                                  placeholder="选择日期时间">
+                                </el-date-picker>
+                          </div>
+                        </el-col>
+                        <el-col>
+                          <div class="form-group">
+                            <label for="comments" class="order_label">说&nbsp;&nbsp;&nbsp;&nbsp;明:</label>
+                            <el-input
+                              type="textarea"
+                              :rows="2"
+                              placeholder="请输入内容"
+                              v-model="comments">
+                            </el-input>
+                          </div>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <!--<div style="float:left;color: #3a8ee6;margin-left: 20px;font-size: 18px;font-weight: bold;"><span>sku:</span><span></span></div>--><div style="float:left;color: #3a8ee6;font-size: 18px;font-weight: bold;width: 200px;"><span>小计:</span><span style="margin-left: 5px;">{% verbatim %}{{ subtotal }}{% endverbatim %}</span></div>
+                    </el-row>
+                    <el-collapse v-model="activeName" accordion>
+                      <el-collapse-item title="订单信息" name="1">
+                        <template>
+                          <el-table
+                            :data="plansData"
+                            style="width: 100%"
+                            max-height="250">
+                                <el-table-column
+                                  prop="sku"
+                                  label="型号"
+                                  width="80">
+                                </el-table-column>
+                                <el-table-column
+                                  prop="plan_rep_quantity"
+                                  label="需补货数量"
+                                  width="120">
+                                    <template slot-scope="scope">
+                                        <input class="edit-cell" v-if="scope.row.plans_edit_flag" v-model="scope.row.plan_rep_quantity" style="width: 50px;">
+                                        <span v-if="!scope.row.plans_edit_flag">
+                                            {% verbatim %}
+                                                {{scope.row.plan_rep_quantity}}
+                                            {% endverbatim %}
+                                        </span>
+                                    </template>
+                                </el-table-column>
+                                 <el-table-column label="操作">
+                                  <template slot-scope="scope">
+                                    <el-button
+                                      v-if="!scope.row.plans_edit_flag"
+                                      size="mini"
+                                      @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                                    <el-button
+                                      v-if="scope.row.plans_edit_flag"
+                                      size="mini"
+                                      type="success"
+                                      @click="handleSave(scope.$index, scope.row)">保存</el-button>
+                                    <el-button
+                                      v-if="!scope.row.plans_edit_flag"
+                                      size="mini"
+                                      type="danger"
+                                      @click="handleDel(scope.$index, scope.row)">删除</el-button>
+                                  </template>
+                                </el-table-column>
+                          </el-table>
+                        </template>
+                      </el-collapse-item>
+                    </el-collapse>
+                    <el-row>
+                        <el-button type="primary" class='submit_plan' @click="submit_request_notes()">保存</el-button>
+                    </el-row>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div style="float: left;">
+                        <div class="input-group input-group" style="width: 200px;">
+                            <input type="text" class="form-control" id="number" placeholder="Please enter the order number"
+                                   autofocus="autofocus" @keyup.enter="btnSearch">
+                            <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default btn-flat" @click="btnSearch">Search</button>
+                            </span>
+                        </div>
+                    </div>
+                    <!--<div style="float: right;">
+                        <el-button type="primary" @click="create_plan">创建采购申请</el-button>
+                    </div>-->
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <template>
+              <el-table
+                :data="tableData"
+                style="width: 100%">
+                <el-table-column
+                  prop="frame"
+                  label="SKU"
+                  width="80">
+                </el-table-column>
+                <el-table-column
+                  prop="name"
+                  label="名称"
+                  width="150">
+                </el-table-column>
+                <el-table-column
+                  prop="color"
+                  label="颜色"
+                  width="100">
+                </el-table-column>
+                <el-table-column
+                  prop="frame_type"
+                  label="镜架类型"
+                  width="200">
+                </el-table-column>
+                <el-table-column
+                  prop="quantity"
+                  label="当前库存"
+                  width="200">
+                </el-table-column>
+                <el-table-column
+                  prop="last_sales"
+                  label="上月销量（预算满30天销量）"
+                  width="230">
+                </el-table-column>
+                <el-table-column
+                  prop="plan_rep_quantity"
+                  label="需补货数量"
+                  width="120">
+                    <template slot-scope="scope">
+                        <input v-bind:disabled="scope.row.disflag" class="edit-cell"  v-model="scope.row.plan_rep_quantity" style="width: 50px;">
+{#                        <span v-if="scope.row.plan_rep_quantity">#}
+{#                            {% verbatim %}#}
+{#                                {{scope.row.plan_rep_quantity}}#}
+{#                            {% endverbatim %}#}
+{#                        </span>#}
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作">
+                  <template slot-scope="scope">
+                    <el-button
+                      v-bind:disabled="scope.row.disflag"
+                      size="mini"
+                      type="danger"
+                      @click="handleAdd(scope.$index, scope.row)">添加</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+           </template>
+        </div>
+    </div>
+    <el-pagination background
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="currentPage"
+        :page-sizes="[20, 50, 100, 200]"
+        :page-size="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total">
+    </el-pagination>
+    </div>
+{#    <!--<div style="width: 100%;text-align: center;">#}
+{#        {% include 'page_number.html' %}#}
+{#    </div>-->#}
+{% endblock %}
+{% block jquery %}
+    <script src={% static "js/vue.js" %}></script>
+    <script src={% static "js/element.js" %}></script>
+    <script src={% static "js/axios.min.js" %}></script>
+    <script src={% static "js/qs.min.js" %}></script>
+    <script>
+        $(document).ready(function (){
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+            });
+        })
+
+        var vm = new Vue({
+            el: '#app',
+            data: {
+                plan_number:'',
+                create_at:'',
+                comments:'',
+                activeName: '1',
+                tableData: [],
+                plansData:[],
+                subtotal:0,
+                edit_qty:0,
+                created_plans_flag:false,
+                total: 0,
+                currentPage: 1,
+　　　　　　　　　 pageSize: 20,
+            },
+            beforeMount(){
+            },
+            created(){
+                getPostList(this.currentPage, this.pageSize, '')
+                {#this.tableData = [#}
+                {#    {% for item in data_list %}#}
+                {#        {#}
+                {#            frame: "{{ item.frame  }}",#}
+                {#            name: "{{ item.name  }}",#}
+                {#            quantity: "{{ item.quantity  }}",#}
+                {#            status: "{{ item.status  }}",#}
+                {#            frame_type: "{{ item.frame_type  }}",#}
+                {#            sales_qty: "{{ item.sales_qty  }}",#}
+                {#            plan_rep_quantity:'',#}
+                {#            disflag:false,#}
+                {#        },#}
+                {#    {% endfor %}#}
+                {#]#}
+
+                this.create_plan()
+            },
+            mounted(){
+
+            },
+            methods: {
+                create_plan() {
+                    var now = new Date();
+       	            var year=now.getFullYear();
+                    var month=now.getMonth();
+                    var day=now.getDate();
+                    var hour=now.getHours();
+                    var minute=now.getMinutes();
+                    var second=now.getSeconds();
+                    var timestamp = String(now.getTime());
+                    str_timestamp = timestamp.substring(timestamp.length-4);
+                    if (month<9){
+                        str_month = '0'+ (month+1)
+                    }else{
+                        str_month = month+1
+                    }
+                    this.plan_number = 'CGSQ'+year + str_month + day + hour + minute + second + str_timestamp
+                    this.create_at = now
+                    this.created_plans_flag = true
+                    $(".pur_plan").show();
+                },
+                btnSearch() {
+                    order_number = $("#number").val();
+                    if (order_number == '' || order_number == null) {
+                        layer.msg('请输入 SKU!', {time: 3000, icon: 7});
+                    }
+                    else {
+                        getPostList(1, this.pageSize, order_number);
+                    }
+                },
+                handleAdd(index, row) {
+                    if(!this.created_plans_flag){
+                        alert("请先创建采购计划！");
+                        return false
+                    }
+                    if(row.plan_rep_quantity == ''){
+                        alert("补货数量不能为空！");
+                        return false
+                    }
+                    for (i=0;i<this.plansData.length;i++){
+                        if(this.plansData[i].sku == row.sku){
+                            alert("采购计划中存在该sku！");
+                            return false
+                        }
+                    }
+                    this.plansData.push({
+                        sku: row.frame,
+                        plan_rep_quantity: row.plan_rep_quantity,
+                        plans_edit_flag:false,
+                    })
+                    this.subtotal = this.subtotal + parseInt(row.plan_rep_quantity)
+                    row.disflag = true
+                    //this.$options.methods.tableRowClassName({row, index})
+                },
+                //点击编辑
+                handleEdit(index, row) {
+                    row.plans_edit_flag = true
+                    for (i=0;i<this.plansData.length;i++){
+                        if(this.plansData[i].sku == row.sku){
+                            this.edit_qty = parseInt(this.plansData[i].plan_rep_quantity)
+                        }
+                    }
+                },
+                //保存
+                handleSave(index, row) {
+                    for (i=0;i<this.plansData.length;i++){
+                        if(this.plansData[i].sku == row.sku){
+                            this.subtotal = this.subtotal - this.edit_qty + parseInt(row.plan_rep_quantity)
+                            this.plansData[i].plan_rep_quantity = row.plan_rep_quantity
+                            break
+                        }
+                    }
+                    row.plans_edit_flag = false
+                },
+                //点击删除
+                handleDel(index, row) {
+                    this.plansData = this.plansData.filter(item => {
+                              if (row.sku !== item.sku) {
+                                return true
+                              }})
+                    this.subtotal = this.subtotal - parseInt(row.plan_rep_quantity)
+                },
+                submit_request_notes(){
+                    var that = this
+                    if(this.plansData.length == 0){
+                        alert("请添加采购条目！");
+                        return false
+                    }
+
+                    data = {
+                        plan_number:this.plan_number,
+                        create_at:this.create_at,
+                        comments: this.comments,
+                        plansData:this.plansData
+                    }
+                    url = "{% url 'purchase_request_notes_submit' %}";
+                     $.ajax({
+                         type: "POST",
+                         url: url,
+                         data: {"form_data": JSON.stringify(data)},
+                         dataType: "json",
+                         success: function(ret){
+                             if(ret.code == 0){
+                                 that.plansData = [];
+                                 var url_list = "{% url 'purchase_request_notes_new' %}";
+                                 window.location.href = url_list
+                                 that.comments = '';
+                             }else{
+                                 alert(ret.msg);
+                             }
+                         }
+
+                     });
+                },
+                handleSizeChange(val){
+                  this.pageSize = val;
+                  this.currentPage = 1;
+                  getPostList(this.currentPage, this.pageSize, '')
+                },
+                handleCurrentChange(val){
+                    this.currentPage = val;
+                    getPostList(this.currentPage, this.pageSize, '')
+                },
+            }
+        });
+        function getPostList(page, pagesize, frame){
+            var url = "{% url 'purchase_request_notes_new_list' %}";
+            form_data = {page: page, pagesize: pagesize, frame: frame}
+            $.ajax({
+                type: "GET",
+                url: url,
+                data: form_data,
+                dataType: "json",
+                success: function(ret){
+                 if(ret.code == 0){
+                     vm.total = ret.data.total
+                     vm.tableData = []
+                    for(let index in ret.data.data_list) {
+                        ret.data.data_list[index].disflag = false;
+                        vm.$set(vm.tableData, index, ret.data.data_list[index]);
+                    };
+                 }else{
+                     //alert(ret.message)
+                 }
+                }
+
+            });
+        }
+    </script>
+
+
+{% endblock %}

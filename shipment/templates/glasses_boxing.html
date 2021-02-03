@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Shipments {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}装箱扫描{% endblock %}
+{% block content %}
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            过滤器 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li><a href={{ requestUrl }}?filter=week&status={{ status }}&vendor={{ vendor }}>{% ifequal filter 'week' %}
+                *{% endifequal %}
+                最近一周</a></li>
+            <li><a href={{ requestUrl }}?filter=month&status={{ status }}&vendor={{ vendor }}>
+                {% ifequal filter 'month' %}*{% endifequal %}
+                最近一月</a></li>
+            <li><a href={{ requestUrl }}?filter=all&status={{ status }}&vendor={{ vendor }}>{% ifequal filter 'all' %}
+                *{% endifequal %}
+                全部</a></li>
+        </ul>
+    </div>
+
+    <!--Search end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover table-striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Status</th>
+                <th>创建日期</th>
+                <th>发货</th>
+                <th>订单数量</th>
+                <th>眼镜数量</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td><a href="{% url 'glasses_boxing_scan' %}?pd_entity={{ item.id }}">{{ item.id }}</a></td>
+                    <td>{{ item.get_status_display }}</td>
+                    <td>{{ item.created_at }}</td>
+                    <td>{{ item.user_name }}</td>
+                    <td>{{ item.get_orders_count }}</td>
+                    <td>{{ item.get_glasses_count }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            {#上一页按钮开始#}
+            {#如果当前页有上一页#}
+            {% if list.has_previous %}
+                {#当前页的上一页按钮正常使用#}
+                <li class="previous"><a
+                        href="{{ requestUrl }}?page={{ list.previous_page_number }}&filter={{ filter }}">previous</a>
+                </li>
+            {% else %}
+                {#当前页的不存在上一页时,上一页的按钮不可用#}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {#上一页按钮结束#}
+            {#页码开始#}
+            {% for num in paginator.page_range %}
+
+                {% if num == currentPage %}
+                    <li class="item active"><a
+                            href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="item"><a
+                            href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a>
+                    </li>
+
+                {% endif %}
+            {% endfor %}
+            {#页码结束#}
+            {#下一页按钮开始#}
+            {% if list.has_next %}
+                <li class="next"><a
+                        href="{{ requestUrl }}?page={{ list.next_page_number }}&filter={{ filter }}">next</a>
+                </li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+            {#下一页按钮结束#}
+        </ul>
+    </div>
+    <!--paginator end-->
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            var url = "{% url 'delivery' %}";
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = url + '?pd_entity=' + order_number;
+            }
+        });
+    </script>
+{% endblock %}

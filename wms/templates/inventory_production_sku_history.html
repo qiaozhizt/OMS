@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .box-default .form-group {
+            overflow: hidden;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}
+    WMS {% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>{% endif %}
+{% endblock %}
+
+{% if type == "invrs" %}
+    {% block small %}<a href="/wms/wms_production_sku_history?sku={{ sku }}&type=invrs">入库记录</a> /
+        <a href="/wms/wms_production_sku_history?sku={{ sku }}&type=invds">出库记录</a>
+    {% endblock %}
+{% endif %}
+
+{% block content %}
+    {% ifequal type 'invrs' %}<span style="margin: 10px;font-size: 16px;">入库记录</span>{% endifequal %}
+    {% ifequal type 'invds' %}<span style="margin: 10px;font-size: 16px;">出库记录</span>{% endifequal %}
+    <br/>    <br/>
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <table class="table table-hover box box-default">
+                <thead>
+                <tr>
+                    <th style="padding-left:20px">编号</th>
+                    <th>SKU</th>
+                    <th>数量</th>
+                    <th>仓库</th>
+                    <th>创建时间</th>
+                    <th>出库类型</th>
+                    <th>用户</th>
+                    <th>订单号</th>
+                    <th>备注</th>
+                </tr>
+                </thead>
+                <tbody id="list_body">
+                {% for invd in list %}
+                    <tr>
+                        <td style="padding-left:20px">{{ invd.doc_number }}</td>
+                        <td>{{ invd.sku }}</td>
+                        <td>{{ invd.quantity }}</td>
+                        <td>{{ invd.warehouse.name }}</td>
+                        <td>{{ invd.created_at }}</td>
+                        <td>{{ invd.get_doc_type_display }}</td>
+                        <td>{{ invd.user_name }}</td>
+                        <td>{{ invd.lab_number }}</td>
+                        <td>{{ invd.comments }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+
+{% endblock %}

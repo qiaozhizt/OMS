@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders{% endblock %}
+{% block small %}出库申请清单{% endblock %}
+{% block content %}
+    <div style="float: left">{% include 'search.html' %}</div>
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+{#    添加VD#}
+        <button class="btn btn-default redirect_laborder_request_notes_archives" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            VD <span class="caret"></span>
+        </button>
+
+            <ul class="dropdown-menu">
+                <li>
+                    <a href="{% url 'laborder_request_notes_archives' %}?vendor=all">
+                    {% ifequal vendor 'all' %}
+                        *
+                    {% endifequal %}
+                    全部</a>
+                </li>
+                 {% for vc in vendors_choices %}
+                    <li>
+                        <a href={{ requestUrl }}?vendor={{ vc.key }}>
+                            {% ifequal vendor vc.key %}
+                                *
+                            {% endifequal %}
+                            {{ vc.value }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+    </div>
+    <!--Search end-->
+
+    <!--Actions-->
+    <div class="cl" style="display:none">
+        <div style="float: left;margin-right: 3px;margin-left:10px; display:none;">
+            <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" href={% url 'laborder_request_notes_print' %}?vendor={{ vendor }}
+               target='view_window'>打印</a>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" href={% url 'laborder_request_notes_create' %}?vendor={{ vendor }}
+               target='view_window'>生成条码清单</a>
+        </div>
+    </div>
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>订单 Entity</th>
+                <th>订单号</th>
+
+                <th>订单数量</th>
+                <th>创建日期</th>
+                <th>VD</th>
+
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td><a href={% url 'laborder_request_notes_detail' %}?id={{ item.id }}>{{ item.id }}</a></td>
+                    <td>{{ item.laborder_id }}</td>
+                    <td>{{ item.lab_number }}</td>
+                    <td>{{ item.count }}</td>
+                    <td>{{ item.created_at }}</td>
+                    <td>{{ item.vendor }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+
+{% endblock %}
+

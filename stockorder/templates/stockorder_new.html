@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="/static/layui/css/layui.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery.searchableSelect.css" />
+    <style>
+        .span_title{
+            padding-right: 30px;
+        }
+        .stack_a{
+            cursor: pointer;
+            color: #ffffff;
+        }
+        /* 防止下拉框的下拉列表被隐藏---必须设置--- */
+        .layui-table-cell {overflow: visible !important;        }
+        /* 使得下拉框与单元格刚好合适 */
+        td .layui-form-select{
+            margin-top: -10px;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+        .required_text{color: #cb2027;font-size: 20px;padding-top: 5px;position: relative;top: 5px;}
+        .searchable-select-dropdown{z-index: 99999;}
+    </style>
+{% endblock %}
+{% block h1 %}成镜订单管理{% endblock %}
+{% block small %}新建成镜订单{% endblock %}
+{% block content %}
+{#    <div class="row">#}
+{#        {% include 'ra_error_message.html' %}#}
+{#    </div>#}
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header form-horizontal box box-default">
+                    <div class="form-group">
+                        <label for="p_number" class="col-sm-2 control-label"><span class="required_text">*</span>成镜订单号:</label>
+                        <div class="col-sm-4">
+                            <input name="p_number" type="text" class="form-control" id="stock_order_number" value="{{ stock_order_number }}" readonly="readonly" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>开始日期:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="layui-input" id="start_date"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>结束日期:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="layui-input" id="finish_date"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>成镜SKU:</label>
+                        <div class="col-sm-4">
+                            <select name="frame_sku" id="frame_sku" class="form-control select_sku">
+                                <option class="parameter" value="">成镜SKU</option>
+                                {% for item in product_frame_lists %}
+                                    <option class="parameter" value="{{ item.sku }}">{{ item.sku }}</option>
+                                {% endfor %}
+                            </select>
+                            <!--<input type="text" class="form-control" id="frame_sku"/>-->
+                        </div>
+                    </div>
+{#                    <div class="form-group">#}
+{#                        <label class="col-sm-2 control-label">Lens SKU:</label>#}
+{#                        <div class="col-sm-4">#}
+{#                            <input type="text" class="form-control" id="lens_sku"/>#}
+{#                        </div>#}
+{#                    </div>#}
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>数量:</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control" id="quantity" placeholder="Quantity" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="comments" class="col-sm-2 control-label">Comments:</label>
+                        <div class="col-sm-4">
+                            <textarea name='comments' maxlength="128" class="form-control" id="comments" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-4">
+                             <button id="save_btn" type="button" class="btn btn-primary">保存</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Stock Order information：</h3>
+                </div>
+                <table class="layui-hide" id="stock_in_table" lay-filter="demo" style="overflow-x: hidden;"></table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.searchableSelect.js"></script>
+    <script>
+        $(function(){
+			$('.select_sku').searchableSelect();
+		});
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        laydate.render({
+          elem: '#start_date'
+          ,type: 'datetime' //默认，可不填
+        });
+        laydate.render({
+          elem: '#finish_date'
+          ,type: 'datetime' //默认，可不填
+        });
+        layui.use(['table', 'layer', 'element', 'jquery', 'form'], function() {
+            var table = layui.table;
+            var form = layui.form;
+            //第一个实例
+            table.render({
+                elem: '#stock_in_table'
+                , height: 'full-300'
+                , url: "{% url 'stock_order_new_data' %}"
+                ,done: function(res, curr, count){
+                   // 渲染dictName列
+                    form.render('select');
+                    //得到当前页码
+                    console.log(curr);
+                    //得到数据总量
+                    console.log(count);
+                }
+                , cellMinWidth: 100
+                , page: true //开启分页
+                , limit:30
+                , limits:[30,50,70,90,120,10000]
+                , even: true
+                , cols: [[ //表头
+                    {field: 'id', title: 'ID', fixed: 'left', width: 80, sort: true,}
+                    , {field: 'stock_order_number', title: '订单号', width: 200}
+                    , {field: 'product_sku', title: '成镜SKU'}
+                    , {field: 'quantity', title: '数量',sort:true}
+                    , {field: 'frame', title: '镜架 SKU'}
+                    , {field: 'od_lens_name', title: '镜片(OD)', width: 200}
+                    , {field: 'od_lens_sph', title: 'SPH'}
+                    , {field: 'od_lens_cyl', title: 'CYL'}
+                    , {field: 'od_len_qty', title: '数量'}
+                    , {field: 'os_lens_name', title: '镜片(OS)', width: 200}
+                    , {field: 'os_lens_sph', title: 'SPH'}
+                    , {field: 'os_lens_cyl', title: 'CYL'}
+                    , {field: 'os_len_qty', title: '数量'}
+                    , {field: 'comments', title: '备注'}
+                    , {field: 'start_date', title: '开始日期', width: 200}
+                    , {field: 'finish_date', title: '结束日期', width: 200}
+                    , {field: 'user_name', title: '用户'}
+                ]]
+            });
+        });
+        $("#save_btn").click(function () {
+            var stock_order_number = $("#stock_order_number").val();
+            var start_date = $("#start_date").val();
+            var finish_date = $("#finish_date").val();
+            var frame_sku = $("#frame_sku").val();
+            var lens_sku = $("#lens_sku").val();
+            var quantity = $("#quantity").val();
+            var comments = $("#comments").val();
+
+            if(start_date == ''){
+                layer.msg('Start Date cannot be empty!', {time:1000,icon:7});
+                return
+            }
+            if(finish_date == ''){
+                layer.msg('Finish Date cannot be empty!', {time:1000,icon:7});
+                return
+            }
+            if(frame_sku == ''){
+                layer.msg('Frame SKU cannot be empty!', {time:1000,icon:7});
+                return
+            }
+            {#if(lens_sku == ''){#}
+            {#    layer.msg('Lens SKU cannot be empty!', {time:1000,icon:7});#}
+            {#    return#}
+            {#}#}
+            if(quantity == '' || parseInt(quantity) == 0){
+                layer.msg('Quantity cannot be empty!', {time:1000,icon:7});
+                return
+            }
+            var url = "{% url 'stock_order_save' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "stock_order_number": stock_order_number,
+                    "start_date": start_date,
+                    "finish_date": finish_date,
+                    "frame_sku": frame_sku,
+                    "lens_sku": lens_sku,
+                    "quantity": quantity,
+                    "comments": comments
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == 0){
+                        layer.msg(arg.msg, {time:3000,icon:6});
+                        window.location.reload();
+                    }else{
+                        layer.msg(arg.msg, {time:3000,icon:7});
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

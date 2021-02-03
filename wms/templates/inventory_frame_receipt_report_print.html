@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>镜架入库记录汇总</title>
+    <link rel="stylesheet" href="{% static "css/print_template.css" %}">
+    <script src={% static "js/jquery-2.2.3.min.js" %}></script>
+</head>
+<script>
+    $(document).ready(function () {
+        window.print();
+    })
+</script>
+<body>
+<div id="print-content">
+        <div class="header clear">
+            <div class="titleArea">
+                <h1>镜架入库记录汇总</h1>
+            </div>
+        </div>
+        <p> </p>
+        <table class="tableTopBorder_3">
+            <thead>
+            <tr class="height30">
+                <th >#</th>
+                <th>入库编号</th>
+                <th>SKU</th>
+                <th>仓库名称</th>
+                <th>入库方式</th>
+                <th>用户</th>
+                <th>创建时间</th>
+                <th>单号</th>
+                <th>备注</th>
+                <th>总数</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for itme in list %}
+                <tr class="height30">
+                    <td>{{ forloop.counter}}</td>
+                    <td>{{ itme.doc_number }}</td>
+                    <td>{{ itme.sku }}</td>
+                    <td>{{ itme.warehouse_id }}</td>
+                    <td>{{ itme.doc_type }}</td>
+                    <td>{{ itme.user_name}}</td>
+                    <td>{{ itme.created_at}}</td>
+                    <td>{{ itme.lab_number }}</td>
+                    <td>{{ itme.comments}}</td>
+                    <td>{{ itme.sum}}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="pageBreak"><!--如果需要强制换页就在上一页的未尾出加上此代码--></div>
+</div>
+
+<button style="display:none" id="print_1">打印</button>
+</body>
+</html>

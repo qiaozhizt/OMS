@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders {% if page_info.total %}<span class="label label-default" >{{ page_info.total }}</span>{% endif %} {% endblock %}
+{% block small %}All LAB Orders V2{% endblock %}
+{% block content %}
+    <div style="float: left;display:none">{% include 'search.html' %}</div>
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;display:none">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            过滤器 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+
+            <li><a href="{% url 'laborder_request_notes' %}?filter=all">{% ifequal filter 'all' %}*{% endifequal %}
+                全部</a></li>
+            <li style="display:none">&nbsp</li>
+            <li><a href="{% url 'laborder_request_notes' %}?filter=new">{% ifequal filter 'new' %}
+                *{% endifequal %}新订单</a></li>
+        </ul>
+    </div>
+    <!--Search end-->
+
+    <!--Actions-->
+    <div class="cl">
+        <div style="float: left;margin-right: 3px;margin-left:10px;">
+            <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" href={% url 'laborder_request_notes_print' %}?id={{ form_data.id }}
+               target='view_window'>打印</a>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" href={% url 'laborder_request_notes_generate_barcode' %}?id={{ form_data.id }}
+               target='view_window'>生成条码清单</a>
+        </div>
+
+        <div style="float: left;margin-left: 5px;">
+            <a class="btn btn-block btn-default" href={% url 'laborder_request_notes_delivery' %}?id={{ form_data.id }}
+               target='view_window'>批量镜架出库</a>
+        </div>
+    </div>
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>镜架</th>
+                <th>订单号</th>
+                <th>数量</th>
+                <th>车房片</th>
+                <th>订单日期</th>
+                <th>订单下达日期</th>
+                <th>订单状态</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td>{{ item.index }}</td>
+                    <td>{{ item.frame }}</td>
+                    <td>{{ item.lab_number }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.lens_type }}</td>
+                    <td>{{ item.order_date }}</td>
+                    <td>{{ item.order_created_date }}</td>
+                    <td>{{ item.status_value }}</td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            {#上一页按钮开始#}
+            {#如果当前页有上一页#}
+            Total: {{ page_info.total }}
+            {% if list.has_previous %}
+                {#当前页的上一页按钮正常使用#}
+                <li class="previous"><a
+                        href="{{ requestUrl }}?page={{ list.previous_page_number }}&filter={{ filter }}&id={{ form_data.id }}">previous</a>
+                </li>
+            {% else %}
+                {#当前页的不存在上一页时,上一页的按钮不可用#}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {#上一页按钮结束#}
+            {#页码开始#}
+            {% for num in paginator.page_range %}
+
+                {% if num == currentPage %}
+                    <li class="item active"><a href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&id={{ form_data.id }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="item"><a href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}&id={{ form_data.id }}">{{ num }}</a></li>
+
+                {% endif %}
+            {% endfor %}
+            {#页码结束#}
+            {#下一页按钮开始#}
+            {% if list.has_next %}
+                <li class="next"><a
+                        href="{{ requestUrl }}?page={{ list.next_page_number }}&filter={{ filter }}&id={{ form_data.id }}">next</a>
+                </li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+            {#下一页按钮结束#}
+        </ul>
+    </div>
+    <!--paginator end-->
+
+{% endblock %}

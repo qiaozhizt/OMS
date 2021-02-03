@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}WMS
+    {% if form_data.total %}
+        <span class="label label-default">{{ form_data.total }}</span>
+    {% endif %}
+{% endblock %}
+{% block small %}仓库新建&维护{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <div style="float: left;">{% include 'search.html' %}</div>
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+                        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                            仓库类型 <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href={{ requestUrl }}?product_type=all>
+                                    {% ifequal product_type 'all' %}
+                                        *{% endifequal %}All</a></li>
+                            <li>&nbsp</li>
+
+                            {% for ut in user_to_choices_list %}
+                                <li>
+                                    <a href={{ requestUrl }}?product_type={{ ut.key }}>
+                                        {% ifequal product_type ut.key %}
+                                            *
+                                        {% endifequal %}
+                                        {{ ut.value }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addmyModal" style="float: right;">新建</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-solid">
+                <div class="box-body">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>仓库类型</th>
+                        <th>是否可售</th>
+                        <th>创建时间</th>
+                        <th>更新时间</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                        </thead>
+                        <tbody>
+                        {% for item in list %}
+                            <tr>
+                                <td>{{ item.code  }}</td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.location }}</td>
+                                <td>{{ item.get_used_to_display }}</td>
+                                <td>{% if item.is_sale %} 可售 {% else %} 不可售 {% endif %}</td>
+                                <td>{{ item.created_at|date:"Y-m-d H:i:s"}}</td>
+                                <td>{{ item.updated_at|date:"Y-m-d H:i:s"}}</td>
+                                <td>{{ item.comments }}</td>
+                                <td><button type="button" class="btn btn-info edit_sku" data="{{ item.code }}">编辑</button></td>
+                            </tr>
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!--日期选择弹窗-->
+    <!--日期选择弹窗-->
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+         <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">编辑仓库</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_code" class="col-sm-4 control-label">Code</label>
+                        <div class="col-sm-8">
+                            <input name="e_code" type="text" class="form-control" id="e_code" readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_name" class="col-sm-4 control-label">Name</label>
+                        <div class="col-sm-8">
+                            <input name="e_name" type="text" class="form-control" id="e_name"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_loction" class="col-sm-4 control-label">Loction</label>
+                        <div class="col-sm-8">
+                            <input name="e_loction" type="text" class="form-control" id="e_loction"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_product_type" class="col-sm-4 control-label">仓库类型</label>
+                        <div class="col-sm-8">
+                            <select name="e_product_type" id="e_product_type" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in user_to_choices_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_sale" class="col-sm-4 control-label">是否可售</label>
+                        <div class="col-sm-8">
+                            <select name="e_sale" id="e_sale" class="form-control">
+                                <option value="1">可售</option>
+                                <option value="0">不可售</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="e_comments" class="col-sm-4 control-label">备注</label>
+                        <div class="col-sm-8">
+                            <textarea maxlength="128" class="form-control" id="e_comments" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="save_sku">确认</button>
+                </div>
+            </div><!-- /.modal -->
+        </div>
+    </div>
+
+   <div class="modal fade" id="addmyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+         <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新建仓库</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_code" class="col-sm-4 control-label">Code</label>
+                        <div class="col-sm-8">
+                            <input name="add_code" type="text" class="form-control" id="add_code"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_name" class="col-sm-4 control-label">Name</label>
+                        <div class="col-sm-8">
+                            <input name="add_name" type="text" class="form-control" id="add_name"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_loction" class="col-sm-4 control-label">Loction</label>
+                        <div class="col-sm-8">
+                            <input name="add_loction" type="text" class="form-control" id="add_loction"/>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_product_type" class="col-sm-4 control-label">仓库类型</label>
+                        <div class="col-sm-8">
+                            <select name="add_product_type" id="add_product_type" class="form-control">
+                                <option value="">请选择</option>
+                                {% for pt in user_to_choices_list %}
+                                        <option value="{{ pt.key }}">{{ pt.value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                   <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_sale" class="col-sm-4 control-label">是否可售</label>
+                        <div class="col-sm-8">
+                            <select name="add_sale" id="add_sale" class="form-control">
+                                <option value="">请选择</option>
+                                <option value="1">可售</option>
+                                <option value="0">不可售</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="height: 40px;line-height: 40px;">
+                        <label for="add_comments" class="col-sm-4 control-label">备注</label>
+                        <div class="col-sm-8">
+                            <textarea maxlength="128" class="form-control" id="add_comments" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="add_sku_btn">确认</button>
+                </div>
+            </div><!-- /.modal -->
+        </div>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+
+            url = "{% url 'wms_add_edit_warehouse' %}";
+
+            if (sku == '' || sku == null) {
+                layer.msg('请输入code&name', {time: 3000, icon: 7});
+            } else {
+                location.href = url + '?sku=' + sku+'&product_type={{ product_type }}';
+            }
+        });
+        $(".edit_sku").click(function () {
+            var code = $(this).attr("data");
+            var url = "{% url 'wms_edit_warehouse' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "code": code,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#e_code").val(arg.data.code);
+                        $("#e_name").val(arg.data.name);
+                        $("#e_product_type option[value='"+arg.data.used_to+"']").attr("selected","selected");
+                        $("#e_sale option[value='"+arg.data.is_sale+"']").attr("selected","selected");
+                        $("#e_loction").val(arg.data.location);
+                        $("#e_comments").val(arg.data.comments);
+                        $("#myModal").modal('show');
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+        $("#save_sku").click(function () {
+            var e_code = $("#e_code").val();
+            var e_name = $("#e_name").val();
+            var e_product_type = $("#e_product_type").val();
+            var e_loction = $("#e_loction").val();
+            var e_sale = $("#e_sale").val();
+            var e_comments = $("#e_comments").val();
+            var url = "{% url 'wms_save_warehouse' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "code": e_code,
+                    "name": e_name,
+                    "used_to": e_product_type,
+                    "location": e_loction,
+                    "sale": e_sale,
+                    "comments": e_comments,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#myModal").modal('hide');
+                        layer.msg(arg.msg, {time: 3000, icon: 6});
+                         location.reload();
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+        $("#add_sku_btn").click(function () {
+            var add_code = $("#add_code").val();
+            var add_name = $("#add_name").val();
+            var add_product_type = $("#add_product_type").val();
+            var add_loction = $("#add_loction").val();
+            var add_sale = $("#add_sale").val();
+            var add_comments = $("#add_comments").val();
+            if(add_code == ''){
+                layer.msg('Code不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_name == ''){
+                layer.msg('Name不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_sale == ''){
+                layer.msg('是否可售不能为空', {time: 3000, icon: 7});
+                return
+            }
+            if(add_product_type == ''){
+                layer.msg('类型不能为空', {time: 3000, icon: 7});
+                return
+            }
+            var url = "{% url 'wms_add_warehouse' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "code": add_code,
+                    "name": add_name,
+                    "used_to": add_product_type,
+                    "location": add_loction,
+                    "sale": add_sale,
+                    "comments": add_comments,
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == '0'){
+                        $("#addmyModal").modal('hide');
+                        layer.msg(arg.msg, {time: 3000, icon: 6});
+                        location.reload()
+                    }else{
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

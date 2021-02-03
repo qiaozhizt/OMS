@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="/static/layui/css/layui.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery.searchableSelect.css" />
+    <style>
+        .span_title{
+            padding-right: 30px;
+        }
+        .stack_a{
+            cursor: pointer;
+            color: #ffffff;
+        }
+        /* 防止下拉框的下拉列表被隐藏---必须设置--- */
+        .layui-table-cell {overflow: visible !important;        }
+        /* 使得下拉框与单元格刚好合适 */
+        td .layui-form-select{
+            margin-top: -10px;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}成镜订单管理{% endblock %}
+{% block small %}新建内部调拨单{% endblock %}
+{% block content %}
+{#    <div class="row">#}
+{#        {% include 'ra_error_message.html' %}#}
+{#    </div>#}
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header form-horizontal box box-default">
+                    <div class="form-group">
+                        <label for="p_number" class="col-sm-2 control-label">Interbranch Order:</label>
+                        <div class="col-sm-4">
+                            <input name="p_number" type="text" class="form-control" id="interbranch_order_number" value="{{ stock_order_number }}" readonly="readonly" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="p_number" class="col-sm-2 control-label">调出仓库:</label>
+                        <div>
+                            <select style="width: 31%;margin-left: 14px; height: 35px; line-height: 35px;" id="issuing_warehouse">
+                                <option value="">请选择调出仓库</option>
+                                {% for item in whs %}
+                                    <option value="{{ item.code }}">{{ item.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="p_number" class="col-sm-2 control-label">库位:</label>
+                        <div class="col-sm-4">
+                            <input name="p_number" type="text" class="form-control" id="issuing_location" value="" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="p_number" class="col-sm-2 control-label">调入仓库:</label>
+                        <div>
+                            <select style="width: 31%;margin-left: 14px; height: 35px; line-height: 35px;" id="receiving_warehouse">
+                                <option value="">请选择调入仓库</option>
+                                {% for item in whs %}
+                                    <option value="{{ item.code }}">{{ item.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="p_number" class="col-sm-2 control-label">库位:</label>
+                        <div class="col-sm-4">
+                            <input name="p_number" type="text" class="form-control" id="receiving_location" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">SKU:</label>
+                        <div class="col-sm-4">
+                            <select name="frame_sku" id="frame_sku" class="form-control select_sku">
+                                <option class="parameter" value="">成镜SKU</option>
+                                {% for item in product_frame_lists %}
+                                    <option class="parameter" value="{{ item.sku }}">{{ item.sku }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+{#                    <div class="form-group">#}
+{#                        <label class="col-sm-2 control-label">Lens SKU:</label>#}
+{#                        <div class="col-sm-4">#}
+{#                            <input type="text" class="form-control" id="lens_sku"/>#}
+{#                        </div>#}
+{#                    </div>#}
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">数量:</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control" id="quantity" placeholder="Quantity" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">SKU 类型:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="sku_attribute" value="STKO" readonly="readonly"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">完成日期:</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="layui-input" id="fulfilment_date"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="comments" class="col-sm-2 control-label">备注:</label>
+                        <div class="col-sm-4">
+                            <textarea name='comments' maxlength="128" class="form-control" id="comments" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-4">
+                             <button id="save_btn" type="button" class="btn btn-primary">确认</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+{#    <div class="row">#}
+{#        <div class="col-xs-12">#}
+{##}
+{#            <div class="box box-default">#}
+{#                <div class="box-header">#}
+{#                    <h3 class="box-title">Stock Order information：</h3>#}
+{#                </div>#}
+{#                <table class="layui-hide" id="stock_in_table" lay-filter="demo" style="overflow-x: hidden;"></table>#}
+{#                <!-- /.box-body -->#}
+{#            </div>#}
+{#            <!-- /.box -->#}
+{#        </div>#}
+{#    </div>#}
+
+{% endblock %}
+{% block jquery %}
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.searchableSelect.js"></script>
+    <script>
+        $(function(){
+			$('.select_sku').searchableSelect();
+		});
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        laydate.render({
+          elem: '#fulfilment_date'
+          ,type: 'datetime' //默认，可不填
+        });
+        layui.use(['table', 'layer', 'element', 'jquery', 'form'], function() {
+            var table = layui.table;
+            var form = layui.form;
+            //第一个实例
+            table.render({
+                elem: '#stock_in_table'
+                , height: 'full-300'
+                , data:[]
+                ,done: function(res, curr, count){
+                   // 渲染dictName列
+                    form.render('select');
+                    //得到当前页码
+                    console.log(curr);
+                    //得到数据总量
+                    console.log(count);
+                }
+                , cellMinWidth: 100
+                , page: true //开启分页
+                , limit:30
+                , limits:[30,50,70,90,120,10000]
+                , even: true
+                , cols: [[ //表头
+                    {field: 'frame', title: 'Frame SKU', fixed: 'left', width: 80, sort: true,}
+                    , {field: 'lens_sku', title: 'Lens SKU', width: 200}
+                    , {field: 'quantity', title: 'Quantity', width: 100}
+                    , {field: 'lens_sku', title: 'Lens SKU',width: 100}
+                    , {field: 'quantity', title: 'Quantity', sort:true, width: 100}
+                    , {field: 'warehouse_from', title: 'Issuing Warehouse', width: 260}
+                    , {field: 'warehouse_to', title: 'Receiving Warehouse', width: 260}
+                    , {field: 'comments', title: 'Comments'}
+                ]]
+            });
+        });
+        $("#save_btn").click(function () {
+            var interbranch_order_number = $("#interbranch_order_number").val();
+            var issuing_warehouse = $("#issuing_warehouse").val();
+            var issuing_location = $("#issuing_location").val();
+            var receiving_warehouse = $("#receiving_warehouse").val();
+            var receiving_location = $("#receiving_location").val();
+            var frame_sku = $("#frame_sku").val();
+            var lens_sku = $("#lens_sku").val();
+            var quantity = $("#quantity").val();
+            var sku_attribute = $("#sku_attribute").val();
+            var fulfilment_date = $("#fulfilment_date").val();
+            var comments = $("#comments").val();
+            if(issuing_warehouse == ''){
+                layer.msg("请选择 issuing_warehouse", {time:1000,icon:7})
+                return
+            }
+            if(receiving_warehouse == ''){
+                layer.msg("请选择 receiving_warehouse", {time:1000,icon:7})
+                return
+            }
+            if(issuing_warehouse == receiving_warehouse){
+                layer.msg("仓库相同不能生成移库单！", {time:1000,icon:7})
+                return
+            }
+            if(frame_sku == ''){
+                layer.msg("Frame SKU 不能为空！", {time:1000,icon:7})
+                return
+            }
+            if(lens_sku == ''){
+                layer.msg("Lens SKU 不能为空！", {time:1000,icon:7})
+                return
+            }
+            if(quantity == '' || quantity == '0' || quantity == 0){
+                layer.msg("Quantity 不能为空或0！", {time:1000,icon:7})
+                return
+            }
+            var url = "{% url 'interbranch_order_save' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "interbranch_order_number": interbranch_order_number,
+                    "issuing_warehouse": issuing_warehouse,
+                    "issuing_location": issuing_location,
+                    "receiving_warehouse": receiving_warehouse,
+                    "receiving_location": receiving_location,
+                    "frame_sku": frame_sku,
+                    "lens_sku": lens_sku,
+                    "quantity": quantity,
+                    "sku_attribute": sku_attribute,
+                    "fulfilment_date": fulfilment_date,
+                    "comments": comments
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == 0){
+                        layer.msg(arg.msg, {time:3000,icon:6});
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000)
+
+                    }else{
+                        layer.msg(arg.msg, {time:3000,icon:7});
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,538 @@
+<div class="col-md-12 self_pspf" id="item_{{ item.item_id.value }}">
+
+    <!-- /.box-body -->
+    <!-- /.box-footer -->
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <div class="form-group">
+                    <div class="col-sm-12 order-images-each">
+                        <img src="{{ prd_img_pre }}{{ item.thumbnail.value }}"
+                             class="img-responsive center-block"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.frame.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.frame.value }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.name.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.name.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.quantity.label }}</b></div>
+                    <div class="col-sm-8">
+                        <span class="label label-default">{{ item.quantity.value }}</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.size.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.size.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.lens_width.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.lens_width.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.lens_height.label }}</b></div>
+                    <div class="col-sm-8">{{ item.lens_height.value }}</div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>ED</b></div>
+                    <div class="col-sm-8 item_ed">please waiting...</div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>Lab Seg Height</b></div>
+                    <div class="col-sm-8 pspf_process">{{ instance.lab_seg_height }}</div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-4"><b>Assemble Height</b></div>
+                    <div class="col-sm-8 pspf_process">{{ instance.assemble_height }}</div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-4"><b>Submirrors Height</b></div>
+                    <div class="col-sm-8 pspf_process">{{ instance.sub_mirrors_height }}</div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-4"><b>Special Handling</b></div>
+                    <div class="col-sm-8 pspf_process">{{ instance.special_handling }}</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="form-group">
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.lens_sku.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.lens_sku.value }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.lens_name.label }}</b></div>
+                    <div class="col-sm-8
+                    {% if 'Lined Bifocal' in item.lens_name.value  %}
+                        text-danger
+                    {% endif %}
+                       ">
+                        {{ item.lens_name.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.coating_sku.label }}</b></div>
+                    <div class="col-sm-8">
+                        <span class="label label-default"> {{ item.coating_sku.value }}</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.coating_name.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.coating_name.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.tint_sku.label }}</b></div>
+                    <div class="col-sm-8">
+                        <span class="label label-default">{{ item.tint_sku.value }}</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.tint_name.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.tint_name.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.pal_design_sku.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.pal_design_sku.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.pal_design_name.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.pal_design_name.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.pupils_position.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.pupils_position.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.pupils_position_name.label }}</b></div>
+                    <div class="col-sm-8">
+                        {{ item.pupils_position_name.value }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-4"><b>{{ item.channel.label }}</b></div>
+                    <div class="col-sm-8 m_channel">
+                        {{ item.channel.value }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <table class="table table-hover">
+                <tr>
+                    <th>Profile ID</th>
+                    <th>Profile Name</th>
+                    {% if item.product_options.value %}
+                        <th>Is NonRx</th>
+                    {% endif %}
+                    <th>Prescription ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Used For</th>
+                </tr>
+                <tr>
+                    <td>{{ item.profile_id.value }}</td>
+                    <td>{{ item.profile_name.value }}</td>
+                    {% if item.product_options.value %}
+                        <td>{{ item.is_nonPrescription.value }}</td>
+                    {% endif %}
+                    <td><a class="prescription_id" href="javascript:void(0)" data-psid="{{ item.item_id.value }}" title="Original Prescription">{{ item.prescription_id.value }}</a></td>
+                    <td>{{ item.prescription_name.value }}</td>
+                    <td>{{ item.prescription_type.value }}</td>
+                    <td><span class="label label-default">{{ item.used_for.value }}</span></td>
+                </tr>
+            </table>
+
+            <table class="table table-hover">
+                <tr>
+                    <th>#</th>
+                    <th>SPH</th>
+                    <th>CYL</th>
+                    <th>AXIS</th>
+                    <th>ADD</th>
+                    <th>PD</th>
+                </tr>
+                <tr>
+                    <td>OD</td>
+                    <td>{{ item.od_sph.value }}</td>
+                    <td>{{ item.od_cyl.value }}</td>
+                    <td>{{ item.od_axis.value }}</td>
+                    <td>{{ item.od_add.value }}</td>
+                    <td>
+                        {% ifequal item.is_singgle_pd.value 1 %}{{ item.pd.value }}{% endifequal %}
+                        {% ifequal item.is_singgle_pd.value 0 %}{{ item.od_pd.value }}{% endifequal %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>OS</td>
+                    <td>{{ item.os_sph.value }}</td>
+                    <td>{{ item.os_cyl.value }}</td>
+                    <td>{{ item.os_axis.value }}</td>
+                    <td>{{ item.os_add.value }}</td>
+                    <td>
+                        {% ifequal item.is_singgle_pd.value 0 %}{{ item.os_pd.value }}{% endifequal %}
+                    </td>
+                </tr>
+            </table>
+
+            <table class="table table-hover">
+                <tr>
+                    <th>#</th>
+                    <th>Prism-H</th>
+                    <th>Base-H</th>
+                    <th>Prism-V</th>
+                    <th>Base-V</th>
+                </tr>
+                <tr>
+                    <td>OD</td>
+                    <td>{{ item.od_prism.value }}</td>
+                    <td>{{ item.od_base.value }}</td>
+                    <td>{{ item.od_prism1.value }}</td>
+                    <td>{{ item.od_base1.value }}</td>
+                </tr>
+                <tr>
+                    <td>OS</td>
+                    <td>{{ item.os_prism.value }}</td>
+                    <td>{{ item.os_base.value }}</td>
+                    <td>{{ item.os_prism1.value }}</td>
+                    <td>{{ item.os_base1.value }}</td>
+                </tr>
+            </table>
+
+            <table class="table table-hover">
+                <tr>
+                    <th>Dia_1</th>
+                    <th>Dia_2</th>
+                    <th>MONO PD OFF CTR MM</th>
+                </tr>
+                <tr>
+                    <td>{{ instance.get_dia_1 }}</td>
+                    <td>{{ instance.get_dia_2 }}</td>
+                    <td>{{ instance.get_mono_pd_off_ctr_mm }}</td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            {% for order_image_url in order_image_urls %}
+                <div class="col-sm-2 order-images-each">
+                    <img src="{{ order_image_url.image_url }}" title="{{ order_image_url.image_type_name }}"
+                         alt="{{ order_image_url.image_type_name }}" class="img-responsive center-block"/>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <b>{{ item.instruction.label }}</b>
+                <label>
+                    <span class="label label-default"> {{ item.instruction.value }}</span>
+                </label>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <b>{{ item.comments.label }}</b><br>
+                <span class="label label-default" id="item_{{ item.item_id.value }}_cmt"> {{ item.comments.value }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-hover">
+                <tr>
+                    <th>Lab Number</th>
+                    <th>Status</th>
+                    <th>Origin Status</th>
+                    <th>Estimated Date</th>
+                    <th>Create Date</th>
+                    <th>Update Date</th>
+                    <th>ACT Shipmethod</th>
+                    <th>User</th>
+                    <th>Shipping</th>
+                    <th>Comments Inner</th>
+                    <th>Comments</th>
+                </tr>
+                {% for lbo in lab_orders %}
+                    <tr>
+                        <td><a href="{% url 'laborder_list_v2' %}?order_number={{ lbo.lab_number }}" target="_blank">{{ lbo.lab_number }}</a></td>
+                        <td>{% ifequal "" lbo.status %}NEW_ORDER{% else %}{{ lbo.status }}{% endifequal %}</td>
+                        <td>{{ lbo.current_status }}</td>
+                        <td>{{ lbo.estimated_date }}</td>
+                        <td>{{ lbo.create_at }}</td>
+                        <td>{{ lbo.update_at }}</td>
+                        <td>{{ lbo.act_ship_direction }}</td>
+                        <td>{{ lbo.user_name }}</td>
+                        <td class="p_chg_{{ lbo.id }}">{{ lbo.comments_ship }}</td>
+                        <td>{{ lbo.comments_inner }}</td>
+                        <td class="chg_{{ lbo.id }}">{{ lbo.comments }}</td>
+                    </tr>
+                    <tr>
+                    {% include 'laborder_detail_tracking_log_en.pspf.html' %}
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <!-- /.box-body -->
+    <div class="row">
+        <div class="col-md-12">
+            <!--4、左边渐变透明：-->
+            <hr style="filter: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color="#987cb9" size=3>
+        </div>
+        <div class="col-md-12">
+            <button type="button" name="btn_add_item_comments"
+                    class="btn btn-default btn pull-right item-each-addcomments"
+                    data-order_number="{{ item.order_number.value }}"
+                    data-obj_type="{{ obj_type }}"
+                    data-obj_id="{{ obj_id }}"
+                    data-cmt_info="item_{{ item.item_id.value }}_cmt"
+                    data-action_value="EDIT COMMENTS"
+            >Item Comments</button>
+            <button type="button" name="edit_lab_comments" style="margin-right:10px"
+                    class="btn btn-default btn pull-right item-each-labcomments"
+                    data-order_number="{{ item.order_number.value }}"
+                    data-item_id="{{ item.item_id.value }}"
+                    data-product_index="{{ item.product_index.value }}"
+                    data-action_value="EDIT COMMENTS"
+            >Lab Comments</button>
+            <button type="button" name="edit_ship_comments" style="margin-right:10px"
+                    class="btn btn-default btn pull-right item-each-shipcomments"
+                    data-order_number="{{ item.order_number.value }}"
+                    data-item_id="{{ item.item_id.value }}"
+                    data-product_index="{{ item.product_index.value }}"
+                    data-action_value="EDIT COMMENTS"
+            >ship Comments</button>
+            <button type="button" name="edit_order_item_detail"
+                    class="btn btn-default btn pull-left item-each-editdetail"
+                    data-order_number="{{ item.order_number.value }}"
+                    data-item_id="{{ item.item_id.value }}"
+                    data-product_index="{{ item.product_index.value }}"
+                    data-action_value="EDIT qDETAILS"
+            >Edit Prescription</button>
+            <button type="button" name="edit_process" style="margin-left:10px"
+                    class="btn btn-default btn pull-left item-each-editprocess"
+                    data-order_number="{{ item.order_number.value }}"
+                    data-item_id="{{ item.item_id.value }}"
+                    data-product_index="{{ item.product_index.value }}"
+            >Processing Technic</button>
+            <div style="display:none;padding: 20px 20px 0px;" class="edit_process">
+                <table class="table table-hover">
+                    <tbody style="padding: 10px 50px">
+                    {% if "Bifocal" in item.lens_name.value  %}
+                        <tr>
+                            <th style="line-height:34px;">Submirrors Height</th>
+                            <td><input class="process_form col-md-7" type="number" name="sub_mirrors_height" value="" placeholder="子镜高度 数字" step="0.1" style="padding:6px"><b style="padding-left:8px;line-height:34px;">mm</b></td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <th style="line-height:34px;">Lab Seg Height</th>
+                            <td><input class="process_form col-md-7" type="number" name="lab_seg_height" value="" placeholder="加工瞳高 数字" step="0.1" style="padding:6px"><b style="padding-left:8px;line-height:34px;">mm</b></td>
+                        </tr>
+                        <tr>
+                            <th style="line-height:34px;">Assemble Height</th>
+                            <td><input class="process_form_ah col-md-7" type="text" name="assemble_height" placeholder="装配瞳高 例:+1" value="" style="padding:6px"><b style="padding-left:8px;line-height:34px;">mm</b></td>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                        <th style="line-height:34px;">Special Handling</th>
+                        <td><textarea class="process_form_sh col-md-12" maxlength="128" placeholder="特殊处理要求..." style="padding:6px"></textarea></td>
+                    </tr>
+                    <input class="process_form" type="hidden" name="order_number" value="{{ item.order_number.value }}">
+                    <input class="process_form" type="hidden" name="item_id" value="{{ item.item_id.value }}">
+                    <input class="process_form" type="hidden" name="product_index" value="{{ item.product_index.value }}">
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" name="edit_channel" style="margin-left:10px"
+                    class="btn btn-default btn pull-left item-each-editchannel"
+                    data-order_number="{{ item.order_number.value }}"
+                    data-item_id="{{ item.item_id.value }}"
+                    data-product_index="{{ item.product_index.value }}"
+            >Edit Channel</button>
+             <button type="button" name="edit_order_dia" style="margin-left:10px"
+                    class="btn btn-default btn pull-left edit_order_dia"
+                    data-order_number="{{ item.order_number.value }}"
+                    data-item_id="{{ item.item_id.value }}"
+                    data-product_index="{{ item.product_index.value }}"
+                    data-action_value="EDIT DIA"
+            >Edit Dia</button>
+            {%  if not is_remake %}
+            <div style="float: left;margin-left: 5px;">
+                <a class="btn btn-block btn-danger" href={% url 'pg_order_reorder' %}?order_number={{ item.order_number.value }}&item_id={{ item.item_id.value }}
+               target='view_window'>Reorder</a>
+            </div>
+            {%  endif %}
+            {% if lab_orders  %}
+            <!-- 按钮触发模态框 -->
+            <button type="button" class="btn btn-primary" style="margin-left:10px" data-toggle="modal" data-target="#HoldItemModal"
+                    data-whatever="R2Hold" data-item="{{ item.item_id.value }}">R2Hold
+            </button>
+            {% endif %}
+         <div class="modal fade" id="HoldItemModal" tabindex="-1" role="dialog"
+                 aria-labelledby="HoldModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title" id="HoldModalLabel"></h3>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" style="padding: 15px">
+                            <form>
+                                <input type="hidden" id="item_id_item"/>
+                                <input type="hidden" id="entity_id_item"/>
+                                <span style="font-size:20px;">{{ item.item_id.value  }} R2HOLD</span>
+                                <br/>
+                               <label for="message-text" class="col-form-label">Ticket Number:</label>
+                               <textarea class="form-control" id="ticket_numbers" rows="2"
+                                                          style="min-width: 90%"></textarea>
+                                <label for="message-text" class="col-form-label">Reason:</label>
+                                <textarea class="form-control" id="reason_item" rows="10"
+                                          style="min-width: 90%;"></textarea>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close
+                            </button>
+                            <button type="button" class="btn btn-primary" id="hold_item_btn">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="display:none;padding-left:20px;" class="edit_form">
+
+        </div>
+    </div>
+    <!-- /.box-footer -->
+</div>
+    <script>
+        $('#HoldItemModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var recipient = button.data('whatever') // Extract info from data-* attributes
+            var entity_id = button.data('entity')
+            var item_id = button.data('item')
+            var modal = $(this)
+            var entity_id=$("#base_entity").val()
+            //此处即为修改modal的标题
+            modal.find('.modal-title').text(recipient)
+            modal.find('#entity_id_item').val(entity_id)
+            modal.find('#item_id_item').val(item_id)
+        })
+        $(document).on("click", "#hold_item_btn", function () {
+            var entity_id = $("#entity_id_item").val();
+            var reason = $("#reason_item").val();
+            var item_id= $("#item_id_item").val();
+            var ticket_number = $("#ticket_numbers").val();
+            var url = "{% url 'pg_order_hold_request' %}";
+            var lay_load = layer.load();
+            var order_number='{{ item.order_number.value }}';
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    'entity_id': entity_id,
+                    'item_id': item_id,
+                    'ticket_number':ticket_number,
+                    'order_number': order_number,
+                    'reason': reason
+                },
+                success: function (msg) {
+                    console.log(msg.code)
+                    if (msg.code != 0) {
+                        layer.msg('failed: ' + msg.message);
+                        layer.close(lay_load);
+                    } else {
+                        layer.closeAll();
+                        layer.alert("Your order has been successfully holded");
+                        $('body').on('hidden.bs.modal', '.modal', function () {
+                            $(this).removeData('bs.modal');
+                        });
+                    }
+
+                },
+                error: function (arg) {
+                    layer.msg('fail!')
+                    layer.close(lay_load);
+                }
+            })
+        });
+        $(".edit_order_dia").click(function () {
+            var order_number = $(this).attr("data-order_number");
+            var item_id = $(this).attr("data-item_id");
+            var product_index = $(this).attr("data-product_index");
+            var url = "{% url 'oms_edit_pgorderitem_dia' %}"
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    'item_id': item_id,
+                    "product_index": product_index,
+                    'order_number': order_number,
+                },
+                dataType:'json',
+                success: function (res) {
+                    if (res.code != 0) {
+                        layer.msg(res.msg, {time: 3000, icon: 7});
+                    } else {
+                        layer.msg(res.msg, {time: 3000, icon: 6});
+                        window.location.reload();
+                    }
+                },
+                error: function (arg) {
+                    layer.msg('fail!')
+                }
+            })
+        });
+    </script>

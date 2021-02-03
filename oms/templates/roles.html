@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block h1 %}Settings{% endblock %}
+{% block small %}Roles{% endblock %}
+{% block content %}
+     <div>
+     <h4>Only LabOrder add permission</h4>
+
+     <form class="form-inline" method="post" action="/oms/permission/">
+         {% csrf_token %}
+         <div class="form-group">
+                      <label for="type">Models</label>
+                      <select class="form-control" name="contentType" id="type">
+                          {% for model in models %}
+                              <option value="{{ model.id }}">{{ model.model }}</option>
+                          {% endfor %}
+                  </select>
+
+                  </div>
+          <div class="form-group">
+            <label for="exampleInputCodeName2">CodeName</label>
+            <input type="text" class="form-control" name="codeName" id="exampleInputCodeName2" placeholder="xx_xx">
+          </div>
+          <div class="form-group">
+            <label for="exampleInputName2">Name</label>
+            <input type="text" class="form-control" name="name" id="exampleInputName2" placeholder="xx xx xx">
+          </div>
+          <button type="submit" class="btn btn-default">Create Perms</button>
+    </form>
+    </div>
+    <div id="perms" style="width: 400px;height: 500px;overflow: auto;margin-top: 20px;" >
+
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $(function(){
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+            });
+            $.ajax({
+                url:"/oms/get_permissions/",
+                type:"POST",
+                success:function (arg) {
+                    var data = JSON.parse(arg);
+                    console.log(data);
+                    var html = [];
+                    html.push("<ul>")
+                    for(var i = 0;i<data.length;i++){
+                        var field = data[i].fields;
+                        html.push("<li>"+data[i].pk+"|"+field.content_type+"|"+field.codename+" | "+field.name+"</li>")
+                    }
+                    html.push("</ul>");
+                    var perms = $('#perms');
+                    perms.empty();
+                    perms.html(html.join(''));
+                }
+            })
+        })
+    </script>
+{% endblock %}

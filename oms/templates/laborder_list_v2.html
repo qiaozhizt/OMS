@@ -1,0 +1,1139 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders {% if form_data.total %}
+    <span class="label label-default" xmlns="http://www.w3.org/1999/html">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}工厂订单{% endblock %}
+{% block content %}
+    <div style="float: left;">{% include 'search.html' %}</div>
+    <!--Search-->
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            过滤器 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href={{ requestUrl }}?filter=new&status={{ status }}&vendor={{ vendor }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}>
+                    {% ifequal filter 'new' %}
+                        *{% endifequal %}新订单</a></li>
+            <li>&nbsp</li>
+            <li>
+                <a href={{ requestUrl }}?filter=week&status={{ status }}&vendor={{ vendor }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}>
+                    {% ifequal filter 'week' %}
+                        *{% endifequal %}
+                    最近一周</a></li>
+            <li>
+                <a href={{ requestUrl }}?filter=month&status={{ status }}&vendor={{ vendor }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}>
+                    {% ifequal filter 'month' %}*{% endifequal %}
+                    最近一月</a></li>
+            <li>
+                <a href={{ requestUrl }}?filter=all&status={{ status }}&vendor={{ vendor }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}>
+                    {% ifequal filter 'all' %}
+                        *{% endifequal %}
+                    全部</a></li>
+        </ul>
+    </div>
+
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            状态 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href={{ requestUrl }}?status=all&filter={{ filter }}&vendor={{ vendor }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}>
+                    {% ifequal status 'all' %}
+                        *{% endifequal %}All</a></li>
+            <li>&nbsp</li>
+
+            {% for sta in status_choices %}
+                <li>
+                    <a href={{ requestUrl }}?status={{ sta.key }}&filter={{ filter }}&vendor={{ vendor }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}>
+                        {% ifequal status sta.key %}*{% endifequal %}
+                        {{ sta.value }}</a></li>
+            {% endfor %}
+
+        </ul>
+    </div>
+
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            Vendor <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href={{ requestUrl }}?vendor=all{% if form_data.filter %}&filter={{ form_data.filter }}{% endif %}&status={{ status }}&sorted={{ form_data.sorted }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}>
+                    {% ifequal vendor 'all' %}
+                        *{% endifequal %}All</a></li>
+            <li>&nbsp</li>
+
+            {% for vc in vendors_choices %}
+                <li>
+                    <a href={{ requestUrl }}?vendor={{ vc.key }}{% if form_data.filter %}&filter={{ form_data.filter }}{% endif %}&status={{ status }}&sorted={{ form_data.sorted }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}>
+                        {% ifequal vendor vc.key %}
+                            *
+                        {% endifequal %}
+                        {{ vc.value }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <!--Search end-->
+
+    <div class="btn-group" id="filters_type" style="float:left;margin-left:5px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            特殊订单&nbsp;<span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="{{ requestUrl }}?ltype=all&vendor={{ vendor }}&filter={{ filter }}&status={{ status }}&sorted={{ form_data.sorted }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}">
+                    {% ifequal ltype 'all' %}*{% endifequal %}全部</a></li>
+            <li>&nbsp</li>
+            <li>
+                <a href="{{ requestUrl }}?ltype=r&vendor={{ vendor }}&filter={{ filter }}&status={{ status }}&sorted={{ form_data.sorted }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}">
+                    {% ifequal ltype 'r' %}*{% endifequal %}重做单-R</a></li>
+            <li>
+                <a href="{{ requestUrl }}?ltype=c&vendor={{ vendor }}&filter={{ filter }}&status={{ status }}&sorted={{ form_data.sorted }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}">
+                    {% ifequal ltype 'c' %}*{% endifequal %}重做单-C</a></li>
+            <li>
+                <a href="{{ requestUrl }}?ltype=z&vendor={{ vendor }}&filter={{ filter }}&status={{ status }}&sorted={{ form_data.sorted }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}">
+                    {% ifequal ltype 'z' %}*{% endifequal %}转单</a></li>
+            <li>
+                <a href="{{ requestUrl }}?ltype=b&vendor={{ vendor }}&filter={{ filter }}&status={{ status }}&sorted={{ form_data.sorted }}&start_date={{ start_date }}&end_date={{ end_date }}&ship={{ form_data.ship }}">
+                    {% ifequal ltype 'b' %}*{% endifequal %}变更单</a></li>
+        </ul>
+    </div>
+    <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+            发货方式 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href={{ requestUrl }}?ship=all&vendor={{ vendor }}{% if form_data.filter %}&filter={{ form_data.filter }}{% endif %}&status={{ status }}&sorted={{ form_data.sorted }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}>
+                    {% ifequal form_data.ship 'all' %}
+                        *{% endifequal %}All
+                </a>
+            </li>
+            <li>&nbsp</li>
+            {% for vc in ship_choices %}
+                <li>
+                    <a href={{ requestUrl }}?ship={{ vc.key }}&vendor={{ vendor }}{% if form_data.filter %}&filter={{ form_data.filter }}{% endif %}&status={{ status }}&sorted={{ form_data.sorted }}&ltype={{ ltype }}&start_date={{ start_date }}&end_date={{ end_date }}>
+                        {% ifequal form_data.ship vc.key %}
+                            *
+                        {% endifequal %}
+                        {{ vc.value }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="cl">
+        <div style="float: left;margin-left:10px;margin-top: -7px">
+            <table>
+                <tr>
+                    <td>
+                        开始日期：
+                    </td>
+                    <td>
+                        <input type="date" id="start_date" value="{{ start_date }}">
+                    </td>
+                    <td rowspan="2">
+                        <button id="btn_choose_date" type="button" class="btn btn-default btn  btn-flat" role="button">
+                            筛选日期
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        结束日期：
+                    </td>
+                    <td>
+                        <input type="date" id="end_date" value="{{ end_date }}">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="cl">
+        <div style="float: left;margin-left:10px;">
+            <button id="btn_sorted" type="button" class="btn btn-default btn  btn-flat" role="button"
+                    onClick="javascript :void(0)">超期单
+            </button>
+        </div>
+    </div>
+
+    <div class="cl">
+        {% if perms.oms.RN_VIEW %}
+            <div style="float: left;margin-left:6px;">
+                <button id="btn_barcode_special" type="button" class="btn btn-default btn  btn-flat" role="button"
+                        onClick="javascript :void(0)">补打条码
+                </button>
+            </div>
+        {% endif %}
+    </div>
+    <div class="cl">
+        <div style="float: left;margin-left:6px;">
+            <button id="btn_export_excel" type="button" class="btn btn-default btn  btn-flat" role="button"
+                    onClick="javascript :void(0)">导出Excel
+            </button>
+        </div>
+    </div>
+    <!--Actions-->
+    <div class="cl">
+        <div style="float: left;margin-right: 3px;margin-left:10px;display: none;">
+            <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                    onClick="javascript :history.back(-1);">返回
+            </button>
+        </div>
+
+        {% if perms.oms.LAB_DIST_VENDOR %}
+            <div style="float: left;margin-left: 5px;display:none">
+                <a class="btn btn-block btn-default" href={{ requestUrl }}?filter={{ filter }}&page={{ currentPage }}
+                   target='view_window'>分配</a>
+            </div>
+
+            <div class="input-group-btn" style="float: left;margin-left: 6px;display: none;">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    批量分配 VD
+                    <span class="fa fa-caret-down"></span></button>
+                <ul class="dropdown-menu">
+                    {% for vc in vendors_choices %}
+                        <li><a name='actions_vds' index={{ vc.key }} href="javascript:void(0)">{{ vc.value }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        <!-- /btn-group -->
+    </div>
+
+    <!-- 全选按钮 -->
+    <div id="is_chk_full" style="float:left;margin-left:110px;display:none">
+        <div class="checkbox">
+            <label>
+                <input id="select_all_data" type="checkbox">选择全部<span id="data_total">{{ form_data.total }}</span>条数据
+            </label>
+        </div>
+    </div>
+
+    {% include 'laborder_list_v2_exceed.pspf.html' %}
+
+    <!--Actions end-->
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover table-striped">
+            <thead>
+            <tr>
+                <th><input id="chk_all" type="checkbox"></th>
+                <th class="hid">#</th>
+                <th>实际发货</th>
+                <th>订单号</th>
+                <th class="hid">镜架</th>
+                <th class="hid">数量</th>
+                <th>计划镜片</th>
+                <th>镜片</th>
+                <th class="hid">高散</th>
+                <th class="hid">染色</th>
+                <th>镜片类型</th>
+
+                <!--<th>订单日期</th>-->
+                <th class="hid">下达日期</th>
+                <th class="hid">更新时间</th>
+                <th class="hid">生产天数</th>
+                <th class="hid">预计完成</th>
+                <!--<th class="hid">规定完成</th>-->
+                <th class="hid">距离规定</th>
+
+                <th>状态</th>
+                <th class="hid">VIP</th>
+                <!--<th class="hid">备注</th>-->
+                <th>VD</th>
+                <th>WS</th>
+                <th>Origin Status</th>
+                <th>内部备注</th>
+                <th>质检信息</th>
+                <!--<th class="hid">Actions</th>-->
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for item in list %}
+                <tr>
+                    <td><input name="chk_items" value="{{ item.Entity_id }}" type="checkbox"></td>
+                    <td class="hid order_entity">{{ item.id }}</td>
+                    <td>{{ item.get_act_ship_direction_display }}</td>
+                    <td><a name="lbo_details"
+                           href="javascript:void(0)"
+                           id="{{ item.lab_number }}"
+                    >{{ item.lab_number }}</a></td>
+                    <td class="hid">{{ item.frame }}</td>
+                    <td class="hid">
+                        {% ifequal item.quantity 1 %}
+                            {{ item.quantity }}
+                        {% endifequal %}
+                        {% ifnotequal item.quantity 1 %}
+                            <span class="label-default">&nbsp {{ item.quantity }} &nbsp</span>
+                        {% endifnotequal %}
+                    </td>
+                    <td class="hid">{{ item.lens_name }}</td>
+                    <td class="{{ item.lab_number }}_act_td">{{ item.act_lens_name }}</td>
+                    <td class="hid">
+                        {% ifequal item.is_cyl_high True %}
+                            <img src="{% static "image/icon-yes.svg" %}">
+                        {% endifequal %}
+                        {% ifequal item.is_cyl_high False %}
+                            <img src="{% static "image/icon-no.svg" %}">
+                        {% endifequal %}
+                    </td>
+                    <td class="hid">{{ item.tint_name }}</td>
+                    <td>{{ item.lens_type }}</td>
+                    <!--<td>{{ item.order_date }}</td>-->
+                    <td class="hid">{{ item.create_at }}</td>
+                    <td class="hid">{{ item.update_at }}</td>
+                    <td class="hid">{{ item.days_of_production }}</td>
+                    <td class="hid">{{ item.estimated_date }}</td>
+                    <!--<td class="hid">{{ item.targeted_date }}</td>-->
+                    <td class="hid">{{ item.set_time }}</td>
+                    <td data_num="{{ item.lab_number }}" class="status_td">{{ item.get_status_display }}</td>
+                    <td class="hid">
+                        {% ifequal item.is_vip True %}
+                            <img src="{% static "image/icon-yes.svg" %}">
+                        {% endifequal %}
+                        {% ifequal item.is_vip False %}
+                            <img src="{% static "image/icon-no.svg" %}">
+                        {% endifequal %}
+                    </td>
+                    <td class="vendor">{{ item.vendor }}</td>
+                    <td class="workshop">{{ item.workshop }}</td>
+                    <td class="current_status">{{ item.current_status }}</td>
+                    <td class="comments_inner">{{ item.comments_inner }}</td>
+                    <!-- 8.31-->
+
+                    <td>
+
+                        <button type="button" class="btn btn-info detail" value="{{ item.lab_number }}">详情</button>
+                    </td>
+
+                    <!--<td class="hid">{{ item.comments }}</td>-->
+                    <!--<td class="hid">
+                        <a name="lbo_details"
+                           href="javascript:void(0)"
+                           id="{{ item.lab_number }}"
+                        >
+                            Details</a>-->
+                    <!-- /btn-group -->
+                    <!--</td>-->
+                </tr>
+                <tr class="lab_order_details" style="display:none">
+                    <td colspan="22">
+                        <div name="details">
+
+                        </div>
+                    </td>
+                </tr>
+                <tr style="display:none">
+                    <td colspan="22">
+                    </td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- add gyf  质检信息模态框-->
+
+    <div class="modal fade " id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+        <div class="modal-dialog">
+            <div class="modal-content" style="width: 400px;">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">QA详情</h4>
+                </div>
+
+                <div class="modal-body" style="overflow: auto">
+                        <div class="form-group" style="">
+                            <label for="" class="col-sm-2 col-sm-offset-1 control-label">视频</label>
+                            <label for="lab_number" class="col-sm-4  control-label" id="video_num">
+                            </label>
+
+                            <label for="lab_number" class="col-sm-3  control-label" id="download_video_num">
+                            </label>
+
+
+                        </div>
+                        <div class="form-group" style="">
+
+                            <label for="" class="col-sm-2 col-sm-offset-1 control-label">图片</label>
+                            <label for="lab_number" class="col-sm-7  control-label"><a href="#" class="qa_img"
+                                                                                       target="_blank"><img
+                                    src="" alt="" class="qa_img" style="width: 40px;height: 40px"></a></label>
+{#                            <label for="lab_number" class="col-sm-3  control-label" id="download_img_num">#}
+{#                            </label>#}
+
+                        </div>
+                        <div class="form-group" style="">
+                            <label for="" class="col-sm-2 col-sm-offset-1 control-label">PDF</label>
+                            <label for="lab_number" class="col-sm-4  control-label" id="pdf_num">
+
+                            </label>
+                            <label for="" class="col-sm-3  control-label" id="download_pdf_num">
+                            </label>
+
+                        </div>
+
+
+                    <style>
+                        #video_num a,#download_video_num  button ,#pdf_num a,#download_pdf_num button{
+                            display: block;
+                            margin-bottom: 5px;
+
+
+                        }
+                    </style>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal -->
+
+        </div>
+    </div>
+
+
+
+
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+    <!--paginator end-->
+    <div style="display:none;padding:20px 20px 0px;" id="reason">
+        <textarea style="width:100%;height:100px;" maxlength="128"></textarea>
+        <div id="exclude_days_div" style="display: none;">
+            <div>已暂停时长(天)：<span id="yi_exclude_days"></span></div>
+            本次暂停时长(天):<input id="exclude_days" name="exclude_days" type="number" value=""/>
+        </div>
+    </div>
+
+    <div style="display:none;padding:20px 20px 0px;" id="confirm">
+        <p style="padding:10px 0;">是否对订单&nbsp;<b class="lab_num"></b>&nbsp;进行&nbsp;<b class="operation"></b>&nbsp;操作？
+        </p>
+        <span style="padding-right:15px;">
+            <input id="re_to_new" name="is_reset_to_new" type="checkbox" value="True" checked="checked"/>
+            <label for="re_to_new" style="position:relative;top:-2px;left:6px;">重置为新订单</label>
+        </span>
+        <span>
+            <input id="del_old" name="is_del_old" type="checkbox" value="True"/>
+            <label for="del_old" style="position:relative;top:-2px;left:6px;">申请取消原订单</label>
+        </span>
+    </div>
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 点击 行上的 Vendor List，更新 Vendor；无确认需求
+        $("a[name='lbo_details']").each(function () {
+            $(this).bind("click", function () {
+
+                var index = layer.load(2); //换了种风格
+                var item_content = this;
+                var id = $(this).attr('id');
+
+                //if ($(this).parents("tr").next().css('display') != 'none') {
+                //$(this).parents("tr").next().toggle(200);
+                //return true;
+                //}
+
+                var _html = [];
+                var url = "{% url 'laborder_detail_pspf' %}";
+                $.ajax({
+                    url: url,
+                    type: 'post',
+                    data: {
+                        "lab_number": id,
+                    },
+                    success: function (arg) {
+                        _html.push(arg);
+                        $(item_content).parents("tr").next().find("td").find("div[name='details']").html(_html.join(''));
+                        layer.close(index);
+                    }
+                });
+                //$(this).parents("tr").next().find("td").html(_html);
+                $(this).parents("tr").next().toggle(400);
+            });
+        });
+
+        function show_details(entity) {
+            var window = layer.load(2); //换了种风格
+            var returnData;
+            var url = "{% url 'laborder_detail_pspf' %}";
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    lab_number: entity
+                },
+                async: true
+            }).done(function (response) {
+
+                returnData = response;
+                alert(response);
+                layer.closeAll();
+            });
+        }
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            order_number = $("#number").val();
+            if (order_number == '' || order_number == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            } else {
+                location.href = '/oms/redirect_laborder_list_v2/?order_number=' + order_number;
+            }
+        });
+
+
+        //全选/不选
+        document.getElementById('chk_all').onclick = function () {
+            // 获取所有的复选框
+            var checkElements = document.getElementsByName('chk_items');
+            if (this.checked) {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = "checked";
+                }
+            } else {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = null;
+                }
+            }
+        };
+
+        // 点击 头部 Actions Vendor List，更新 Vendor；无确认需求
+        $("a[name='actions_vds']").each(function () {
+            $(this).bind("click", function () {
+
+                var index = $(this).attr('index');
+
+                var entities = [];
+                checkboxs = $("input[name='chk_items']:checked");
+                if (checkboxs.length <= 0) {
+                    alert("Please select a lab order");
+                    return false;
+                }
+
+                checkboxs.each(function () {
+                    order_entity = $(this).closest("tr").find(".order_entity").html();
+                    entities.push(order_entity);
+                    entity = JSON.stringify(order_entity);
+
+                    var returnData = distribute_vendor(index, order_entity, $(this));
+                });
+            });
+        });
+
+
+        function distribute_vendor(index, entity, _self) {
+            var window = layer.load(2); //换了种风格
+            var returnData;
+            $.ajax({
+                url: "/oms/distribute_vendor/",
+                type: 'POST',
+                data: {
+                    index: index,
+                    entities: entity
+                },
+                async: true
+            }).done(function (response) {
+                returnData = response;
+                if (returnData.code == '0')
+                    _self.closest("tr").find(".vendor").html(index);
+                layer.closeAll();
+                layer.msg(returnData.message);
+            });
+        }
+
+        $("#btn_sorted").on("click", function () {
+            var url = document.location;
+
+            var se = window.location.search;
+            if (se == '') {
+                location.href = url + '?sorted=set_time';
+            } else {
+                location.href = url + '&sorted=set_time';
+            }
+        });
+
+        $("#btn_barcode_special").on("click", function () {
+            var url = document.location;
+
+            var entities = [];
+            checkboxs = $("input[name='chk_items']:checked");
+            if (checkboxs.length <= 0) {
+                alert("Please select a lab order");
+                return false;
+            }
+
+            checkboxs.each(function () {
+                order_entity = $(this).closest("tr").find(".order_entity").html();
+                entities.push(order_entity);
+            });
+
+            url = "{% url 'laborder_request_notes_generate_barcode_special' %}";
+            //全选判断
+            if ($("#select_all_data").prop("checked")) {
+                url += '?filter={{ filter }}&status={{ status }}&vendor={{ vendor }}&ltype={{ ltype }}&sorted={{ form_data.sorted }}&start_date={{ start_date }}&end_date={{ end_date }}';//添加筛选条件
+            } else {
+                url += '?entities=' + entities;//添加编号
+            }
+
+            location.href = url;
+        });
+
+        $(document).ready(function () {
+            //alert("ok");
+            //$('.btn_distribute_vendors').click();
+        });
+
+        // 去除字符串两端空格
+        function Trim(str) {
+            return str.replace(/(^\s*)|(\s*$)/g, "");
+        }
+
+        // 订单取消
+        $(document).on("click", ".btn_cancel", function () {
+            _self = $(this);
+            var _html = [];
+            var lab_num = _self.attr("lab_number");
+            var action = _self.attr("canceled");
+            var status_now = _self.attr("status_now");
+            if (status_now == "R2HOLD") {
+                layer.alert("请取消其它申请");
+            } else {
+                $("#reason textarea").val("");
+                var index = layer.open({
+                    type: 1,
+                    shadeClose: true,
+                    title: '取消订单原因',
+                    content: $("#reason"),
+                    btn: ['保存', '取消'],
+                    area: '30%',
+                    yes: function () {
+                        var reason = $("#reason textarea").val();
+                        if (!reason.match(/^\s*$/)) {
+                            layer.close(index);
+                            $.ajax({
+                                url: "/oms/lab_order_cancelled_v2/",
+                                type: "POST",
+                                data: {
+                                    'lab_num': lab_num,
+                                    'reason': reason,
+                                    'action': action
+                                },
+                                success: function (arg) {
+                                    //if (arg == "Ture") {
+                                    //    var lab_detail = _self.parents(".lab_order_details");
+                                    //    lab_detail.prev().css("display", "none");
+                                    //    lab_detail.next().css("display", "none");
+                                    //    lab_detail.css("display", "none");
+                                    //} else {
+                                    //    layer.msg(arg);
+                                    //}
+                                    _html.push(arg);
+                                    var cur_html = _self.parents().filter("div[name='details']").empty().prepend(_html);
+                                    var status_str = cur_html.find("td[name='detail_status']").text();
+                                    var _self_num = Trim(cur_html.find(".spn_lab_number").text());
+                                    var status_td = $(".status_td");
+                                    for (var i = 0; i < status_td.length; ++i) {
+                                        var data_num = status_td.eq(i).attr("data_num");
+                                        if (_self_num == data_num.toString()) {
+                                            status_td.eq(i).html(status_str);
+                                            break;
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            layer.alert("请输入原因");
+                        }
+                    }
+                });
+            }
+        });
+
+        // 订单暂停 / 取消暂停---0729 改为申请暂停
+        $(document).on("click", ".btn_hold", function () {
+            _self = $(this);
+            var lab_num = _self.attr("lab_number");
+            var _html = [];
+            var status_now = _self.attr("status_now");
+            var old_exclude_days = _self.attr("exclude_days");
+            if (status_now == 'ONHOLD' || status_now == 'R2HOLD') {
+                $("#yi_exclude_days").html(old_exclude_days);
+                $("#exclude_days_div").show();
+            }
+            if (status_now === "R2CANCEL") {
+                layer.alert("请取消其它申请");
+            } else {
+                $("#reason textarea").val("");
+                var index = layer.open({
+                    type: 1,
+                    shadeClose: true,
+                    title: '填写原因',
+                    content: $("#reason"),
+                    btn: ['保存', '取消'],
+                    area: '30%',
+                    yes: function () {
+                        var reason = $("#reason textarea").val();
+                        var exclude_days = $("#exclude_days").val();
+                        if ((status_now == 'ONHOLD' || status_now == 'R2HOLD') && exclude_days == '') {
+                            layer.alert("请填写暂停时长");
+                            return
+                        }
+                        if (!reason.match(/^\s*$/)) {
+                            layer.close(index);
+                            $.ajax({
+                                url: "/oms/lab_order_hold_v2/",
+                                type: "POST",
+                                data: {
+                                    'lab_num': lab_num,
+                                    'reason': reason,
+                                    'exclude_days': exclude_days
+                                },
+                                success: function (arg) {
+                                    $("#exclude_days").val('');
+                                    $("#exclude_days_div").hide();
+                                    _html.push(arg);
+                                    var cur_html = _self.parents().filter("div[name='details']").empty().prepend(_html);
+                                    var status_str = cur_html.find("td[name='detail_status']").text();
+                                    var _self_num = Trim(cur_html.find(".spn_lab_number").text());
+                                    var status_td = $(".status_td");
+                                    for (var i = 0; i < status_td.length; ++i) {
+                                        var data_num = status_td.eq(i).attr("data_num");
+                                        if (_self_num == data_num.toString()) {
+                                            status_td.eq(i).html(status_str);
+                                            break;
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            layer.alert("请输入原因");
+                        }
+                    }
+                });
+            }
+        });
+
+        // 打印订单
+        $(document).on("click", ".btn_print", function () {
+            var lab_number = $(this).attr("data_lab_number");
+            print_url = "/oms/print_laborder/?p=" + lab_number;
+            window.open(print_url);
+        });
+
+        // 终检
+        $(document).on("click", ".btn_final_inspection", function () {
+            var _self = $(this);
+            var lab_entity = _self.attr("data_lab_entity");
+
+            $.ajax({
+                url: "/oms/final_inspection/",
+                type: "POST",
+                data: {
+                    "lab_entity": lab_entity
+                },
+                success: function (res) {
+                    layer.msg(res.message);
+                    if (res.code == "0") {
+                        _self.attr("disabled", "disabled");
+                        _self.parents().prev().find("td.status_td").text("终检");
+                    }
+                }
+            });
+        });
+
+        // 重做
+        $(document).on("click", ".btn_redo", function () {
+            redo_transfer($(this));
+        });
+        // 转单
+        $(document).on("click", ".btn_transfer", function () {
+            redo_transfer($(this));
+        });
+
+        function redo_transfer(obj) {
+
+            var labid = obj.attr("lab_number"); //获取lab_number
+            var lab_status = obj.attr("lab_status");//获取订单状态
+            var alias = obj.attr("action");//获取action key
+            var content = obj.html();//获取action value
+            var $this = obj;
+            var confirm_box = $("#confirm");
+            confirm_box.find(".lab_num").html(labid);
+            confirm_box.find(".operation").html(content);
+            btn_re_new = $("#re_to_new");
+            btn_del_old = $("#del_old");
+            if (lab_status == 'SHIPPING') {
+                btn_del_old.attr("checked", false);
+                btn_del_old.prop("disabled", true);
+            }
+            btn_re_new.click(function () {
+                if ($(this).prop("checked")) {
+                    if (lab_status == 'SHIPPING') {
+                        btn_del_old.attr("checked", false);
+                        btn_del_old.prop("disabled", true);
+                    } else {
+                        btn_del_old.prop("disabled", false);
+                        btn_del_old.attr("checked", false);
+                    }
+                } else {
+                    if (lab_status == 'SHIPPING') {
+                        btn_del_old.attr("checked", false);
+                        btn_del_old.prop("disabled", true);
+                    } else {
+                        btn_del_old.attr("checked", true);
+                        btn_del_old.prop("disabled", true);
+                    }
+                }
+            });
+            var index = layer.open({
+                type: 1,
+                shadeClose: true,
+                title: content, //不显示标题
+                content: confirm_box,
+                btn: ['确定', '取消'],
+                area: '27%',
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                },
+                yes: function () {
+                    var re_to_new_v = "False";
+                    var del_old_v = "False";
+                    if (btn_re_new.is(":checked")) {
+                        re_to_new_v = btn_re_new.val();
+                    }
+                    if (btn_del_old.is(":checked")) {
+                        if (lab_status === 'R2CANCEL') {
+                            layer.msg('请先取消（申请取消）');
+                            return false;
+                        }
+                        if (lab_status === 'R2HOLD') {
+                            layer.msg('请先取消（申请暂停）');
+                            return false;
+                        }
+                        if (lab_status === 'ONHOLD') {
+                            layer.msg('请先取消（暂停）');
+                            return false;
+                        }
+                        del_old_v = btn_del_old.val();
+                    }
+                    self.location.href = "/oms/labOrderRedo?labid=" + labid + "&alias=" + alias + "&content=" + content + "&type=1" + "&new=" + re_to_new_v + "&del_old=" + del_old_v;
+                }
+            });
+        }
+
+        // edit lens
+        $(document).on("click.edit_lens_btn", ".edit_lens_btn", function () {
+            var _self = $(this);
+            var field = _self.attr('data-field')
+            var val = '';
+            var html_input = '<input id="change_value" style="width:100%" type="text" name="lens_info">'
+            if (field === 'act_ship_direction' || field === 'ship_direction') {
+                html_input = '<select id="change_value" style="width:100%"  name="lens_info">' +
+                    '<option value="STANDARD">普通</option>' +
+                    '<option value="EXPRESS">加急</option>' +
+                    '<option value="CA_EXPRESS">加急-加拿大</option>' +
+                    '<option value="EMPLOYEE">内部</option>' +
+                    '<option value="FLATRATE">批量</option>' +
+                    '</select>'
+            } else if (field === 'frame_type') {
+                html_input = '<select id="change_value" style="width:100%"  name="lens_info">' +
+                    '<option value="">（设置为空）</option>' +
+                    '<option value="Full Rim">Full Rim</option>' +
+                    '<option value="Ricky Rectangle">Ricky Rectangle</option>' +
+                    '<option value="Rimless">Rimless</option>' +
+                    '<option value="Semi Rim">Semi Rim</option>' +
+                    '<option value="Semi Rimless">Semi Rimless</option>' +
+                    '</select>'
+            }
+            var idx = layer.open({
+                title: '编辑信息',
+                content: html_input,
+                area: '25%',
+                success: function (elem) {
+                    elem.find('input').eq(0).val(_self.attr('data-clipboard-text'));
+                },
+                yes: function (i, e) {
+                    layer.close(idx);
+                    val = e.find("#change_value").eq(0).val();
+                    $.ajax({
+                        url: '{% url "ajax_edit_act_lens" %}',
+                        type: 'POST',
+                        data: {
+                            'cur_lab': _self.attr('data-labnum'),
+                            'field': field,
+                            'value': val
+                        },
+                        success: function (res) {
+                            if (res.code == '0') {
+                                _self.prev().text(val);
+                                _self.attr('data-clipboard-text', val);
+                                layer.msg('更改成功', {icon: 1});
+                                if ('act_lens_name' == _self.attr('data-field')) {
+                                    var sect = '.' + _self.attr('data-labnum') + '_act_td';
+                                    $(sect).text(val);
+                                }
+                            } else {
+                                layer.msg(res.message);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+        //全选/不选&显示选择所有订单按钮
+        document.getElementById('chk_all').onclick = function () {
+            // 获取所有的复选框
+            var checkElements = document.getElementsByName('chk_items');
+
+            if (this.checked) {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = "checked";
+                }
+                //counts未分页的list数量
+                var count = "{{form_data.total}}"
+                if (count < 10001) {
+                    $("#is_chk_full").css("display", "block");
+                }
+
+            } else {
+                for (var i = 0; i < checkElements.length; i++) {
+                    var checkElement = checkElements[i];
+                    checkElement.checked = null;
+                    $("#is_chk_full").css("display", "none");
+                }
+
+                $("#select_all_data").prop("checked", false);
+
+            }
+        };
+        // 导出到Excel
+        $("#btn_export_excel").on("click", function () {
+            var url = document.location;
+            var entities = [];
+            //var url_v = window.location.search;
+            checkboxs = $("input[name='chk_items']:checked");
+            if (checkboxs.length <= 0) {
+                alert("Please select a lab order");
+                return false;
+            }
+            checkboxs.each(function () {
+                order_entity = $(this).closest("tr").find(".order_entity").html()
+                entities.push(order_entity);
+
+            });
+            url = "{% url 'export_excel' %}";//跳转根目录
+            var order_number = GetQueryValue('order_number');
+            var filter = GetQueryValue('filter');
+            var status = GetQueryValue('status');
+            var vendor = GetQueryValue('vendor');
+            var ltype = GetQueryValue('ltype');
+            var sorted = GetQueryValue('sorted');
+            var start_date = GetQueryValue('start_date');
+            var end_date = GetQueryValue('end_date');
+            var ship = GetQueryValue('ship');
+            if (ship == '') {
+                ship = 'all'
+            }
+            if (ltype == '') {
+                ltype = 'all'
+            }
+            //全选判断
+            if ($("#select_all_data").prop("checked")) {
+                url += '?order_number=' + order_number + '&filter=' + filter + '&status=' + status + '&vendor=' + vendor + '&ltype=' + ltype + '&sorted=' + sorted + '&start_date=' + start_date + '&end_date=' + end_date + '&ship=' + ship;//添加筛选条件
+            } else {
+                url += '?entities=' + entities;//添加编号
+            }
+            location.href = url;
+        });
+        //时间间隔筛选
+        $("#btn_choose_date").on("click", function () {
+            var startdate = $("#start_date").val();
+            var enddate = $("#end_date").val();
+            var MyDate = new Date();//获取系统当前时间
+            var mydate_str = MyDate.toLocaleDateString();
+            var mydate_str_re = mydate_str.replace(/\//g, "-");//转换成统一格式
+            if (startdate > enddate) {
+                layer.msg('日期选择错误', {time: 3000, icon: 7});
+            }
+            if (daysBetween(startdate, enddate) > 31) {
+                layer.msg('最大时间间隔为一个月', {time: 3000, icon: 7});
+            }
+            if (daysBetween(startdate, mydate_str_re) > 93) {
+                layer.msg('最多查询三个月前数据', {time: 3000, icon: 7});
+            }
+            location.href = '/oms/redirect_laborder_list_v2/?start_date=' + startdate + '&end_date=' + enddate + '&filter={{ filter }}&status={{ status }}&vendor={{ vendor }}&ltype={{ ltype }}&sorted={{ form_data.sorted }}'
+
+            function daysBetween(DateOne, DateTwo) {
+                var OneMonth = DateOne.substring(5, DateOne.lastIndexOf('-'));
+                var OneDay = DateOne.substring(DateOne.length, DateOne.lastIndexOf('-') + 1);
+                var OneYear = DateOne.substring(0, DateOne.indexOf('-'));
+
+                var TwoMonth = DateTwo.substring(5, DateTwo.lastIndexOf('-'));
+                var TwoDay = DateTwo.substring(DateTwo.length, DateTwo.lastIndexOf('-') + 1);
+                var TwoYear = DateTwo.substring(0, DateTwo.indexOf('-'));
+
+                var cha = ((Date.parse(OneMonth + '/' + OneDay + '/' + OneYear) - Date.parse(TwoMonth + '/' + TwoDay + '/' + TwoYear)) / 86400000);
+                return Math.abs(cha);
+            }
+        });
+
+
+
+        // edit gyf for QA detail
+        // 质检信息
+
+        $(".detail").click(function () {
+
+            var qa_order_number = $(this).val();
+
+            var url = "{% url 'laborder_list_v2_qa' %}";
+
+            $("#myModal").modal('show');
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "qa_order_number": qa_order_number,
+                },
+                dataType: "json",
+                success: function (data) {
+                    if (data.code == '1') {
+
+                        var video = data.data.qa_video_list;
+                        var img = data.data.qa_img_list;
+                        var pdf = data.data.qa_pdf_list;
+
+
+                        if(img.length<=0){
+                            $(".qa_img").parents(".form-group").html("");
+                        }else{
+                            var str_img = "";
+
+                            for(var i=0; i<img.length; i++){
+                                str_img += "<a target='_blank' href=" + img[i] + "><img src="+img[i]+"  style='width: 40px;height: 40px;margin: 5px 20px 20px 0;'></a>";
+
+                            }
+                            $(".qa_img").html(str_img);
+
+                        }
+
+                        if(video.length<=0){
+                            $("#video_num").parents(".form-group").html("");
+                        }else {
+                            var vidio_str = "";
+                            var video_download = "";
+                            var url = "{% url 'oms_file_download' %}";
+
+                            for (var i2 = 0; i2 < video.length; i2++) {
+                                vidio_str += "<a target='_blank' href=" + video[i2] + "><button  class='btn btn-primary qa_url' >查看视频</button></a>";
+                                video_download += "<a target='_blank' href=" +url + '?qa_url='+ video[i2] + "><button  class='btn btn-primary'>下载视频</button></a>"
+                            }
+                            $("#video_num").html(vidio_str);
+                            $("#download_video_num").html(video_download);
+                        }
+
+
+                        if(pdf.length<=0){
+                            $("#pdf_num").parents(".form-group").html("");
+                        }else {
+                             var pdf_str="";
+                             var pdf_download="";
+                             var url = "{% url 'oms_file_download' %}";
+                             for(var i3=0; i3<pdf.length; i3++){
+                                pdf_str += "<a target='_blank' href="+pdf[i3]+"><button  class='btn btn-primary qa_url' >查看PDF</button></a>";
+                                pdf_download += "<a target='_blank' href=" +url + '?qa_url='+ pdf[i3] + "><button  class='btn btn-primary'>下载PDF</button></a>"
+                            }
+                            $("#pdf_num").html(pdf_str);
+                            $("#download_pdf_num").html(pdf_download);
+
+                          }
+
+
+                    } else {
+                        layer.msg('文件不存在', {time: 3000, icon: 7});
+                    }
+                }
+            });
+
+
+        });
+
+        // 下载视频/图片
+        <!--
+        $(".qa_url").click(function () {
+            var qa_url = $(this).val();
+            var url = "{% url 'oms_file_download' %}";
+            location.href = url + '?qa_url=' + qa_url;
+            $.ajax({
+                url: url,
+                type: 'get',
+                data: {
+                    "qa_url": qa_url,
+                },
+                dataType: "json",
+                success: function (arg) {
+                    if (arg.code == '-1') {
+                        layer.msg(arg.msg, {time: 3000, icon: 7});
+                    } else {
+                        location.href = url + '?qa_url=' + qa_url;
+                    }
+                }
+            });
+
+
+            if (product_number == '' || product_number == null) {
+                layer.msg('文件不存在', {time: 3000, icon: 7});
+            } else {
+                location.href = url + '?product_number=' + product_number;
+            }
+
+        });
+-->
+
+        function GetQueryValue(queryName) {
+            var query = decodeURI(window.location.search.substring(1));
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == queryName) {
+                    return pair[1];
+                }
+            }
+            return '';
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="/static/layui/css/layui.css" />
+    <style>
+        .span_title{
+            padding-right: 30px;
+        }
+        .stack_a{
+            cursor: pointer;
+            color: #ffffff;
+        }
+        /* 防止下拉框的下拉列表被隐藏---必须设置--- */
+        .layui-table-cell {overflow: visible !important;        }
+        /* 使得下拉框与单元格刚好合适 */
+        td .layui-form-select{
+            margin-top: -10px;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+        .input-top{
+            margin-top: 15px;
+        }
+    </style>
+{% endblock %}
+{% block h1 %}成镜订单管理 {% if form_data.total %}<span class="label label-info">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}从Lab Order生成入库请求{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Lab Order List：</h3>
+                </div>
+                <table class="layui-hide" id="stock_in_table" lay-filter="demo" style="overflow-x: hidden;"></table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title" id="myModalLabel">创建入库申请</h3>
+                </div>
+                <div class="modal-body" style="height: 350px;">
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">成镜订单号码:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="stock_order_number" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">工厂订单号:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="stock_lab_number" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">镜架 SKU:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="sku" disabled="disabled">
+                    </div>
+                  </div>
+{#                  <div class="form-group">#}
+{#                    <div class="col-sm-12 input-top">#}
+{#                        <label style="width: 100px;">Lens SKU:</label>#}
+{#                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="lens_sku" disabled="disabled">#}
+{#                    </div>#}
+{#                  </div>#}
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">数量:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="quantity" disabled="disabled">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">实际数量:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="act_quantity">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 100px;">备注:</label>
+                        <textarea  rows="3" cols="50" id="comments"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="close_btn">关闭</button>
+                    <button type="button" class="btn btn-primary" id="create_btn">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <script type="text/html" id="toolbarDemo">
+        <label>Lab Number:</label>
+        <input type="text" id="lab_number" name="search" style="width: 200px;height: 37px;">
+{#        <label>Date:</label>#}
+{#        <input type="text" id="start_date" style="width: 200px;height: 37px;">#}
+        <button type="button" class="btn btn-primary" id="search_btn" style="margin-left: 5px;" lay-event="search">Search</button>
+{#        <button type="button" class="btn btn-primary" id="creat_reciept_request_btn" style="margin-left: 5px;" lay-event="create">Creat Reciept Request</button>#}
+    </script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        laydate.render({
+          elem: '#start_date'
+          ,type: 'datetime' //默认，可不填
+        });
+        layui.use(['table', 'layer', 'element', 'jquery', 'form'], function() {
+            var table = layui.table;
+            var form = layui.form;
+            //第一个实例
+            table.render({
+                elem: '#stock_in_table'
+                ,toolbar: '#toolbarDemo'
+                , height: 'full-10'
+                , url: "{% url 'get_stko_laborder_data' %}"
+                , where: {flag:'list'}
+                ,done: function(res, curr, count){
+                   // 渲染dictName列
+                    laydate.render({
+                      elem: '#start_date'
+                      ,type: 'datetime' //默认，可不填
+                    });
+                    //得到当前页码
+                    console.log(curr);
+                    //得到数据总量
+                    console.log(count);
+                }
+                , cellMinWidth: 100
+                , page: true //开启分页
+                , limit:30
+                , limits:[30,50,70,90,120,10000]
+                , even: true
+                , cols: [[ //表头
+                    {field: 'id', title: 'ID', sort: true, width:80}
+                    , {field: 'lab_number', title: 'Lab Number'}
+                    , {field: 'sku', title: '镜架 SKU'}
+                    , {field: 'lens_sku', title: '镜片 SKU'}
+                    , {field: 'lens_name', title: '镜片名称'}
+                    , {field: 'quantity', title: 'Quantity', sort:true, width:100}
+                    , {field: 'order_number', title: '成镜订单'}
+                    , {title: '操作', templet: function(row){
+                            var barBtnsHTML = '<button type="button" class="btn btn-primary" id="creat_reciept_request_btn" lay-event="create">创建入库请求</button>';
+                            return barBtnsHTML;
+                    }}
+                ]]
+            });
+
+            table.on('tool(demo)', function (obj) {
+                 var data = obj.data; //获得当前行数据
+                 var layEvent = obj.event;
+                 console.log(data);
+                 console.log(data.lab_number);
+                 if(layEvent == 'create'){
+                     $("#stock_order_number").val(data.order_number);
+                     $("#stock_lab_number").val(data.lab_number);
+                     $("#sku").val(data.sku);
+                     $("#lens_sku").val(data.lens_sku);
+                     $("#quantity").val(data.quantity);
+                     $("#myModal").modal("show");
+                 }
+
+            });
+            $("#create_btn").click(function () {
+                var stock_order_number = $("#stock_order_number").val();
+                var stock_lab_number = $("#stock_lab_number").val();
+                var frame = $("#sku").val();
+                //var lens_sku = $("#lens_sku").val();
+                var quantity = $("#quantity").val();
+                var act_quantity = $("#act_quantity").val();
+                var comments = $("#comments").val();
+                if (stock_lab_number == ''){
+                    layer.msg('Lab Number 不能为空，请刷新重试', {time:3000,icon:7})
+                    return ''
+                }
+                if(parseInt(act_quantity)-parseInt(quantity)>0){
+                    layer.msg('Act Quantity 数量错误', {time:3000,icon:7})
+                    return ''
+                }
+                if(act_quantity == '' || act_quantity == '0' || act_quantity == 0){
+                    layer.msg('请输入实收数量', {time:3000,icon:7})
+                    return ''
+                }
+                 var url = "{% url 'create_stock_in_request' %}";
+                 $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        "lab_number":stock_lab_number,
+                        "stock_order_number": stock_order_number,
+                        "frame": frame,
+                        "quantity": quantity,
+                        "act_quantity": act_quantity,
+                        "comments": comments
+                    },
+                    dataType:'json',
+                    success: function (arg) {
+                        if (arg.code == 0){
+                            $("#myModal").modal("hide");
+                            $("#act_quantity").val('');
+                            $("#comments").val('');
+                            layer.msg(arg.msg, {icon:6,time:1000});
+                            window.location.reload();
+                        }else {
+                            layer.msg(arg.msg, {icon:7,time:3000});
+                        }
+                    }
+                 });
+            });
+            $("#close_btn").click(function () {
+                $("#act_quantity").val('');
+                $("#comments").val('');
+            });
+            table.on('toolbar(demo)', function (obj) {
+             var layEvent = obj.event;
+             if (layEvent == 'search'){
+                var lab_number = $("#lab_number").val();
+                var start_date = $("#start_date").val();
+                table.reload('stock_in_table',{
+                    url: "{% url 'get_stko_laborder_data' %}",
+                    where: {
+                        lab_number:lab_number,
+                        start_date:start_date
+                    },
+                    page:{
+                        curr:1
+                    }
+                })
+             }
+            });
+        });
+    </script>
+{% endblock %}

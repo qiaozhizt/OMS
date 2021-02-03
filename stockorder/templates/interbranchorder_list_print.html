@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>制镜光学有限公司--Interbranch Order List</title>
+{#    <link rel="stylesheet" href="{% static "css/print_template.css" %}">#}
+    <link rel="stylesheet" type="text/css" href="/static/layui/css/layui.css" />
+    <script src={% static "js/jquery-2.2.3.min.js" %}></script>
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Verdana, Geneva, sans-serif;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        ul, li {
+            list-style: none;
+        }
+
+        img {
+            border: none;
+        }
+        table{
+            font-size: 12px;
+            border: none;
+        }
+        #print-content{
+            width: 98%;
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+        .header{margin-bottom: 20px;}
+            .table_tr{
+                padding:0px;
+            }
+            table{
+                table-layout: fixed;/*首行统一宽度*/
+            }
+            .first_th{
+                width: 3%;
+            }
+            .second_th{
+                width: 10%;
+            }
+            .third_th{
+                width: 27%;
+            }
+            .four_th{
+                width: 8%;
+            }
+            .five_th{
+                width: 6%;
+            }
+            .six_th{
+                width: 12%;
+            }
+            .seven_th{
+                width: 19%;
+            }
+            .eight_th{
+                width: 8%;
+            }
+    </style>
+</head>
+<script>
+    $(document).ready(function () {
+        window.print();
+        //$("#print_1").click(function () {
+        //    window.print();
+        //})
+    })
+</script>
+<body>
+<div id="print-content">
+    <div class="header clear">
+        <h3>Interbranch Order List</h3>
+    </div>
+    <table class="layui-table">
+        <thead>
+            <th class="table_tr first_th">ID</th>
+            <th class="table_tr six_th">Interbranch Order Number</th>
+            <th class="table_tr five_th">Frame SKU</th>
+            <th class="table_tr five_th">Lens SKU</th>
+            <th class="table_tr five_th">Quantity</th>
+            <th class="table_tr five_th">Status</th>
+            <th class="table_tr four_th">Issuing Warehouse</th>
+            <th class="table_tr four_th">Receiving Warehouse</th>
+            <th class="table_tr second_th">Fulfil Date</th>
+            <th class="table_tr second_th">Comments</th>
+        </thead>
+        <tbody>
+            {% for item in interbranch_orders %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.interbranch_order_number }}</td>
+                    <td>{{ item.frame }}</td>
+                    <td>{{ item.lens_sku }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{{ item.warehouse_from }}</td>
+                    <td>{{ item.warehouse_to }}</td>
+                    <td>{{ item.fulfil_date | date:"Y-m-d" }}</td>
+                    <td>{{ item.comments }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="pageBreak"><!--如果需要强制换页就在上一页的未尾出加上此代码--></div>
+</div>
+
+<button style="display:none" id="print_1">打印</button>
+</body>
+</html>

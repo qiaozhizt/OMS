@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders{% endblock %}
+{% block small %}采购订单{% endblock %}
+{% block content %}
+    <!--Actions-->
+    <div class="cl">
+        <div style="float:left;margin-right:3px;margin-left:10px;">
+            <a class="btn btn-block btn-default" href="/oms/laborder_purchase_orders/">返回</a>
+        </div>
+    </div>
+    <!--Actions end-->
+
+    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+        <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            过滤器 <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            {% for vc in vendors_choices %}
+            <li><a href="{{ requestUrl }}?filter={{vc.key}}">
+                {% ifequal filter vc.key %}*{% endifequal %}{{vc.value}}
+            </a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!--Table-->
+    <div id="tableContent">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>#</th> <!-- laborder_purchase_order的ID -->
+                <th>订单数量</th>
+                <th>VD</th>
+                <th>用户</th>
+                <th>创建时间</th>
+                <th>更新时间</th>
+                <th>详情</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for lopo in lopos %}
+                <tr>
+                    <td>{{ lopo.id }}</td>
+                    <td>{{ lopo.count }}</td>
+                    <td>{{ lopo.vendor }}</td>
+                    <td>{{ lopo.user_name }}</td>
+                    <td>{{ lopo.created_at }}</td>
+                    <td>{{ lopo.updated_at }}</td>
+                    <td><a href="/oms/purchase_order_line/?lid={{ lopo.id }}">views</a></td>
+                 </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+    </div>
+    <!--Table end-->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        <ul class="pagination" id="pager">
+            <li class="item"><a>Total&nbsp;:&nbsp;{{ page_info.total }}</a></li>
+            {% if lopos.has_previous %}
+                <li class="previous"><a href="{{ requestUrl }}?page={{ lopos.previous_page_number }}&filter={{ filter }}">previous</a></li>
+            {% else %}
+                <li class="previous disabled"><a href="#">previous</a></li>
+            {% endif %}
+            {% for num in paginator.page_range %}
+                {% if num == currentPage %}
+                    <li class="item active"><a href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a></li>
+                {% else %}
+                    <li class="item"><a href="{{ requestUrl }}?page={{ num }}&filter={{ filter }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if lopos.has_next %}
+                <li class="next"><a href="{{ requestUrl }}?page={{ lopos.next_page_number }}&filter={{ filter }}">next</a></li>
+            {% else %}
+                <li class="next disabled"><a href="#">next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    <!--paginator end-->
+{% endblock %}

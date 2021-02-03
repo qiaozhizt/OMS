@@ -1,0 +1,2073 @@
+<!-- /.box-body -->
+<!-- /.box-footer -->
+<div class="container-fluid">
+
+    <div class="row detail_head">
+        <div class="col-xs-12">
+            {% if item.status == 'CANCELLED' %}
+                <div class="box box-danger">
+                    <div class="box-body">
+                        <span class="label-danger">该订单已取消,所有操作已被禁止</span>
+                    </div>
+                </div>
+            {% elif item.status == 'CLOSED' %}
+                <div class="box box-danger">
+                    <div class="box-body">
+                        <span class="label-danger">该订单已关闭,所有操作已被禁止</span>
+                    </div>
+                </div>
+            {% elif item.status == 'DELIVERED' %}
+                <div class="box box-success">
+                    <div class="box-body">
+                        <span class="btn btn-danger btn-lg">该订单已妥投,所有操作已被禁止</span> &nbsp;
+                        <span class="btn btn-success btn-lg">妥投日期: {{ item.delivered_at }}</span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="box box-default">
+                    <div class="box-body">
+
+                        <div style="float: left;margin-left: 5px;">
+                            <span class="btn btn-block btn-default btn-flat">VD</span>
+                        </div>
+                        <div style="float: left;margin-left: 5px;">
+                            <span id="btn_cur_vd" class="btn btn-block btn-primary btn-flat">{{ item.vendor }}</span>
+                        </div>
+
+                        {% if perms.oms.LAB_DIST_VENDOR %}
+                            <div style="float: left;margin-left: 5px;">
+                                <div class="btn-group hidden" data-toggle="buttons-radio">
+
+                                    {% for vc in vendors_choices %}
+                                        <button name="btn_distribute_vendors" type="button" index={{ vc.key }}
+                                                entity={{ item.id }} class="btn btn-default
+                                    ">V{{ vc.value }}</button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div style="float: left;margin-left: 5px;">
+                    <span class="input-group-btn" style="float: left;">
+                        <button type="button"
+                                class="btn btn-default btn-flat"
+                                name="btn_add_comments"
+                                tag='ADDCOMMENT'
+                                lab_entity="{{ item.id }}"
+                                lab_number="{{ item.lab_number }}"
+                                obj_type="{{ item.type }}"
+                        >添加评论</button>
+                    </span>
+                        </div>
+
+                        <div style="float: left;margin-left: 5px;">
+                    <span class="input-group-btn" style="float: left;">
+                        <button type="button"
+                                class="btn btn-default btn-flat"
+                                name="btn_add_comments_inner"
+                                tag='ADDCOMMENT'
+                                lab_entity="{{ item.id }}"
+                                lab_number="{{ item.lab_number }}"
+                                obj_type="{{ item.type }}"
+                        >添加评论[内部]</button>
+                    </span>
+                        </div>
+
+                        <div style="float: left;margin-left: 5px;">
+                    <span class="input-group-btn" style="float: left;">
+                        <button type="button"
+                                class="btn btn-default btn-flat"
+                                name="btn_add_es_time"
+                                tag='ADDCOMMENT'
+                                lab_entity="{{ item.id }}"
+                                lab_number="{{ item.lab_number }}"
+                                obj_type="{{ item.type }}"
+                        >预计完成时间</button>
+                    </span>
+                        </div>
+
+
+                        <div style="float: left;margin-left: 5px;">
+                    <span class="input-group-btn" style="float: left;">
+                        <button type="button"
+                                class="btn btn-default btn-flat btn_transfer"
+                                name="btn_transfer"
+                                action="TRANSFER"
+                                tag='ADDCOMMENT'
+                                lab_entity="{{ item.id }}"
+                                lab_number="{{ item.lab_number }}"
+                                lab_status="{{ item.status }}"
+                                obj_type="{{ item.type }}"
+                        >转单</button>
+                    </span>
+                        </div>
+
+                        <!-- add hold -->
+                        <div style="float: left;margin-left: 5px;">
+                    <span class="input-group-btn" style="float: left;">
+                        <button type="button"
+                                class="btn btn-default btn-flat btn_hold"
+                                name="btn_hold"
+                                tag='ADDCOMMENT'
+                                lab_entity="{{ item.id }}"
+                                lab_number="{{ item.lab_number }}"
+                                obj_type="{{ item.type }}"
+                                status_now="{{ item.status }}"
+                                exclude_days="{{ item.exclude_days }}"
+                        >{% if not item.status == 'ONHOLD' and not item.status == 'R2HOLD' %}申请暂停{% else %}
+                            取消暂停或申请{% endif %}
+                        </button>
+                    </span>
+                        </div>
+                        <div style="float: left;margin-left: 5px;">
+                    <span class="input-group-btn" style="float: left;">
+                        <button type="button"
+                                class="btn btn-default btn-flat btn_cancel"
+                                name="btn_cancel"
+                                action="canceled"
+                                tag='ADDCOMMENT'
+                                lab_entity="{{ item.id }}"
+                                lab_number="{{ item.lab_number }}"
+                                obj_type="{{ item.type }}"
+                                status_now="{{ item.status }}"
+                        >{% if not item.status == 'R2CANCEL' %}申请取消订单{% else %}取消申请取消{% endif %}
+                        </button>
+                    </span>
+                        </div>
+                        <div style="float: left;margin-left: 5px;">
+                    <span class="input-group-btn" style="float: left;">
+                        <button type="button"
+                                class="btn btn-default btn-flat btn_redo"
+                                name="btn_redo"
+                                action="REDO"
+                                tag='ADDCOMMENT'
+                                lab_entity="{{ item.id }}"
+                                lab_number="{{ item.lab_number }}"
+                                lab_status="{{ item.status }}"
+                                obj_type="{{ item.type }}"
+                        >重做</button>
+                    </span>
+                        </div>
+                        <!-- 终检 -->
+                        {% ifequal item.lens_type 'C' %}
+                            <div style="float: left;margin-left: 5px;">
+                    <span class="input-group-btn" style="float: left;">
+                        <button type="button" class="btn btn-default btn-flat btn_final_inspection"
+                                data_lab_entity="{{ item.id }}"
+                                {% ifnotequal item.status "GLASSES_RECEIVE" %}disabled="disabled"{% endifnotequal %}>终检</button>
+                    </span>
+                            </div>
+                        {% endifequal %}
+                        <div style="float: left;margin-left: 5px;">
+                             <span class="input-group-btn" style="float: left;">
+                                <button type="button" class="btn btn-default btn-flat btn_print"
+                                        data_lab_number="{{ item.lab_number }}">打印订单</button>
+                             </span>
+                        </div>
+
+                        {% if perms.vendor.LENS_ORDER_CREATE %}
+                            <div style="float: left;margin-left: 5px;">
+                                <span class="input-group-btn" style="float: left;">
+                                    <button type="button"
+                                            class="btn btn-default btn-flat"
+                                            name="btn_create_lens_order"
+                                            tag='ADDCOMMENT'
+                                            lab_entity="{{ item.id }}"
+                                            lab_number="{{ item.lab_number }}"
+                                            obj_type="{{ item.type }}"
+                                            {% if item.is_lens_order_created %} disabled="disabled" {% endif %}
+                                    >创建 Lens Order</button>
+                                </span>
+                            </div>
+                        {% endif %}
+
+                        {% if perms.vendor.LAB_ORDER_DISTRIBUTE %}
+                            <div style="float: left;margin-left: 5px;">
+                                <span class="input-group-btn" style="float: left;">
+                                    <button type="button"
+                                            class="btn btn-default btn-flat"
+                                            name="btn_distribute_lab_order"
+                                            tag='Distribute'
+                                            lab_entity="{{ item.id }}"
+                                            lab_number="{{ item.lab_number }}"
+                                            obj_type="{{ item.type }}"
+                                            {% if item.is_lens_order_created %} disabled="disabled" {% endif %}
+                                    >自动分单</button>
+                                </span>
+                            </div>
+
+                            <div style="float: left;margin-left: 5px;">
+                                <span class="input-group-btn" style="float: left;">
+                                    <button type="button"
+                                            class="btn btn-default btn-flat"
+                                            name="btn_distribute_lab_order_manual"
+                                            tag='Distribute'
+                                            lab_entity="{{ item.id }}"
+                                            lab_number="{{ item.lab_number }}"
+                                            vendor="{{ item.vendor }}"
+                                            base_sku="{{ item.lens_sku }}"
+                                            lens_name="{{ item.lens_name }}"
+                                            obj_type="{{ item.type }}"
+                                    >手动分单</button>
+                                </span>
+                            </div>
+                        {% endif %}
+                        <div style="float: left;margin-left: 5px;">
+                            <span class="input-group-btn" style="float: left;">
+                                <button type="button"
+                                        class="btn btn-default btn-flat"
+                                        name="sync_shipment_status"
+                                        tag='Distribute'
+                                        lab_entity="{{ item.id }}"
+                                        lab_number="{{ item.lab_number }}"
+                                        act_ship_direction="{{ item.act_ship_direction }}"
+                                >同步发货状态</button>
+                            </span>
+                        </div>
+                        <div style="float: left;margin-left: 5px;">
+                            <span class="input-group-btn" style="float: left;">
+                                <button type="button"
+                                        class="btn btn-default btn-flat"
+                                        name="edit_laborder_ship"
+                                        tag='Distribute'
+                                        lab_entity="{{ item.id }}"
+                                        lab_number="{{ item.lab_number }}"
+                                        act_ship_direction="{{ item.act_ship_direction }}"
+                                >修改发货方式</button>
+                            </span>
+                        </div>
+                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                            <div style="float: left;margin-left: 5px;">
+                                <span class="input-group-btn" style="float: left;">
+                                    <button type="button"
+                                            class="btn btn-default btn-flat"
+                                            name="edit_processing_parameters"
+                                            tag='Distribute'
+                                            lab_entity="{{ item.id }}"
+                                            lab_number="{{ item.lab_number }}"
+                                            lab_seg_height="{{ item.lab_seg_height }}"
+                                            assemble_height="{{ item.assemble_height }}"
+                                            sub_mirrors_height="{{ item.sub_mirrors_height }}"
+                                            special_handling="{{ item.special_handling }}"
+                                    >修改加工参数</button>
+                                </span>
+                            </div>
+                        {% endif %}
+                        {% if perms.oms.ACT_SHIPMENT %}
+                            <div style="float: left;margin-left: 5px;">
+                                <span class="input-group-btn" style="float: left;">
+                                    <button type="button"
+                                            class="btn btn-default btn-flat"
+                                            name="btn_add_delivered_time"
+                                            tag='Distribute'
+                                            lab_entity="{{ item.id }}"
+                                            lab_number="{{ item.lab_number }}"
+                                            act_ship_direction="{{ item.act_ship_direction }}"
+                                    >添加妥投时间</button>
+                                </span>
+                            </div>
+                        {% endif %}
+                        <div style="float: left;margin-left: 5px;">
+                            <span class="input-group-btn" style="float: left;">
+                                <button type="button"
+                                        class="btn btn-default btn-flat"
+                                        name="edit_overdue_orders"
+                                        tag='Distribute'
+                                        lab_entity="{{ item.id }}"
+                                        lab_number="{{ item.lab_number }}"
+                                        lab_seg_height="{{ item.lab_seg_height }}"
+                                        assemble_height="{{ item.assemble_height }}"
+                                        sub_mirrors_height="{{ item.sub_mirrors_height }}"
+                                        special_handling="{{ item.special_handling }}"
+                                >超期单处理</button>
+                            </span>
+                        </div>
+                        <div style="float: left;margin-left: 5px;">
+                            <span class="input-group-btn" style="float: left;">
+                                <button type="button"
+                                        class="btn btn-default btn-flat pause_duration"
+                                        name="pause_duration"
+                                        tag='ADDCOMMENT'
+                                        lab_entity="{{ item.id }}"
+                                        lab_number="{{ item.lab_number }}"
+                                        obj_type="{{ item.type }}"
+                                        status_now="{{ item.status }}"
+                                        exclude_days="{{ item.exclude_days }}"
+                                >添加暂停时长
+                                </button>
+                            </span>
+                        </div>
+                        <div style="float:left;margin-left:5px;">
+                            <span class="input-group-btn" style="float: left;display: none">
+                                <button type="button"
+                                        class="btn btn-default btn-flat btn_redo"
+                                        name="btn_redo"
+                                        action="REDO"
+                                        tag='ADDCOMMENT'
+                                        lab_entity="{{ item.id }}"
+                                        lab_number="{{ item.lab_number }}"
+                                        obj_type="{{ item.type }}">发货</button>
+                            </span>
+                        </div>
+
+                        <div style="float: left;margin-left: 5px;display:none">
+                            <a class="btn btn-block btn-default btn-flat"
+                               href="#"
+                               target='view_window'>打印订单</a>
+                        </div>
+
+                        <!-- /.box-body -->
+                        <!-- /.box -->
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Line chart -->
+            <div class="box box-default">
+                <div class="box-header with-border">
+                    <i class="fa fa-hourglass-half"></i>
+
+                    <h3 class="box-title">工厂订单</h3>
+                    <span class="box-title" style="margin-left: 20px;">Tag:{{ item.tag }}</span>
+                    <span class="btn
+                    {% ifequal item.priority 5 %}btn-default{% endifequal %}
+                    {% ifequal item.priority 4 %}btn-primary{% endifequal %}
+                    {% ifequal item.priority 3 %}btn-success{% endifequal %}
+                    {% ifequal item.priority 2 %}btn-warning{% endifequal %}
+                    {% ifequal item.priority 1 %}btn-danger{% endifequal %}
+                    "> 优先级: {{ item.priority }} </span>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool"><i
+                                class="fa fa-edit" id="edit_sku"></i>
+                        </button>
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <table class="table table-hover">
+                        <tr>
+                            <th>订单号</th>
+                            <td><span id="spn_lab_number" class="label label-default spn_lab_number"
+                                      style="font-size:small"> {{ item.lab_number }}</span>
+                                <button type="button" class="btn btn-link"
+                                        data-clipboard-action="copy"
+                                        data-clipboard-text="{{ item.lab_number }}"><i class="fa fa-copy"></i>
+                                </button>
+                            </td>
+                            <th>订单日期</th>
+                            <td>{{ item.order_date }}</td>
+                        </tr>
+                        <tr>
+                            <th>镜架</th>
+                            <td>
+                                <div>
+                                    <span id="glasses_frame">{{ item.frame }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_glasses_frame_btn"
+                                                    data-field="frame"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.frame }}" data-toggle="modal"
+                                                    data-target="#myModal"><i class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>数量</th>
+                            <td>{{ item.quantity }}</td>
+                        </tr>
+                        <tr>
+                            <th>框型</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_sku">{{ item.frame_type }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="frame_type"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.frame_type }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>尺寸</th>
+                            <td colspan="3">
+                                <div>
+                                    <span id="txt_act_lens_sku">{{ item.size }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="size"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.size }}"><i class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>框宽</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_sku">{{ item.lens_width }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="lens_width"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.lens_width }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>框高</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_sku">{{ item.lens_height }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="lens_height"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.lens_height }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>订单镜片-SKU</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_sku">{{ item.lens_sku }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="lens_sku"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.lens_sku }}"><i class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>订单镜片</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_sku">{{ item.lens_name }}</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr class="act_lens">
+                            <th>实际镜片-SKU</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_sku">{{ item.act_lens_sku }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="act_lens_sku"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.act_lens_sku }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>实际镜片</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">{{ item.act_lens_name }}</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>染色-SKU</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_sku">{{ item.tint_sku }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="tint_sku"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.tint_sku }}"><i class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>染色</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_sku">{{ item.tint_name }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="tint_name"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.tint_name }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>设计-SKU</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">{% if item.pal_design_sku is not None %}
+                                        {{ item.pal_design_sku }}{% endif %}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="pal_design_sku"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.pal_design_sku }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>设计</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">{% if item.pal_design_name is not None %}
+                                        {{ item.pal_design_name }}{% endif %}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="pal_design_name"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.pal_design_name }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>涂层-SKU</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">{% if item.coating_sku is not None %}
+                                        {{ item.coating_sku }}{% endif %}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="coating_sku"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.coating_sku }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>涂层</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">{% if item.coating_name is not None %}
+                                        {{ item.coating_name }}{% endif %}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="coating_name"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.coating_name }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>加工瞳高</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">{% if item.lab_seg_height is not None %}
+                                        {{ item.lab_seg_height }} {% endif %}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="lab_seg_height"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.lab_seg_height }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>装配瞳高</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">按标准瞳高{% if item.assemble_height is not None %}
+                                        {{ item.assemble_height }}{% endif %}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="assemble_height"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.assemble_height }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>子镜高度</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">{% if item.sub_mirrors_height is not None %}
+                                        {{ item.sub_mirrors_height }}{% endif %}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="sub_mirrors_height"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.sub_mirrors_height }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>加工要求</th>
+                            <td colspan="3">
+                                <div>
+                                    <span id="txt_act_lens_name">{% if item.special_handling is not None %}
+                                        {{ item.special_handling }}{% endif %}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="special_handling"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.special_handling }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>发运方式</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">{{ item.get_ship_direction_display }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="ship_direction"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.ship_direction }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <th>实际发运方式</th>
+                            <td>
+                                <div>
+                                    <span id="txt_act_lens_name">{{ item.get_act_ship_direction_display }}</span>
+                                    {% if item.status == 'ONHOLD' or item.status == 'R2HOLD' %}
+                                        {% if perms.oms.CHANGE_ORDER_VALUE %}
+                                            <button type="button" class="btn-link edit_lens_btn"
+                                                    data-field="act_ship_direction"
+                                                    data-labnum="{{ item.lab_number }}"
+                                                    data-clipboard-text="{{ item.act_ship_direction }}"><i
+                                                    class="fa fa-edit"></i>
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>状态</th>
+                            <td name="detail_status">{{ item.get_status_display }}</td>
+                            <th>预计完成时间</th>
+                            <td id="est_time_{{ item.id }}"> {{ item.estimated_date }}</td>
+                        </tr>
+                        <tr>
+                            <th>VD订单状态</th>
+                            <td name="vd_os_status">{{ item.vendor_order_status_value }}</td>
+                            <th>VD更新时间</th>
+                            <td id="vd_update_time_{{ item.id }}"> {{ item.vendor_order_status_updated_at }}</td>
+                        </tr>
+                        <tr>
+                            <th>下达日期</th>
+                            <td>{{ item.create_at }}</td>
+                            <th>更新日期</th>
+                            <td>{{ item.update_at }}</td>
+                        </tr>
+                        <tr>
+                            <th>用户ID</th>
+                            <td>{{ item.user_id }}</td>
+                            <th>用户</th>
+                            <td>{{ item.user_name }}</td>
+                        </tr>
+                        {% if perms.oms.TOP_SECRET %}
+                            <tr>
+                                <th>备注[内部]</th>
+                                <td colspan="7" id="comments_inner_{{ item.id }}">{{ item.comments_inner }}</td>
+                            </tr>
+                        {% endif %}
+
+                        <tr>
+                            <th>备注</th>
+                            <td colspan="7" id="comments_{{ item.id }}">{{ item.comments }}</td>
+                        </tr>
+                        <tr>
+                            <th>出库申请单</th>
+                            <td>
+                                <a href={% url 'laborder_request_notes_detail' %}?id={{ item.get_laborder_request_notes_id }}
+                                   target="_blank">{{ item.get_laborder_request_notes_id }}</a></td>
+                            <th>采购订单</th>
+                            <td><a href={% url 'purchase_order_line' %}?lid={{ item.get_laborder_purchase_order_id }}
+                                   target="_blank">{{ item.get_laborder_purchase_order_id }}</a></td>
+                        </tr>
+                        <tr>
+                            <th>成镜收货记录</th>
+                            <td><a href={% url 'received_glasses_list' %}?lab_number={{ item.lab_number }}
+                                   target="_blank">{{ item.get_received_glasses_id }}</a></td>
+                            <th>类型</th>
+                            <td>{{ category_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>BOX</th>
+                            <td id="box_{{ item.id }}">{{ item.get_box_id }}</td>
+                            <th>BAG</th>
+                            <td>{{ item.get_bag_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Shipping Number</th>
+                            <td>{{ item.shipping_number }}</td>
+                            <th>Tracking Code</th>
+                            <td>{{ item.tracking_code }}</td>
+                        </tr>
+                        <tr>
+                            <th>质检报告</th>
+                            <td><a href={% url 'quality_inspection_report' %}?lab_number={{ item.lab_number }}
+                                   target="_blank">{{ gfit_id }}</a></td>
+                        </tr>
+                    </table>
+                </div>
+                <!-- /.box-body-->
+            </div>
+            <!-- /.box -->
+
+        </div>
+
+        <div class="col-md-6">
+
+
+            <!-- /.col -->
+            {% include 'laborder_prescription_detail_v2_col12.pspf.html' %}
+            <!-- /.col -->
+
+            <!-- order status started -->
+            <div class="col-md-12">
+
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <i class="fa fa-pencil-square-o"></i>
+                        <h3 class="box-title">订单状态跟踪日志</h3>
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="box-body" style="">
+                        <table class="table table-hover">
+                            <tr>
+                                <th>#</th>
+                                <th>操作</th>
+                                <th>用户</th>
+                                <th>时间</th>
+                                <th>备注</th>
+                            </tr>
+                            {% for tk in tracking %}
+                                <tr>
+                                    <td>
+                                        <!--{{ tk.id }}-->
+                                    </td>
+                                    <td>
+                                        {{ tk.action_value }}
+                                    </td>
+                                    <td>
+                                        {{ tk.username }}
+                                    </td>
+                                    <td>
+                                        {{ tk.create_at }}
+                                    </td>
+                                    <td>
+                                        {{ tk.remark }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+            <!-- order status end -->
+            <!-- vendor order status started -->
+            <div class="col-md-12">
+
+                <div class="box box-default">
+                    <div class="box-header with-border">
+                        <i class="fa fa-pencil-square-o"></i>
+                        <h3 class="box-title">VD[{{ item.vendor }}]订单状态</h3>
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                    class="fa fa-minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                                    class="fa fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="box-body" style="">
+                        <table class="table table-hover">
+                            <tr>
+                                <th>#</th>
+                                <th>操作</th>
+                                <th>时间</th>
+                            </tr>
+                            {% for tk in tracking_vendor %}
+                                <tr>
+                                    <td>
+
+                                    </td>
+                                    <td>
+                                        {{ tk.status_value }}
+                                    </td>
+                                    <td>
+                                        {{ tk.status_updated_at }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+            <!-- vendor order status end -->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <div style="float: left;margin-left: 5px;display:none">
+                        <a class="btn btn-block btn-default btn-flat"
+                           href="#"
+                           target='view_window'>镜架出库</a>
+                    </div>
+
+
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+</div>
+
+<div id="shippingtime" style="display: none;">
+    <div class="form-group" style="padding: 0 5px;">
+        <input class="form-control" type="text" value="" name="shiptime" id="shiptime" placeholder="请点击输入框填写预计发货时间">
+    </div>
+</div>
+
+<div id="div_distribute_vendor_manual" style="display: none;">
+    <div class="form-group" style="padding: 0 5px;">
+        订单 VD:<input class="form-control" name="txt_vendor" id="txt_vendor" readonly="true"></input>
+        订单 SKU:<input class="form-control" name="txt_lens_sku" id="txt_lens_sku" readonly="true"></input>
+        订单镜片:<input class="form-control" name="txt_lens_name" id="txt_lens_name" readonly="true"></input>
+        <div id="sel_index_div">
+            请选择 Index:<select class="form-control" name="sel_index" id="sel_index"></select>
+        </div>
+
+        请选择 VD:<select class="form-control" name="sel_vendors" id="sel_vendors">
+                    {% for vc in vendors_choices %}
+                        <option value="{{ vc.key }}">{{ vc.value }}</option>
+                    {% endfor %}
+                </select>
+        <div id="sel_lens_sku_div">
+            请选择镜片:<select class="form-control" name="sel_lens_sku" id="sel_lens_sku"></select>
+        </div>
+    </div>
+</div>
+<div id="sync_shipment_div" style="display: none;">
+    <div class="form-group" style="padding: 0 5px;">
+        Lab Number:<input class="form-control" name="txt_vendor" id="txt_lab_number" readonly="true"></input>
+        实际发运方式:<input class="form-control" name="txt_lens_name" id="txt_act_shipment" readonly="true"></input>
+    </div>
+</div>
+<div id="edit_shipment_div" style="display: none;">
+    <div class="form-group" style="padding: 0 5px;">
+        Lab Number:<input class="form-control" name="txt_vendor" id="edit_ship_lab_number" readonly="true"></input>
+        发运方式:<select class="form-control" name="edit_lab_ship" id="edit_lab_ship">
+                    <option value="STANDARD">普通</option>
+                    <option value="EXPRESS">加急</option>
+                    <option value="EMPLOYEE">内部</option>
+                    <option value="FLATRATE">批量</option>
+                   <option  value="CA_EXPRESS">加急-加拿大</option>
+                </select>
+    </div>
+</div>
+<div id="edit_parameters_div" style="display: none;">
+    <div class="form-group" style="padding: 0 5px;">
+        <input name="e_lab_number" type="hidden" class="form-control" id="e_lab_number"/>
+        加工瞳高：<input name="e_seg_height" class="form-control" id="e_seg_height" value="{{ item.lab_seg_height }}"/>
+        装配瞳高：<input name="e_assemble_height" class="form-control" id="e_assemble_height" value="{{ item.assemble_height }}"/>
+        子镜高度：<input name="e_sub_mirrors_height" class="form-control" id="e_sub_mirrors_height" value="{{ item.sub_mirrors_height }}"/>
+        加工要求：<textarea class="form-control" id="e_special_handling" rows="2" value="{{ item.special_handling }}"
+                                                  style="min-width: 90%"></textarea>
+    </div>
+</div>
+<div id="delivered_time_div" style="display: none;">
+    <div class="form-group" style="padding: 0 5px;">
+        <input class="form-control" type="text" value="" name="delivered_time" id="delivered_time" placeholder="请点击添加妥投时间">
+    </div>
+</div>
+<div id="edit_overdue_orders_div" style="display: none;">
+    <div class="form-group" style="padding: 0 5px;">
+        <input name="overdue_orders_lab_number" type="hidden" class="form-control" id="overdue_orders_lab_number"/>
+        目前进程：<input name="cur_progress" class="form-control" id="cur_progress" value=""/>
+        超期原因：<textarea class="form-control" id="overdue_reasons" rows="2" value=""
+                                                  style="min-width: 90%"></textarea>
+    </div>
+</div>
+<div id="edit_exclude_days_div" style="display: none;">
+    <div class="form-group" style="padding: 0 5px;">
+        <div>已暂停时长(天)：<span id="add_exclude_days"></span></div>
+        本次暂停时长(天):<input id="edit_exclude_days" name="edit_exclude_days" type="number" value=""/>
+    </div>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">更换镜架SKU</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                     <input type="text" class="form-control" placeholder="请输入镜架SKU" id="frame_sku" style="width: 300px;float: left;">
+                     <button type="button" class="btn btn-primary search_frame_img" style="float: left;" >查找</button>
+                </div>
+                <div style="margin-top: 40px;width: 300px;">
+                    <label>库存数量:</label>
+                    <span class="stock"></span>
+                </div>
+                <div>
+                    <img src="" class="frame_img" width="100%"/>
+                    <input type="hidden" class="form_img" value=""/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default sure_submit">确认</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="editParametersModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">修改加工参数</h4>
+            </div>
+            <div class="modal-body" style="height: 200px;">
+                <input name="e_lab_number" type="hidden" class="form-control" id="e_lab_number"/>
+                <div class="row" style="margin-top: 15px;">
+                    <div class="col-sm-2"><label>加工瞳高</label></div>
+                    <div class="col-sm-4">
+                        <input name="e_seg_height" class="form-control" id="e_seg_height" value="{{ item.lab_seg_height }}"/>
+                    </div>
+                    <div class="col-sm-2"><label>装配瞳高</label></div>
+                    <div class="col-sm-4">
+                        <input name="e_assemble_height" class="form-control" id="e_assemble_height" value="{{ item.assemble_height }}"/>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 15px;">
+                    <div class="col-sm-2"><label>子镜高度</label></div>
+                    <div class="col-sm-4">
+                        <input name="e_sub_mirrors_height" class="form-control" id="e_sub_mirrors_height" value="{{ item.sub_mirrors_height }}"/>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 15px;">
+                    <div class="col-sm-2"><label>加工要求</label></div>
+                    <div class="col-sm-8">
+                        <textarea class="form-control" id="e_special_handling" rows="2" value="{{ item.special_handling }}"
+                                                          style="min-width: 90%"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-default e_parameters_submit">确认</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+{% block jquery %}
+    <script>
+
+        var clipboard = new ClipboardJS('.btn');
+        clipboard.on('success', function (e) {
+            console.info('Action:', e.action);
+            console.info('Text:', e.text);
+            console.info('Trigger:', e.trigger);
+            layer.msg('订单号已复制 ....');
+            e.clearSelection();
+        });
+
+        clipboard.on('error', function (e) {
+            console.error('Action:', e.action);
+            console.error('Trigger:', e.trigger);
+        });
+        // 点击 头部 Actions Vendor List，更新 Vendor；无确认需求
+        $("[name='btn_distribute_vendors']").each(function () {
+            $(this).bind("click", function () {
+                // $("[name='btn_distribute_vendors']").removeAttr("checked");
+                // $(this).attr("checked", "checked");
+                var index = $(this).attr('index');
+                var entity = $(this).attr('entity');
+                var obj = $(this);
+                var window = layer.load(2); //换了种风格
+                var returnData;
+                $.ajax({
+                    url: "/oms/distribute_vendor/",
+                    type: 'POST',
+                    data: {
+                        index: index,
+                        entities: entity
+                    },
+                    async: true
+                }).done(function (response) {
+
+                    returnData = response;
+
+                    if (returnData.code == '0') {
+                        $("#btn_cur_vd").text(index);
+                        obj.closest("tr").prev("tr").find(".vendor").html(index);
+                        layer.closeAll();
+                        //$("#btn_cur_vd").html(index);
+                        layer.msg(returnData.message);
+                    } else {
+                        layer.closeAll();
+                        layer.alert(returnData.message);
+                    }
+                });
+            });
+        });
+
+        $("[name='btn_add_comments']").each(function () {
+            $(this).bind("click", function () {
+                // $("[name='btn_distribute_vendors']").removeAttr("checked");
+                // $(this).attr("checked", "checked");
+                add_comments($(this), 0);
+
+            });
+        });
+
+        $("[name='btn_add_comments_inner']").each(function () {
+            $(this).bind("click", function () {
+                // $("[name='btn_distribute_vendors']").removeAttr("checked");
+                // $(this).attr("checked", "checked");
+                add_comments($(this), 1);
+            });
+        });
+
+        function add_comments(obj, inner) {
+
+            var entity = obj.attr('lab_entity');
+            var type = obj.attr('obj_type');
+            var lab_number = obj.attr('lab_number');
+            var action_value = obj.attr('tag');
+            parent.layer.prompt({
+                title: '输入备注:',
+                formType: 2
+            }, function (text, index) {
+                $.ajax({
+                    url: "/oms/addComments/",
+                    type: 'POST',
+                    data: {
+                        'order_number': lab_number,
+                        'ordertype': type,
+                        'id': entity,
+                        'action_value': action_value,
+                        'textarea': text,
+                        'inner': inner
+                    },
+                    success: function (arg) {
+                        obj = $.parseJSON(arg);
+                        $('#' + obj.id_content).html(obj.content);
+                        layer.msg(arg);
+                        responseValue = arg;
+                        layer.close(index);
+                        layer.msg('操作反馈: ' + obj.status);
+                    },
+                    error: function (arg) {
+                        layer.msg('操作失败: ' + arg.status);
+                    }
+                })
+            })
+        }
+
+        $("[name='btn_add_es_time']").each(function () {
+            $(this).bind("click", function () {
+                // $("[name='btn_distribute_vendors']").removeAttr("checked");
+                // $(this).attr("checked", "checked");
+                var obj = $(this);
+
+                url = "{% url 'esTime' %}";
+
+                var entity = obj.attr('lab_entity');
+                var type = obj.attr('obj_type');
+                var lab_number = obj.attr('lab_number');
+                var action_value = obj.attr('tag');
+                var index = layer.open({
+                    type: 1,
+                    shade: false,
+                    title: '填写预计发货时间', //不显示标题
+                    content: $('#shippingtime'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['保存', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        var shiptime = $('#shiptime').val();
+                        if (shiptime == '' || shiptime == null) {
+                            layer.msg('请填写预计发货时间', {icon: 5});
+                            return false;
+                        } else {
+                            $.ajax({
+                                url: url,
+                                type: "POST",
+                                data: {
+                                    'shiptime': shiptime,
+                                    'labid': lab_number,
+                                    'content': shiptime,
+                                    'alias': 'ESTIMATED_DATE'
+                                },
+                                error: function () {
+                                    layer.msg('添加失败，请稍后重试', {icon: 5});
+                                },
+                                success: function (arg) {
+                                    var time = $('#shiptime').val();
+                                    //$($this).closest("tr").prev().find("td:eq(5)").text(time)
+
+                                    // 成功修改之后，需要更新当前的显示字段:
+                                    $("#est_time_" + entity).html(shiptime);
+
+                                    layer.close(index);
+                                    if (arg == "True") {
+
+                                        $($this).attr('disabled', 'disabled');
+
+                                        layer.open({
+                                            title: 'Order Tracking',
+                                            content: '订单' + labid + '已添加预期发货时间',
+                                            time: 10000
+                                        });
+                                    } else {
+                                        layer.open({
+                                            title: 'Error',
+                                            content: arg,
+                                            time: 10000
+                                        });
+                                    }
+                                }
+                            })
+
+                        }
+                    }
+                });
+                //es_time($(this));
+            });
+        });
+
+        laydate.render({
+            elem: '#shiptime', //指定元素
+            type: 'date'
+        });
+        laydate.render({
+            elem: '#delivered_time', //指定元素
+            type: 'datetime'
+        });
+
+
+        $("[name='btn_create_lens_order']").each(function () {
+            $(this).bind("click", function () {
+                layer.load();
+                var obj = $(this);
+                url = "{% url 'lens_order_new' %}";
+                var entity = obj.attr('lab_entity');
+                var type = obj.attr('obj_type');
+                var lab_number = obj.attr('lab_number');
+                var action_value = obj.attr('tag');
+
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        'lab_number': lab_number,
+                    },
+                    error: function () {
+                        layer.msg('添加失败，请稍后重试', {icon: 5});
+                    },
+                    success: function (arg) {
+                        obj.attr('disabled', true);
+                        // alert('Lens Order Created.');
+                        layer.closeAll();
+                        layer.msg('Lens Order Created.');
+                    }
+                })
+
+            });
+        });
+
+
+        $("[name='btn_distribute_lab_order']").each(function () {
+            $(this).bind("click", function () {
+                layer.load();
+                var obj = $(this);
+                url = "{% url 'distribute_lab_orders' %}";
+                var entity = obj.attr('lab_entity');
+                var type = obj.attr('obj_type');
+                var lab_number = obj.attr('lab_number');
+                var action_value = obj.attr('tag');
+
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        'lab_number': lab_number,
+                    },
+                    error: function () {
+                        layer.msg('操作异常，请稍后重试....', {icon: 5, time: 100000});
+                        setTimeout(function () {
+                            //add your code
+                            layer.closeAll();
+                        }, 6 * 1000);// 延迟5000毫秒
+                    },
+                    success: function (arg) {
+                        obj.attr('disabled', true);
+                        // alert('Lens Order Created.');
+
+                        rm = JSON.parse(arg);
+
+                        if (rm.code == 0) {
+                            layer.msg('此操作已成功!');
+                        } else {
+                            layer.msg(rm.code + '-' + rm.message);
+                        }
+
+                        setTimeout(function () {
+                            //add your code
+                            layer.closeAll();
+                        }, 4 * 1000);// 延迟5000毫秒
+                    }
+                })
+
+            });
+        });
+
+
+        $("[name='btn_distribute_lab_order_manual_old']").each(function () {
+            $(this).bind("click", function () {
+                // $("[name='btn_distribute_vendors']").removeAttr("checked");
+                // $(this).attr("checked", "checked");
+                var obj = $(this);
+
+                url = "{% url 'esTime' %}";
+
+                var entity = obj.attr('lab_entity');
+                var type = obj.attr('obj_type');
+                var lab_number = obj.attr('lab_number');
+                var action_value = obj.attr('tag');
+                var base_sku = obj.attr('base_sku');
+                var vendor = obj.attr('vendor');
+
+
+                url_lens = "{% url 'distribute_lab_orders_manual' %}";
+                var lens_index = layer.load();
+                $.ajax({
+                    url: url_lens,
+                    type: 'POST',
+                    data: {
+                        'lab_number': lab_number,
+                        'base_sku': base_sku,
+                        'vendor': vendor,
+                    },
+                    success: function (arg) {
+                        obj = $.parseJSON(arg);
+
+                        {#var s_vendors = $("#sel_vendors");#}
+                        {#s_vendors.empty();#}
+                        {##}
+                        {#s_vendors.append("<option value='" + '2' + "'>" + '2' + "</option>");#}
+                        {#s_vendors.append("<option value='" + '3' + "'>" + '3' + "</option>");#}
+                        {#s_vendors.append("<option value='" + '4' + "'>" + '4' + "</option>");#}
+                        {#s_vendors.append("<option value='" + '5' + "'>" + '5' + "</option>");#}
+                        {#s_vendors.append("<option value='" + '6' + "'>" + '6' + "</option>");#}
+
+                        var s_lens_sku = $("#sel_lens_sku");
+                        s_lens_sku.empty();
+
+                        for (let lens of obj.obj) {
+                            s_lens_sku.append("<option value='" + lens.sku + "'>" + lens.name + "</option>");
+                        }
+
+                        layer.close(lens_index);
+
+                        var index = top.layer.open({
+                            type: 1,
+                            shade: 0.8,
+                            anim: 4,
+                            style: {
+                                width: '600px',
+                                height: '400px'
+                            },
+                            title: '手动分配 Vendor', //不显示标题
+                            content: $('#div_distribute_vendor_manual'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                            btn: ['保存', '取消'],
+
+                            cancel: function () {
+                                layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                            },
+                            yes: function () {
+                                var shiptime = $('#shiptime').val();
+
+                                if (shiptime == '' || shiptime == null) {
+                                    layer.msg('请填写预计发货时间', {icon: 5});
+                                    return false;
+                                } else {
+                                    $.ajax({
+                                        url: url,
+                                        type: "POST",
+                                        data: {
+                                            'shiptime': shiptime,
+                                            'labid': lab_number,
+                                            'content': shiptime,
+                                            'alias': 'ESTIMATED_DATE'
+                                        },
+                                        error: function () {
+                                            layer.msg('添加失败，请稍后重试', {icon: 5});
+                                        },
+                                        success: function (arg) {
+                                            var time = $('#shiptime').val();
+                                            //$($this).closest("tr").prev().find("td:eq(5)").text(time)
+
+                                            // 成功修改之后，需要更新当前的显示字段:
+                                            $("#est_time_" + entity).html(shiptime);
+
+                                            layer.close(index);
+                                            if (arg == "True") {
+
+                                                $($this).attr('disabled', 'disabled');
+
+                                                layer.open({
+                                                    title: 'Order Tracking',
+                                                    content: '订单' + labid + '已添加预期发货时间',
+                                                    time: 10000
+                                                });
+                                            } else {
+                                                layer.open({
+                                                    title: 'Error',
+                                                    content: arg,
+                                                    time: 10000
+                                                });
+                                            }
+                                        }
+                                    })
+
+                                }
+                            }
+                        });
+
+
+                    },
+                    error: function (arg) {
+                        layer.msg('操作失败: ' + arg.status);
+                        layer.close(lens_index);
+                    }
+                })
+
+                // $("#sel_lens_sku").append("<option value='Value'>Text</option>");  //为Select追加一个Option(下拉项)
+
+            });
+        });
+
+        $("[name='btn_distribute_lab_order_manual']").each(function () {
+            $(this).bind("click", function () {
+                var obj = $(this);
+
+                var entity = obj.attr('lab_entity');
+                var type = obj.attr('obj_type');
+                var lab_number = obj.attr('lab_number');
+                var action_value = obj.attr('tag');
+                var base_sku = obj.attr('base_sku');
+                var vendor = obj.attr('vendor');
+                var lens_name = obj.attr('lens_name');
+
+                $("#txt_vendor").val(vendor);
+                $("#txt_lens_sku").val(base_sku);
+                $("#txt_lens_name").val(lens_name);
+
+                {#var s_vendors = $("#sel_vendors");#}
+                {#s_vendors.empty();#}
+                {#s_vendors.append("<option value='" + '0' + "'>" + '0' + "</option>");#}
+                {#s_vendors.append("<option value='" + '2' + "'>" + '2' + "</option>");#}
+                {#s_vendors.append("<option value='" + '3' + "'>" + '3' + "</option>");#}
+                {#s_vendors.append("<option value='" + '4' + "'>" + '4' + "</option>");#}
+                {#s_vendors.append("<option value='" + '5' + "'>" + '5' + "</option>");#}
+                {#s_vendors.append("<option value='" + '6' + "'>" + '6' + "</option>");#}
+                {#s_vendors.append("<option value='" + '7' + "'>" + '7' + "</option>");#}
+                {#s_vendors.append("<option value='" + '8' + "'>" + '8' + "</option>");#}
+                {#s_vendors.append("<option value='" + '9' + "'>" + '9' + "</option>");#}
+                {#s_vendors.append("<option value='" + '10' + "'>" + '10' + "</option>");#}
+                {#s_vendors.append("<option value='" + '11' + "'>" + '11' + "</option>");#}
+                {#s_vendors.append("<option value='" + '12' + "'>" + '12' + "</option>");#}
+                {#s_vendors.append("<option value='" + '13' + "'>" + '13' + "</option>");#}
+                {#s_vendors.append("<option value='" + '14' + "'>" + '14' + "</option>");#}
+                {#s_vendors.append("<option value='" + '15' + "'>" + '15' + "</option>");#}
+
+                var s_index = $("#sel_index");
+                s_index.empty();
+                s_index.append("<option value='" + '1.50' + "'>" + '1.50' + "</option>");
+                s_index.append("<option value='" + '1.56' + "'>" + '1.56' + "</option>");
+                s_index.append("<option value='" + '1.59' + "'>" + '1.59' + "</option>");
+                s_index.append("<option value='" + '1.61' + "'>" + '1.61' + "</option>");
+                s_index.append("<option value='" + '1.67' + "'>" + '1.67' + "</option>");
+                s_index.append("<option value='" + '1.71' + "'>" + '1.71' + "</option>");
+                s_index.append("<option value='" + '1.74' + "'>" + '1.74' + "</option>");
+
+                var index = top.layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '600px',
+                        height: '400px'
+                    },
+                    title: '手动分配 Vendor', //不显示标题
+                    content: $('#div_distribute_vendor_manual'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['保存', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        distribute_orders(obj);
+                    }
+                });
+            });
+        });
+
+
+        $("#sel_vendors").change(function () {
+
+            var obj = $(this);
+            var vendor = obj.val();
+            var sel_index = $("#sel_index");
+            var lens_index = sel_index.val();
+
+            url = "{% url 'lens_by_vd' %}";
+            var window_loading = layer.load();
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    'vendor': vendor,
+                    'index': lens_index,
+                },
+                success: function (arg) {
+                    obj = $.parseJSON(arg);
+                    var s_lens_sku = $("#sel_lens_sku");
+                    s_lens_sku.empty();
+
+                    for (let lens of obj.obj) {
+                        s_lens_sku.append("<option value='" + lens.sku + "'>" + lens.name + "</option>");
+                    }
+                    layer.close(window_loading);
+                },
+                error: function (arg) {
+                    layer.close(window_loading);
+                }
+            });
+        });
+
+
+        function distribute_orders(obj) {
+
+            var lab_number = obj.attr('lab_number');
+
+            var sel_lens_sku = $("#sel_lens_sku");
+            var lens_sku = sel_lens_sku.val();
+            var lens_name = $("#sel_lens_sku option:selected").text();
+            var s_vendors = $("#sel_vendors");
+            var vendor = s_vendors.val();
+            url_lens = "{% url 'distribute_lab_orders_manual' %}";
+            var lens_index = layer.load();
+            $.ajax({
+                url: url_lens,
+                type: 'POST',
+                data: {
+                    'lab_number': lab_number,
+                    'vendor': vendor,
+                    'lens_sku': lens_sku,
+                    'lens_name': lens_name,
+                },
+                dataType: 'json',
+                success: function (arg) {
+                    console.log(arg)
+                    console.log(arg.code)
+                    if(arg.code == 0){
+                        //resp = $.parseJSON(arg);
+                        layer.closeAll();
+                        $("#btn_cur_vd").text(vendor);
+                        $("#txt_lens_sku").text(lens_sku);
+                        $("#txt_lens_name").text(lens_name);
+                        obj.closest("tr").prev("tr").find(".vendor").html(vendor);
+                        layer.alert("此操作已成功.");
+                    }else{
+                        layer.alert(arg.message);
+                        layer.close(lens_index);
+                    }
+
+                },
+                error: function (arg) {
+                    layer.msg('操作失败: ' + arg.status);
+                    layer.close(lens_index);
+                }
+            })
+        }
+
+
+        $("#edit_sku").on('click', function () {
+            var order_number = $("#edit_lab_number").val();
+            var clk_ld = layer.load(2);
+            layer.close(clk_ld);
+            $.ajax({
+                url: '/oms/edit_laborder_sku/',
+                type: 'POST',
+                data: {
+                    "order_number": order_number
+                },
+                success: function (res_data) {
+                    var index = layer.open({
+                        title: "编辑加工参数信息",
+                        content: res_data,
+                        area: '55%',
+                        btn: ['修改', '取消'],
+                        type: 1,
+                        cancel: function () {
+                            layer.msg('直接关闭 什么也不会处理', {time: 3000});
+                         },
+                        yes: function (i, e) {
+                            layer.close(index);
+                            var index_load = layer.load(2);
+                            let form_data = getFormData(e.find("form.edit_sku_form").eq(0));
+                            console.log(form_data)
+                            {#form_data["name"] = form_data["name"].replace(/\+/, " ");#}
+                            console.log(JSON.stringify(form_data))
+
+                            $.ajax({
+                                url: '/oms/modify_laborder_sku/',
+                                type: 'POST',
+                                data: {
+                                    "order_number": order_number,
+                                    "form_data": JSON.stringify(form_data)
+                                },
+                                success: function (arg) {
+                                    if (arg.code != '0') {
+                                        layer.msg('操作失败: ' + arg.message);
+                                    } else {
+                                        layer.msg("修改成功");
+                                    }
+                                    layer.close(index_load);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        })
+        $(".search_frame_img").click(function () {
+            var sku = $("#frame_sku").val();
+            if(sku == ""){
+                alert("请输入sku!");
+                return
+            }
+            $(".form_img").val('');
+            $(".frame_img").attr("src", '');
+            $(".stock").html('');
+            url = "{% url 'get_frame_img' %}"
+            $.get(url, params={sku:sku}, function (res) {
+                if(res.code == '0'){
+                    img_url = res.img_url +"media/catalog/product"+ res.list[0].image;
+                    $(".form_img").val(res.list[0].image);
+                    $(".frame_img").attr("src", img_url);
+                    $(".stock").html(res.list[0].quantity);
+                    $(".sure_submit").attr("disabled", false);
+                }else{
+                    layer.msg('操作失败: ' + res.message);
+                    $(".sure_submit").attr("disabled", true);
+                }
+            })
+        });
+        $(".sure_submit").click(function () {
+            var image = $(".form_img").val();
+            var lab_number = $("#spn_lab_number").text();
+            var frame = $("#frame_sku").val();
+            if(frame == ''){
+                layer.msg('请输入sku进行查询');
+                return
+            }
+            var data = {
+                'lab_number': lab_number.replace(/\s*/g,""),
+                'frame': frame.replace(/\s*/g,""),
+                'image': image.replace(/\s*/g,"")
+            };
+            var url = "{% url 'change_frame_sku' %}";
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                dataType: 'json',
+                success: function (arg) {
+                    console.log(arg.code)
+                    if(arg.code==0){
+                        $("#glasses_frame").html(frame.replace(/\s*/g,""))
+                        $("#myModal").modal('hide');
+                        layer.msg('操作成功!');
+                    }else {
+                        layer.msg('操作失败: ' + arg.msg);
+                    }
+                }
+            });
+
+        });
+        $("[name='sync_shipment_status']").each(function () {
+            $(this).bind("click", function () {
+                var obj = $(this);
+
+                var entity = obj.attr('lab_entity');
+                var act_ship_direction = obj.attr('act_ship_direction');
+                var lab_number = obj.attr('lab_number');
+                $("#txt_lab_number").val(lab_number);
+                $("#txt_act_shipment").val(act_ship_direction);
+
+                var index = top.layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '600px',
+                        height: '400px'
+                    },
+                    title: '同步发货状态', //不显示标题
+                    content: $('#sync_shipment_div'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['提交', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        var url = "{% url 'sync_shipment_status' %}";
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: {
+                                "entity":entity,
+                                "act_ship_direction":act_ship_direction,
+                                "lab_number":lab_number
+                            },
+                            dataType: 'json',
+                            success: function (arg) {
+                                console.log(arg)
+                                if(arg.code==0){
+                                    layer.close(index);
+                                    layer.msg('操作成功!');
+                                }else {
+                                    layer.msg('操作失败: ' + arg.msg);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+        //修改发货状态
+        $("[name='edit_laborder_ship']").each(function () {
+            $(this).bind("click", function () {
+                var obj = $(this);
+
+                var entity = obj.attr('lab_entity');
+                var act_ship_direction = obj.attr('act_ship_direction');
+                var lab_number = obj.attr('lab_number');
+                $("#edit_ship_lab_number").val(lab_number);
+                var index = top.layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '600px',
+                        height: '400px'
+                    },
+                    title: '修改发货方式', //不显示标题
+                    content: $('#edit_shipment_div'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['确认', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        var edit_lab_ship = $("#edit_lab_ship").val();
+                        var url = "{% url 'edit_laborder_shipment' %}";
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: {
+                                "act_ship_direction":edit_lab_ship,
+                                "lab_number":lab_number
+                            },
+                            dataType: 'json',
+                            success: function (arg) {
+                                console.log(arg)
+                                if(arg.code==0){
+                                    layer.close(index);
+                                    layer.msg('操作成功!');
+                                }else {
+                                    layer.msg('操作失败: ' + arg.msg);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+        //修改加工参数
+        $("[name='edit_processing_parameters']").each(function () {
+            $(this).bind("click", function () {
+                var obj = $(this);
+
+                var entity = obj.attr('lab_entity');
+                var lab_seg_height = obj.attr('lab_seg_height');
+                var assemble_height = obj.attr('assemble_height');
+                var sub_mirrors_height = obj.attr('sub_mirrors_height');
+                var special_handling = obj.attr('special_handling');
+                if(special_handling == 'None'){
+                    special_handling = ''
+                }
+                if(sub_mirrors_height == 'None'){
+                    sub_mirrors_height = ''
+                }
+                var lab_number = obj.attr('lab_number');
+                $("#e_lab_number").val(lab_number);
+                $("#e_seg_height").val(lab_seg_height);
+                $("#e_assemble_height").val(assemble_height);
+                $("#e_sub_mirrors_height").val(sub_mirrors_height);
+                $("#e_special_handling").val(special_handling);
+                var index = top.layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '800px',
+                        height: '600px'
+                    },
+                    title: '修改加工参数', //不显示标题
+                    content: $('#edit_parameters_div'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['确认', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        var e_lab_number = $("#e_lab_number").val();
+                        var e_seg_height = $("#e_seg_height").val();
+                        var e_assemble_height = $("#e_assemble_height").val();
+                        var e_sub_mirrors_height = $("#e_sub_mirrors_height").val();
+                        var e_special_handling = $("#e_special_handling").val();
+                        var url = "{% url 'edit_laborder_parameters' %}";
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: {
+                                "lab_seg_height":e_seg_height,
+                                "assemble_height":e_assemble_height,
+                                "sub_mirrors_height":e_sub_mirrors_height,
+                                "special_handling":e_special_handling,
+                                "lab_number":lab_number
+                            },
+                            dataType: 'json',
+                            success: function (arg) {
+                                console.log(arg)
+                                if(arg.code==0){
+                                    layer.close(index);
+                                    layer.msg('操作成功!');
+                                }else {
+                                    layer.msg('操作失败: ' + arg.msg);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+        //添加妥投时间
+        $("[name='btn_add_delivered_time']").each(function () {
+            $(this).bind("click", function () {
+                var obj = $(this);
+
+                var url = "{% url 'oms_delivered_time_add' %}";
+                var lab_number = obj.attr('lab_number');
+                var index = layer.open({
+                    type: 1,
+                    shade: false,
+                    title: '添加妥投时间', //不显示标题
+                    content: $('#delivered_time_div'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['保存', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        var delivered_time = $('#delivered_time').val();
+                        if (delivered_time == '' || delivered_time == null) {
+                            layer.msg('请填写妥投时间', {icon: 5});
+                            return false;
+                        } else {
+                            $.ajax({
+                                url: url,
+                                type: "POST",
+                                data: {
+                                    'delivered_time': delivered_time,
+                                    'lab_number': lab_number
+                                },
+                                dataType:"json",
+                                error: function () {
+                                    layer.msg('添加失败，请稍后重试', {icon: 5});
+                                },
+                                success: function (arg) {
+                                    layer.close(index);
+                                    if(arg.code == 0){
+                                        layer.msg(arg.msg, {icon: 6});
+                                    }else{
+                                        layer.msg(arg.msg, {icon: 5});
+                                    }
+                                }
+                            })
+
+                        }
+                    }
+                });
+                //es_time($(this));
+            });
+        });
+
+        //超期处理
+        $("[name='edit_overdue_orders']").each(function () {
+            $(this).bind("click", function () {
+                var obj = $(this);
+
+                var entity = obj.attr('lab_entity');
+                var lab_number = obj.attr('lab_number');
+                $("#overdue_orders_lab_number").val(lab_number);
+                var index = top.layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '800px',
+                        height: '600px'
+                    },
+                    title: '超期单处理', //不显示标题
+                    content: $('#edit_overdue_orders_div'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['确认', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        var e_lab_number = $("#overdue_orders_lab_number").val();
+                        var cur_progress = $("#cur_progress").val();
+                        var overdue_reasons = $("#overdue_reasons").val();
+                        if(cur_progress == ''){
+                            layer.msg('请填写当前进度', {time: 5000});
+                            return false
+                        }
+                        if(overdue_reasons == ''){
+                            layer.msg('请填写超期原因', {time: 5000});
+                            return false
+                        }
+                        var url = "{% url 'oms_sub_delay_data' %}";
+                        data = {
+                            "cur_progress":cur_progress,
+                            "overdue_reasons":overdue_reasons,
+                            "lab_number":e_lab_number,
+                            "delay_time":''
+                        }
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: {
+                                "form_data": JSON.stringify(data)
+                            },
+                            dataType: 'json',
+                            success: function (arg) {
+                                console.log(arg)
+                                if(arg.code==0){
+                                    layer.close(index);
+                                    layer.msg('操作成功!');
+                                    window.location.reload();
+                                }else {
+                                    layer.msg('操作失败: ' + arg.msg);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        $("#sel_vendors").change(function () {
+            if($(this).val()=='1000' || $(this).val()=='1001'){
+                $("#sel_index_div").hide();
+                $("#sel_lens_sku_div").hide();
+            }else{
+                $("#sel_index_div").show();
+                $("#sel_lens_sku_div").show();
+            }
+        });
+        //添加暂停时长
+        $("[name='pause_duration']").each(function () {
+            $(this).bind("click", function () {
+                var obj = $(this);
+
+                var exclude_days = obj.attr('exclude_days');
+                $("#add_exclude_days").html(exclude_days);
+                var lab_number = obj.attr('lab_number');
+                var url = '{% url "oms_pause_duration_add" %}';
+                var index = top.layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '800px',
+                        height: '600px'
+                    },
+                    title: '添加暂停时长', //不显示标题
+                    content: $('#edit_exclude_days_div'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['确认', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        var new_edit_exclude_days = $("#edit_exclude_days").val();
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: {
+                                "lab_number":lab_number,
+                                "exclude_days":new_edit_exclude_days
+                            },
+                            dataType: 'json',
+                            success: function (arg) {
+                                if(arg.code==0){
+                                    layer.close(index);
+                                    layer.msg('操作成功!');
+                                }else {
+                                    layer.msg('操作失败: ' + arg.msg);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    // 返回JSON格式字符串
+    function getFormData(form) {
+        var data = form.serialize();
+        console.log(data);
+        data = decodeURI(data);
+        var arr = data.split('&');
+        var item, key, value, newData = {};
+        for (var i = 0; i < arr.length; i++) {
+            item = arr[i].split('=');
+            key = item[0];
+            value = item[1];
+            if (key.indexOf('[]') != -1) {
+                key = key.replace('[]', '');
+                if (!newData[key]) {
+                    newData[key] = [];
+                }
+                newData[key].push(value);
+            } else {
+                newData[key] = value;
+            }
+        }
+        return newData;
+    }
+    </script>
+{% endblock %}

@@ -1,0 +1,18 @@
+<div>
+    <div class="form-group col-sm-12" style="margin-top:20px">
+        <div class="col-sm-4"><b style="padding:6px;display: block">选择工厂订单:</b></div>
+        <div class="col-sm-8"><select style="width:100%;padding:6px">
+            {% for lbo in lbos %}
+                <option value="{{ lbo.id }}">{{ lbo.lab_number }}</option>
+            {% endfor %}
+        </select></div>
+    </div>
+    <div class="col-sm-12" style="padding-top:5px">
+        <textarea rows="4" style="width:100%;padding:6px;resize:none;">{% ifequal is_ship '1' %}{{ lbos.0.comments_ship }}{% else %}{{ lbos.0.comments }}{% endifequal %}</textarea>
+    </div>
+    <p style="display:none">
+        {% for lbo in lbos %}
+            <span class="id_{{ lbo.id }}">{% ifequal is_ship '1' %}{{ lbos.0.comments_ship }}{% else %}{{ lbos.0.comments }}{% endifequal %}</span>
+        {% endfor %}
+    </p>
+</div>

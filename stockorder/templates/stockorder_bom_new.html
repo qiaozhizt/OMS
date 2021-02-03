@@ -1,0 +1,755 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="/static/layui/css/layui.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery.searchableSelect.css" />
+    <style>
+        .span_title{
+            padding-right: 30px;
+        }
+        .stack_a{
+            cursor: pointer;
+            color: #ffffff;
+        }
+        /* 防止下拉框的下拉列表被隐藏---必须设置--- */
+        .layui-table-cell {overflow: visible !important;        }
+        /* 使得下拉框与单元格刚好合适 */
+        td .layui-form-select{
+            margin-top: -10px;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+        .required_text{color: #cb2027;font-size: 20px;padding-top: 5px;position: relative;top: 5px;}
+        .searchable-select-dropdown{z-index: 99999;}
+    </style>
+{% endblock %}
+{% block h1 %}成镜订单管理{% endblock %}
+{% block small %}成镜BOM维护{% endblock %}
+{% block content %}
+{#    <div class="row">#}
+{#        {% include 'ra_error_message.html' %}#}
+{#    </div>#}
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header form-horizontal box box-default">
+                    <div class="form-group">
+                        <label for="p_number" class="col-sm-2 control-label"><span class="required_text">*</span>成镜SKU:</label>
+                        <div class="col-sm-4">
+{#                            <select name="product_sku" id="product_sku" class="form-control select_sku">#}
+{#                                <option class="parameter" value="">成镜SKU</option>#}
+{#                                {% for bsl in product_frame_list %}#}
+{#                                    <option class="parameter" value="{{ bsl }}">{{ bsl }}</option>#}
+{#                                {% endfor %}#}
+{#                            </select>#}
+                            <input name="p_number" type="text" class="form-control" id="product_sku" value="" placeholder="成镜SKU"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>镜架SKU:</label>
+                        <div class="col-sm-4">
+                            <select name="frame_sku" id="frame_sku" class="form-control select_sku">
+                                <option class="parameter" value="">镜架SKU</option>
+                                {% for bsl in frame_list %}
+                                    <option class="parameter" value="{{ bsl }}">{{ bsl }}</option>
+                                {% endfor %}
+                            </select>
+                            <!--<input name="p_number" type="text" class="form-control" id="frame_sku" value="" placeholder="镜架SKU"/>-->
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>数量:</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control" id="frame_qty" placeholder="Quantity" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>镜片（OD）:</label>
+                        <div class="col-sm-4">
+{#                            <input type="text" class="form-control" id="od_sku_select" placeholder="镜片" value=""/>#}
+                            <select name="od_sku_select" id="od_sku_select" class="form-control">
+                                <option class="parameter" value="">镜片</option>
+                                {% for bsl in sku_list %}
+                                    <option class="parameter" value="{{ bsl.sku }}"
+                                            {% ifequal parameter_list.sku bsl.sku %}
+                                            selected="selected"
+                                            {% endifequal %}
+                                    >{{ bsl.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>参数:</label>
+                        <div class="col-sm-2">
+{#                            <input type="text" class="form-control" id="od_sph_select" placeholder="SPH" value=""/>#}
+                            <select name="od_sph_select" id="od_sph_select" class="form-control od_sph_select">
+                                <option style="display: none" selected="" value="">SPH</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+{#                            <input type="text" class="form-control" id="od_cyl_select" placeholder="CYL" value=""/>#}
+                            <select name="od_cyl_select" id="od_cyl_select" class="form-control od_cyl_select">
+                                <option style="display: none" selected="selected" value="">CYL</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>数量<span>*</span>:</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control" id="od_len_qty" placeholder="Quantity" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>镜片（OS）:</label>
+                        <div class="col-sm-4">
+{#                            <input type="text" class="form-control" id="os_sku_select" placeholder="镜片" value=""/>#}
+                            <select name="os_sku_select" id="os_sku_select" class="form-control">
+                                <option class="parameter" value="">镜片</option>
+                                {% for bsl in sku_list %}
+                                    <option class="parameter" value="{{ bsl.sku }}"
+                                            {% ifequal parameter_list.sku bsl.sku %}
+                                            selected="selected"
+                                            {% endifequal %}
+                                    >{{ bsl.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>参数:</label>
+                        <div class="col-sm-2">
+{#                            <input type="text" class="form-control" id="os_sph_select" placeholder="SPH" value=""/>#}
+                            <select name="os_sph_select" id="os_sph_select" class="form-control os_sph_select">
+                                <option style="display: none" selected="" value="">SPH</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+{#                            <input type="text" class="form-control" id="os_sph_select" placeholder="CYL" value=""/>#}
+                            <select name="os_cyl_select" id="os_cyl_select" class="form-control os_cyl_select">
+                                <option style="display: none" selected="selected" value="">CYL</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"><span class="required_text">*</span>数量:</label>
+                        <div class="col-sm-4">
+                            <input type="number" class="form-control" id="os_len_qty" placeholder="Quantity" value=""/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="comments" class="col-sm-2 control-label">Comments:</label>
+                        <div class="col-sm-4">
+                            <textarea name='comments' maxlength="128" class="form-control" id="comments" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-4">
+                             <button id="save_btn" type="button" class="btn btn-primary">保存</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">成镜BOM列表：</h3>
+                </div>
+                <table class="layui-hide" id="stock_in_table" lay-filter="demo" style="overflow-x: hidden;"></table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title" id="myModalLabel">编辑</h3>
+                </div>
+                <div class="modal-body" style="height: 620px;">
+                    <div class="box-header form-horizontal">
+                        <input name="p_number" type="hidden" class="form-control" id="product_id" value=""/>
+                        <div class="form-group">
+                            <label for="p_number" class="col-sm-3 control-label"><span class="required_text">*</span>成镜SKU:</label>
+                            <div class="col-sm-6">
+                                <select name="e_product_sku" id="e_product_sku" class="form-control select_sku">
+                                    <option class="parameter" value="">成镜SKU</option>
+                                    {% for bsl in product_frame_list %}
+                                        <option class="parameter" value="{{ bsl }}">{{ bsl }}</option>
+                                    {% endfor %}
+                                </select>
+                                <!--<input name="p_number" type="text" class="form-control" id="product_sku" value="" placeholder="成镜SKU"/>-->
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"><span class="required_text">*</span>镜架SKU:</label>
+                            <div class="col-sm-6">
+                                <select name="e_frame_sku" id="e_frame_sku" class="form-control select_sku">
+                                    <option class="parameter" value="">镜架SKU</option>
+                                    {% for bsl in frame_list %}
+                                        <option class="parameter" value="{{ bsl }}">{{ bsl }}</option>
+                                    {% endfor %}
+                                </select>
+                                <!--<input name="p_number" type="text" class="form-control" id="frame_sku" value="" placeholder="镜架SKU"/>-->
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"><span class="required_text">*</span>数量:</label>
+                            <div class="col-sm-6">
+                                <input type="number" class="form-control" id="e_frame_qty" placeholder="Quantity" value=""/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"><span class="required_text">*</span>镜片（OD）:</label>
+                            <div class="col-sm-6">
+    {#                            <input type="text" class="form-control" id="od_sku_select" placeholder="镜片" value=""/>#}
+                                <select name="e_od_sku_select" id="e_od_sku_select" class="form-control">
+                                    <option class="parameter" value="">镜片</option>
+                                    {% for bsl in sku_list %}
+                                        <option class="parameter" value="{{ bsl.sku }}"
+                                                {% ifequal parameter_list.sku bsl.sku %}
+                                                selected="selected"
+                                                {% endifequal %}
+                                        >{{ bsl.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"><span class="required_text">*</span>参数:</label>
+                            <div class="col-sm-3">
+    {#                            <input type="text" class="form-control" id="od_sph_select" placeholder="SPH" value=""/>#}
+                                <select name="e_od_sph_select" id="e_od_sph_select" class="form-control od_sph_select">
+                                    <option style="display: none" selected="" value="">SPH</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+    {#                            <input type="text" class="form-control" id="od_cyl_select" placeholder="CYL" value=""/>#}
+                                <select name="e_od_cyl_select" id="e_od_cyl_select" class="form-control od_cyl_select">
+                                    <option style="display: none" selected="selected" value="">CYL</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"><span class="required_text">*</span>数量<span>*</span>:</label>
+                            <div class="col-sm-6">
+                                <input type="number" class="form-control" id="e_od_len_qty" placeholder="Quantity" value=""/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"><span class="required_text">*</span>镜片（OS）:</label>
+                            <div class="col-sm-6">
+    {#                            <input type="text" class="form-control" id="os_sku_select" placeholder="镜片" value=""/>#}
+                                <select name="e_os_sku_select" id="e_os_sku_select" class="form-control">
+                                    <option class="parameter" value="">镜片</option>
+                                    {% for bsl in sku_list %}
+                                        <option class="parameter" value="{{ bsl.sku }}"
+                                                {% ifequal parameter_list.sku bsl.sku %}
+                                                selected="selected"
+                                                {% endifequal %}
+                                        >{{ bsl.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"><span class="required_text">*</span>参数:</label>
+                            <div class="col-sm-3">
+    {#                            <input type="text" class="form-control" id="os_sph_select" placeholder="SPH" value=""/>#}
+                                <select name="e_os_sph_select" id="e_os_sph_select" class="form-control os_sph_select">
+                                    <option style="display: none" selected="" value="">SPH</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+    {#                            <input type="text" class="form-control" id="os_sph_select" placeholder="CYL" value=""/>#}
+                                <select name="e_os_cyl_select" id="e_os_cyl_select" class="form-control os_cyl_select">
+                                    <option style="display: none" selected="selected" value="">CYL</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"><span class="required_text">*</span>数量:</label>
+                            <div class="col-sm-6">
+                                <input type="number" class="form-control" id="e_os_len_qty" placeholder="Quantity" value=""/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="comments" class="col-sm-3 control-label">Comments:</label>
+                            <div class="col-sm-6">
+                                <textarea name='e_comments' maxlength="128" class="form-control" id="e_comments" placeholder="请输入备注"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="close_btn">关闭</button>
+                    <button type="button" class="btn btn-primary" id="create_btn">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.searchableSelect.js"></script>
+    <script>
+        $(function(){
+			$('.select_sku').searchableSelect();
+		});
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        layui.use(['table', 'layer', 'element', 'jquery', 'form'], function() {
+            var table = layui.table;
+            var form = layui.form;
+            //第一个实例
+            table.render({
+                elem: '#stock_in_table'
+                , height: 'full-300'
+                , url: "{% url 'stock_bom_order_new_data' %}"
+                ,done: function(res, curr, count){
+                   // 渲染dictName列
+                    form.render('select');
+                    //得到当前页码
+                    console.log(curr);
+                    //得到数据总量
+                    console.log(count);
+                }
+                , cellMinWidth: 100
+                , page: true //开启分页
+                , limit:30
+                , limits:[30,50,70,90,120,10000]
+                , even: true
+                , cols: [[ //表头
+                    {field: 'id', title: 'ID', fixed: 'left', width: 80, sort: true,}
+                    , {field: 'product_sku', title: '成镜SKU', width: 100}
+                    , {field: 'frame', title: '镜架SKU', width: 100}
+                    , {field: 'product_qty', title: '数量', width: 100}
+                    , {field: 'od_lens_name', title: '镜片(OD)',width: 200}
+                    , {field: 'od_lens_sph', title: 'SPH', width: 100}
+                    , {field: 'od_lens_cyl', title: 'CYL', width: 100}
+                    , {field: 'od_len_qty', title: '数量', width: 100}
+                    , {field: 'os_lens_name', title: '镜片(OS)',width: 200}
+                    , {field: 'os_lens_sph', title: 'SPH', width: 100}
+                    , {field: 'os_lens_cyl', title: 'CYL', width: 100}
+                    , {field: 'os_len_qty', title: '数量', width: 100}
+                    , {field: 'comments', title: 'Comments'}
+                    , {field: 'update_date', title: '更新时间', width: 180}
+                    , {field: 'user_name', title: '用户'}
+                    , {title: '操作', templet: function(row){
+                        var barBtnsHTML = '<button type="button" class="btn btn-primary" id="stockorder_bom_btn" lay-event="create">编辑</button>';
+                        return barBtnsHTML;
+                    }}
+                ]]
+            });
+            table.on('tool(demo)', function (obj) {
+             var data = obj.data; //获得当前行数据
+             var layEvent = obj.event;
+             console.log(data);
+             console.log(data.lab_number);
+             console.log('1111111111111');
+             if(layEvent == 'create'){
+                 $("#product_id").val(data.id);
+                 $("#e_product_sku").val(data.product_sku);
+                 $("#e_frame_sku").val(data.frame);
+                 $("#e_frame_qty").val(data.product_qty);
+                 $("#e_od_sku_select").val(data.od_lens_sku);
+                 var url = "{% url 'get_product_lens_sph' %}";
+                 get_sph(url, data.od_lens_sku, 'OD', data.od_lens_sph);
+                 var cyl_url = "{% url 'get_product_lens_cyl' %}";
+                 get_cyl(cyl_url, data.od_lens_sku, data.od_lens_sph, 'OD', data.od_lens_cyl);
+                 get_sph(url, data.os_lens_sku, 'OS', data.os_lens_sph);
+                 get_cyl(cyl_url, data.os_lens_sku, data.os_lens_sph, 'OS', data.os_lens_cyl);
+                 $("#e_od_sph_select").val(data.od_lens_sph);
+                 $("#e_od_cyl_select").val(data.od_lens_cyl);
+                 $("#e_od_len_qty").val(data.od_len_qty);
+                 $("#e_os_sku_select").val(data.os_lens_sku);
+                 $("#e_os_sph_select").val(data.os_lens_sph);
+                 $("#e_os_cyl_select").val(data.os_lens_cyl);
+                 $("#e_os_len_qty").val(data.os_len_qty);
+                 $("#e_comments").val(data.comments);
+                 $("#myModal").modal("show");
+             }
+
+            });
+        });
+        $('#myModal').on('hide.bs.modal', function () {
+            $(".od_sph_select").val('');
+            $(".os_sph_select").val('');
+            $(".od_cyl_select").val('');
+            $(".os_cyl_select").val('');
+        });
+        //切换镜片
+        $("#od_sku_select").change(function () {
+            var sku = $(this).val();
+            var url = "{% url 'get_product_lens_sph' %}";
+            if(sku == ''){
+                alert('请选择镜片')
+                return
+            }
+            get_sph(url, sku, 'OD', '')
+        });
+        $("#e_od_sku_select").change(function () {
+            var sku = $(this).val();
+            var url = "{% url 'get_product_lens_sph' %}";
+            if(sku == ''){
+                alert('请选择镜片')
+                return
+            }
+            alert(1)
+            get_sph(url, sku, 'OD', '')
+        });
+        function get_sph(url, sku, flag, sph){
+            $.ajax({
+                url: url,
+                type: "GET",
+                data: {
+                    'sku': sku
+                },
+                dataType: 'json',
+                success: function (arg) {
+                    if (arg.code == 0) {
+                        if(flag=='OD'){
+                            $(".od_sph_select").empty();
+                        }else{
+                            $(".os_sph_select").empty();
+                        }
+                        var html = '<option selected="" value="">SPH</option>';
+                        for (i=0;i<arg.data.length;i++){
+                            if(arg.data[i] == sph){
+                                html = html + '<option class="parameter" value="'+arg.data[i]+'" selected="selected">'+arg.data[i]+'</option>'
+                            }else{
+                               html = html + '<option class="parameter" value="'+arg.data[i]+'" >'+arg.data[i]+'</option>'
+                            }
+
+                        }
+                        if(flag=='OD'){
+                            $(".od_sph_select").append(html);
+                        }else{
+                            $(".os_sph_select").append(html);
+                        }
+
+                    }
+                    else {
+                        alert(arg.message)
+                    }
+                }
+            })
+        }
+        //切换 cyl
+        $("#od_sph_select").change(function () {
+            var sku = $("#od_sku_select").val();
+            var sph = $(this).val();
+            var url = "{% url 'get_product_lens_cyl' %}";
+            if(sku == ''){
+                alert('请选择SKU')
+                return
+            }
+
+            if(sph == ''){
+                alert('请选择SPH')
+                return
+            }
+            get_cyl(url, sku, sph, 'OD', '')
+        });
+        $("#e_od_sph_select").change(function () {
+            var sku = $("#e_od_sku_select").val();
+            var sph = $(this).val();
+            var url = "{% url 'get_product_lens_cyl' %}";
+            if(sku == ''){
+                alert('请选择SKU')
+                return
+            }
+
+            if(sph == ''){
+                alert('请选择SPH')
+                return
+            }
+            get_cyl(url, sku, sph, 'OD', '')
+        });
+        function get_cyl(url, sku, sph, flag, cyl){
+            $.ajax({
+                url: url,
+                type: "GET",
+                data: {
+                    'sku': sku,
+                    'sph': sph
+                },
+                dataType: 'json',
+                success: function (arg) {
+                    if (arg.code == 0) {
+                        if(flag == 'OD'){
+                            $(".od_cyl_select").empty();
+                        }else{
+                            $(".os_cyl_select").empty();
+                        }
+
+                        var html = '<option selected="" value="">CYL</option>';
+                        for (i=0;i<arg.data.length;i++){
+                            if(arg.data[i] == cyl){
+                                html = html + '<option class="parameter" value="'+arg.data[i]+'" selected="selected">'+arg.data[i]+'</option>'
+                            }else{
+                               html = html + '<option class="parameter" value="'+arg.data[i]+'" >'+arg.data[i]+'</option>'
+                            }
+                        }
+                        if(flag == 'OD'){
+                            $(".od_cyl_select").append(html);
+                        }else{
+                            $(".os_cyl_select").append(html);
+                        }
+
+                    }
+                    else {
+                        alert(arg.message)
+                    }
+                }
+            })
+        }
+        //切换镜片
+        $("#os_sku_select").change(function () {
+            var sku = $(this).val();
+            var url = "{% url 'get_product_lens_sph' %}";
+            if(sku == ''){
+                alert('请选择镜片')
+                return
+            }
+            get_sph(url, sku, 'OS')
+        });
+        $("#e_os_sku_select").change(function () {
+            var sku = $(this).val();
+            var url = "{% url 'get_product_lens_sph' %}";
+            if(sku == ''){
+                alert('请选择镜片')
+                return
+            }
+            get_sph(url, sku, 'OS')
+        });
+        //切换 cyl
+        $("#os_sph_select").change(function () {
+            var sku = $("#os_sku_select").val();
+            var sph = $(this).val();
+            var url = "{% url 'get_product_lens_cyl' %}";
+            if(sku == ''){
+                alert('请选择SKU')
+                return
+            }
+
+            if(sph == ''){
+                alert('请选择SPH')
+                return
+            }
+
+            get_cyl(url, sku, sph, 'OS', '')
+        });
+        $("#e_os_sph_select").change(function () {
+            var sku = $("#e_os_sku_select").val();
+            var sph = $(this).val();
+            var url = "{% url 'get_product_lens_cyl' %}";
+            if(sku == ''){
+                alert('请选择SKU')
+                return
+            }
+
+            if(sph == ''){
+                alert('请选择SPH')
+                return
+            }
+            get_cyl(url, sku, sph, 'OS', '')
+        });
+        $("#save_btn").click(function () {
+            var product_sku = $("#product_sku").val();
+            var frame_sku = $("#frame_sku").val();
+            var frame_qty = $("#frame_qty").val();
+            var od_lens_sku = $("#od_sku_select").val();
+            var od_lens_name = $("#od_sku_select").find("option:selected").text();
+            var od_lens_sph = $("#od_sph_select").val();
+            var od_lens_cyl = $("#od_cyl_select").val();
+            var od_lens_qty = $("#od_len_qty").val();
+            var os_lens_sku = $("#os_sku_select").val();
+            var os_lens_name = $("#os_sku_select").find("option:selected").text();
+            var os_lens_sph = $("#os_sph_select").val();
+            var os_lens_cyl = $("#os_cyl_select").val();
+            var os_lens_qty = $("#os_len_qty").val();
+            var comments = $("#comments").val();
+            if(product_sku == ''){
+                layer.msg('成镜SKU不能为空！', {time:1000,icon:7});
+                return
+            }
+            if(frame_sku == ''){
+                layer.msg('镜架SKU不能为空！', {time:1000,icon:7});
+                return
+            }
+            if(frame_qty == '' || parseInt(frame_qty) == 0){
+                layer.msg('数量不能为空!', {time:1000,icon:7});
+                return
+            }
+            if(od_lens_sku == ''){
+                layer.msg('请选择镜片（OD）!', {time:1000,icon:7});
+                return
+            }
+            if(od_lens_sph == ''){
+                layer.msg('请选择SPH（OD）!', {time:1000,icon:7});
+                return
+            }
+            if(od_lens_cyl == ''){
+                layer.msg('请选择CYL（OD）!', {time:1000,icon:7});
+                return
+            }
+            if(od_lens_qty == '' || parseInt(od_lens_qty) == 0){
+                layer.msg('数量（OD）不能为空!', {time:1000,icon:7});
+                return
+            }
+            if(os_lens_sku == ''){
+                layer.msg('请选择镜片（OS）!', {time:1000,icon:7});
+                return
+            }
+            if(os_lens_sph == ''){
+                layer.msg('请选择SPH（OS）!', {time:1000,icon:7});
+                return
+            }
+            if(os_lens_cyl == ''){
+                layer.msg('请选择CYL（OS）!', {time:1000,icon:7});
+                return
+            }
+            if(os_lens_qty == '' || parseInt(os_lens_qty) == 0){
+                layer.msg('数量（OS）不能为空!', {time:1000,icon:7});
+                return
+            }
+            var url = "{% url 'stock_bom_order_save' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "product_sku": product_sku,
+                    "frame_sku": frame_sku,
+                    "frame_qty": frame_qty,
+                    "od_lens_sku": od_lens_sku,
+                    "od_lens_name":od_lens_name,
+                    "od_lens_sph": od_lens_sph,
+                    "od_lens_cyl": od_lens_cyl,
+                    "od_lens_qty": od_lens_qty,
+                    "os_lens_sku": os_lens_sku,
+                    "os_lens_name":os_lens_name,
+                    "os_lens_sph": os_lens_sph,
+                    "os_lens_cyl": os_lens_cyl,
+                    "os_lens_qty": os_lens_qty,
+                    "comments": comments
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == 0){
+                        layer.msg(arg.msg, {time:3000,icon:6});
+                        window.location.reload();
+                    }else{
+                        layer.msg(arg.msg, {time:3000,icon:7});
+                    }
+                }
+            });
+        });
+        $("#create_btn").click(function () {
+            var product_id = $("#product_id").val();
+            var product_sku = $("#e_product_sku").val();
+            var frame_sku = $("#e_frame_sku").val();
+            var frame_qty = $("#e_frame_qty").val();
+            var od_lens_sku = $("#e_od_sku_select").val();
+            var od_lens_name = $("#e_od_sku_select").find("option:selected").text();
+            var od_lens_sph = $("#e_od_sph_select").val();
+            var od_lens_cyl = $("#e_od_cyl_select").val();
+            var od_lens_qty = $("#e_od_len_qty").val();
+            var os_lens_sku = $("#e_os_sku_select").val();
+            var os_lens_name = $("#e_os_sku_select").find("option:selected").text();
+            var os_lens_sph = $("#e_os_sph_select").val();
+            var os_lens_cyl = $("#e_os_cyl_select").val();
+            var os_lens_qty = $("#e_os_len_qty").val();
+            var comments = $("#e_comments").val();
+            if(product_sku == ''){
+                layer.msg('成镜SKU不能为空！', {time:1000,icon:7});
+                return
+            }
+            if(frame_sku == ''){
+                layer.msg('镜架SKU不能为空！', {time:1000,icon:7});
+                return
+            }
+            if(frame_qty == '' || parseInt(frame_qty) == 0){
+                layer.msg('数量不能为空!', {time:1000,icon:7});
+                return
+            }
+            if(od_lens_sku == ''){
+                layer.msg('请选择镜片（OD）!', {time:1000,icon:7});
+                return
+            }
+            if(od_lens_sph == ''){
+                layer.msg('请选择SPH（OD）!', {time:1000,icon:7});
+                return
+            }
+            if(od_lens_cyl == ''){
+                layer.msg('请选择CYL（OD）!', {time:1000,icon:7});
+                return
+            }
+            if(od_lens_qty == '' || parseInt(od_lens_qty) == 0){
+                layer.msg('数量（OD）不能为空!', {time:1000,icon:7});
+                return
+            }
+            if(os_lens_sku == ''){
+                layer.msg('请选择镜片（OS）!', {time:1000,icon:7});
+                return
+            }
+            if(os_lens_sph == ''){
+                layer.msg('请选择SPH（OS）!', {time:1000,icon:7});
+                return
+            }
+            if(os_lens_cyl == ''){
+                layer.msg('请选择CYL（OS）!', {time:1000,icon:7});
+                return
+            }
+            if(os_lens_qty == '' || parseInt(os_lens_qty) == 0){
+                layer.msg('数量（OS）不能为空!', {time:1000,icon:7});
+                return
+            }
+            var url = "{% url 'stock_bom_order_update' %}";
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    "product_id": product_id,
+                    "product_sku": product_sku,
+                    "frame_sku": frame_sku,
+                    "frame_qty": frame_qty,
+                    "od_lens_sku": od_lens_sku,
+                    "od_lens_name":od_lens_name,
+                    "od_lens_sph": od_lens_sph,
+                    "od_lens_cyl": od_lens_cyl,
+                    "od_lens_qty": od_lens_qty,
+                    "os_lens_sku": os_lens_sku,
+                    "os_lens_name":os_lens_name,
+                    "os_lens_sph": os_lens_sph,
+                    "os_lens_cyl": os_lens_cyl,
+                    "os_lens_qty": os_lens_qty,
+                    "comments": comments
+                },
+                dataType:"json",
+                success: function (arg) {
+                    if(arg.code == 0){
+                        layer.msg(arg.msg, {time:3000,icon:6});
+                        window.location.reload();
+                    }else{
+                        layer.msg(arg.msg, {time:3000,icon:7});
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

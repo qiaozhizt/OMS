@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Inventory{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}库存结构表{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">Actions</h3>
+                </div>
+                <div class="box-header">
+
+                    <div style="float: left;">{% include 'search.html' %}</div>
+
+                    <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+                        <button class="btn btn-default btn dropdown-toggle btn-flat"
+                                type="button"
+                                data-toggle="dropdown"
+                                aria-haspopup="true"
+                                aria-expanded="false">
+                            Filter <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href={{ requestUrl }}?filter=all>
+                                {% ifequal filter 'all' %}{% ifequal flatrate 'all' %}*{% endifequal %}{% endifequal %}All</a>
+                            </li>
+                            <li class="divider"></li>
+                            <li><a href={{ requestUrl }}?filter=in_stock>
+                                {% ifequal filter 'in_stock' %}*{% endifequal %}In Stock</a></li>
+                            <li><a href={{ requestUrl }}?filter=out_of_stock>
+                                {% ifequal filter 'out_of_stock' %}*{% endifequal %}Out of stock</a></li>
+                            <li><a href={{ requestUrl }}?filter=draft>
+                                {% ifequal filter 'draft' %}*{% endifequal %}Draft</a></li>
+                            <li class="divider"></li>
+                            <li><a href={{ requestUrl }}?filter=retired>
+                                {% ifequal filter 'retired' %}*{% endifequal %}retired</a></li>
+                            <li class="divider"></li>
+                            {% for fd in filter_doctors %}
+                                <li><a href={{ requestUrl }}?flatrate={{ fd.id }}>
+                                    {% ifequal flatrate|add:'0' fd.id %}*{% endifequal %}{{ fd.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div style="float: left;margin-left: 5px;display:none">
+                        <button id="btn_delivery_shipped" name="btn_order_matched_shipped" type="button"
+                                class="btn btn-default btn active btn-flat">发货完成
+                        </button>
+                    </div>
+
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+
+    <div class="row">
+        {% for item in list %}
+            <div class="col-md-3">
+                <div class="box box-solid">
+                    <div class="box-header with-border">
+                        <i class="fa fa-hand-o-right"></i>
+                        <h3 class="box-title">{{ item.sku }} - {{ item.get_status_display }}</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <ul>
+                            <li>SKU:{{ item.sku }}</li>
+                            <li>Name:{{ item.name }}</li>
+                            <li class="edit_stock">
+                                <span>In Stock:</span>
+                                <button type="button" class="btn-link btn_stock" data-info="{{ item.sku }}" data-isr="IN_STOCK">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                            </li>
+                            <li class="edit_stock">
+                                <span>Out of stock:</span>
+                                <button type="button" class="btn-link btn_stock" data-info="{{ item.sku }}" data-isr="OUT_OF_STOCK">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                            </li>
+                            <li class="edit_retired">
+                                <span>Retired:<span>{{ item.retired }}</span></span>
+                                <button type="button" class="btn-link edit_ret_btn" data-info="{{ item.sku }}"
+                                        data-isr="{{ item.retired }}">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                            </li>
+                            <li class="date_li" data-item-id="{{ item.id }}">
+                                <span>Estimate RP Date: <data>{% ifequal item.estimate_replenishment_date None %}
+                                    unset{% else %}
+                                    {{ item.estimate_replenishment_date|date:'Y-m-d' }}{% endifequal %}</data>
+                                </span>
+                                {% if perms.wms.REPLENISHMENT %}
+                                    <button type="button" class="btn-link edit_lens_btn" data-info="{{ item.sku }}">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                {% endif %}
+                            </li>
+                            <li class="edit_lock_quantity">
+                                <span>Lock Quantity:  <span class="lock_qty_span">{{ item.lock_quantity }}</span></span>
+                                <button type="button" class="btn-link edit_loc_qty_btn" data-info="{{ item.sku }}"
+                                        data-isr="{{ item.lock_quantity }}">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                            </li>
+                            <li>Quantity</li>
+                            <ul>
+                                <li>Lab:{{ item.quantity }}</li>
+                                <li>Women:{{ item.web_women_quantity }}
+
+                                    {% ifequal item.web_women_is_in_stock True %}
+                                        <img src="{% static "image/icon-yes.svg" %}">
+                                    {% endifequal %}
+                                    {% ifequal item.web_women_is_in_stock False %}
+                                        <img src="{% static "image/icon-no.svg" %}">
+                                    {% endifequal %}
+
+                                </li>
+                                <li>Men:{{ item.web_men_quantity }}
+                                    {% ifequal item.web_men_is_in_stock True %}
+                                        <img src="{% static "image/icon-yes.svg" %}">
+                                    {% endifequal %}
+                                    {% ifequal item.web_men_is_in_stock False %}
+                                        <img src="{% static "image/icon-no.svg" %}">
+                                    {% endifequal %}
+                                </li>
+                                <li>Kids:{{ item.web_kids_quantity }}
+                                    {% ifequal item.web_kids_is_in_stock True %}
+                                        <img src="{% static "image/icon-yes.svg" %}">
+                                    {% endifequal %}
+                                    {% ifequal item.web_kids_is_in_stock False %}
+                                        <img src="{% static "image/icon-no.svg" %}">
+                                    {% endifequal %}
+                                </li>
+                            </ul>
+                        </ul>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <!-- /.box -->
+            </div>
+            <!-- ./col -->
+        {% endfor %}
+    </div>
+    <!-- /.row -->
+
+    <!--paginator-->
+    <div style="width: 100%;text-align: center;">
+        {% include 'page_number.html' %}
+    </div>
+
+    <div id="edit_lock_qty" class="col-md-12 column hidden">
+        <style>
+            .edit_lock_qty label {
+                border-bottom: 0px !important;
+            }
+            .edit_lock_qty input {
+                line-height: 32px;
+                padding:0 0 0 10px;
+                margin-left: 20px;
+            }
+        </style>
+        <form role="form" class="edit_lock_qty">
+            <label><b>锁定库存数量:</b><input name="lock_qty" type="number" value=0/></label>
+        </form>
+    </div>
+
+    <!--paginator end-->
+    <div id="edit_ret" class="col-md-12 column hidden">
+        <style>
+            label {
+                display: block;
+                line-height: 42px;
+                font-size: 16px;
+                letter-spacing: 1px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                margin-bottom: 0px;
+                font-weight: 500;
+            }
+
+            label > input[name='is_ret'] {
+                margin-right: 8px;
+            }
+
+            textarea {
+                resize: none;
+                width: 100%;
+                min-height: 100px;
+                margin-top: 20px;
+            }
+        </style>
+        <form role="form">
+            <label><input name="is_ret" type="radio" value="true"/>true</label>
+            <label><input name="is_ret" type="radio" value="false"/>false</label>
+            <textarea maxlength="128" placeholder="请填写变更原因......"></textarea>
+        </form>
+    </div>
+
+    <div id="edit_stock" class="col-md-12 column hidden">
+        <style>
+            label {
+                display: block;
+                line-height: 42px;
+                font-size: 16px;
+                letter-spacing: 1px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                margin-bottom: 0px;
+                font-weight: 500;
+            }
+
+            label > input[name='is_ret'] {
+                margin-right: 8px;
+            }
+
+            textarea {
+                resize: none;
+                width: 100%;
+                min-height: 100px;
+                margin-top: 20px;
+            }
+        </style>
+        <form role="form">
+            <textarea maxlength="128" placeholder="请填写原因......"></textarea>
+        </form>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+        $("#btnSearch").on("click", function () {
+            sku = $("#number").val();
+
+            url = "{% url 'wms_inventory_struct' %}";
+
+            if (sku == '' || sku == null) {
+                layer.msg('Please enter a sku', {time: 3000, icon: 7});
+            }
+            else {
+                location.href = url + '?sku=' + sku;
+            }
+        });
+
+        {% if perms.wms.RETIRED %}
+            $(document).ready(function () {
+                var cont = $("#edit_ret");
+                var edit_retired = $(".edit_retired");
+                edit_retired.click(function () {
+                    let _self = $(this);
+                    let idx = layer.open({
+                        title: "状态修改为",
+                        area: "25%",
+                        shadeClose: true,
+                        content: cont.html(),
+                        success: function (e) {
+                            let sir = _self.find('button.edit_ret_btn').eq(0).attr('data-isr');
+                            let ele = e.find("input[value='true']");
+                            if (sir == "True") {
+                                e.find("input[value='true']").attr("checked", "checked");
+                                e.find("input[value='false']").removeAttr('checked');
+                            } else if (sir == "False") {
+                                e.find("input[value='false']").attr("checked", "checked");
+                                e.find("input[value='true']").removeAttr('checked');
+                            }
+                        },
+                        yes: function (i, e) {
+                            layer.close(idx);
+                            let reason = $.trim(e.find("textarea").val());
+                            if (reason == "") {
+                                layer.msg("原因不能为空");
+                                return false;
+                            }
+                            $.post("{% url 'edit_retired' %}", {
+                                'frame': _self.find('button.edit_ret_btn').eq(0).attr('data-info'),
+                                'is_ret': e.find('input[name="is_ret"]:checked').val(),
+                                'reason': reason
+                            }, function (res) {
+                                if (res.code == '0') {
+                                    _self.find('button.edit_ret_btn').eq(0).attr('data-isr', res.message);
+                                    _self.find('span span').eq(0).text(res.message);
+                                    layer.msg("修改成功");
+                                    return true;
+                                }
+                                layer.msg(res.message);
+                            });
+                        }
+                    });
+                });
+
+
+                var lock_qty = $("#edit_lock_qty");
+                var edit_lock_quantity = $(".edit_lock_quantity");
+                edit_lock_quantity.click(function () {
+                    let _self = $(this);
+                    let idx = layer.open({
+                        title: "修改库存锁定数量",
+                        area: "25%",
+                        shadeClose: true,
+                        content: lock_qty.html(),
+                        success: function (e) {
+                            let o_qty = _self.find("button.edit_loc_qty_btn").eq(0).attr("data-isr");
+                            e.find("input[name='lock_qty']").val(o_qty);
+                        },
+                        yes: function (i, e) {
+                            let lock_qty = e.find("input[name='lock_qty']").eq(0).val();
+                            $.post("{% url 'edit_lock_quantity' %}", {
+                                'frame': _self.find("button.edit_loc_qty_btn").eq(0).attr('data-info'),
+                                'lock_quantity': e.find("input[name='lock_qty']").val()
+                            },function (res) {
+                                if (res.code == '0') {
+                                    _self.find("span.lock_qty_span").eq(0).text(res.message);
+                                    _self.find("button.edit_loc_qty_btn").eq(0).attr("data-isr", res.message)
+                                }
+                                layer.msg(res.message);
+                            });
+                        }
+                    });
+                });
+
+                var stock = $("#edit_stock")
+                var edit_stock = $(".edit_stock");
+                edit_stock.click(function () {
+                    let _self = $(this);
+                    let idx = layer.open({
+                        title: "上",
+                        area: "25%",
+                        shadeClose: true,
+                        content: stock.html(),
+                        success: function (layero, index) {
+                            if(_self.find('button.btn_stock').eq(0).attr('data-isr') == "IN_STOCK"){
+                                $(".layui-layer-title").html('上架')
+                            }else{
+                                $(".layui-layer-title").html('下架')
+                            }
+                        },
+                        yes: function (i, e) {
+                            layer.close(idx);
+                            let reason = $.trim(e.find("textarea").val());
+                            let stock = _self.find('button.btn_stock').eq(0).attr('data-isr');
+                            if(stock == "OUT_OF_STOCK" && reason == ""){
+                                layer.msg("原因不能为空");
+                                return false;
+                            }
+                            $.post("{% url 'edit_stock' %}", {
+                                'frame': _self.find('button.btn_stock').eq(0).attr('data-info'),
+                                'stock': stock,
+                                'reason': reason
+                            }, function (res) {
+                                if (res.code == '0') {
+                                    if(res.message == 'OUT_OF_STOCK'){
+                                        layer.msg("下架成功");
+                                    }else{
+                                        layer.msg("上架成功");
+                                    }
+                                    return true;
+                                }
+                                layer.msg(res.message);
+                            });
+                        }
+                    });
+                });
+
+            });
+        {% endif %}
+
+        // 更改日期
+        {% if perms.wms.REPLENISHMENT %}
+            // 为十月下的的月份加0
+            function ad_0(s) {
+                return s < 10 ? '0' + s : s;
+            }
+
+            // 日期需要的变量
+            var m_dt = new Date();
+            var sdate = m_dt.getFullYear() + '-' + ad_0(m_dt.getMonth() + 1) + '-' + ad_0(m_dt.getDate());
+            var edate = (m_dt.getFullYear() + 1) + '-' + ad_0(m_dt.getMonth() + 1) + '-' + ad_0(m_dt.getDate());
+            var date_li = $('.date_li');
+
+            // 初始化开始时间的日历框
+            date_li.datetimepicker({
+                language: 'zdy', weekStart: 1, autoclose: 1,
+                startDate: sdate, endDate: edate, minView: 2, maxView: 3
+            }).on('changeDate', function (ev) {
+                let time_str = ev.date.getFullYear() + "-" + ad_0(ev.date.getMonth() + 1) + "-" + ad_0(ev.date.getDate());
+                $.post("{% url 'update_replenishment_date' %}", {
+                    "item_id": $(ev.currentTarget).attr('data-item-id'),
+                    "tar_time": time_str
+                }, function (res) {
+                    if (res.code == 0) {
+                        $(ev.currentTarget).find("data").text(time_str).attr("value", time_str);
+                        layer.msg("成功更新预计补货时间为:【" + res.obj.tar_time + "】", {icon: 1});
+                    } else {
+                        layer.msg("更新时间失败: " + res.message, {time: 3000, icon: 7, shadeClose: true});
+                    }
+                });
+            });
+        {% endif %}
+
+    </script>
+{% endblock %}

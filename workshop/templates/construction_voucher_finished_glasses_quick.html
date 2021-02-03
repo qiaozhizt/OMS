@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block h1 %}Lab Orders{% if page_info.total %}<span class="label label-default">{{ page_info.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}快捷装配{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-8">
+            <!--Search-->
+            <div style="float: left;">{% include 'search.html' %}</div>
+            <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+                <button id="btn_qualified"
+                        order_number="{{ form_data.laborder.lab_number }}"
+                        lab_number="{{ form_data.laborder.lab_number }}"
+                        qualified='1'
+                        class="btn btn-default btn dropdown-toggle" type="button">
+                    初检合格
+                </button>
+            </div>
+            <div style="float: left;margin-left: 5px;">
+                <button id="btn_not_qualified"
+                        order_number="{{ form_data.laborder.lab_number }}"
+                        qualified='0'
+                        type="button"
+                        class="btn btn-default btn-flat active">检验不合格
+                </button>
+            </div>
+            <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+                <button id="laborder_work_order" lab_number="{{ form_data.laborder.lab_number }}" class="btn btn-default btn dropdown-toggle" type="button">补打作业单</button>
+            </div>
+            <div class="btn-group" id="filters" style="float: left;margin-left: 5px;">
+                <button id="laborder_assembling" lab_number="{{ form_data.laborder.lab_number }}" class="btn btn-default btn dropdown-toggle" type="button">装配</button>
+            </div>
+            <!--Search end-->
+
+            <!--Actions-->
+            <div class="cl">
+                <div style="float: left;margin-right: 3px;margin-left:10px; display:none;">
+                    <button id="btn_back" type="button" class="btn btn-default btn active" role="button"
+                            onClick="javascript :history.back(-1);">返回
+                    </button>
+                </div>
+
+                {% for workshop in form_data.stal %}
+                <div style="float: left;margin-left: 5px;">
+                    <a class="btn btn-block btn-default btn-flat"
+                       href={% url 'construction_voucher_finished_glasses_print' %}?id={{ form_data.id }}&ws={{ workshop.key }}
+                    target='view_window'>{{ workshop.value }}</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <!--Actions end-->
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title"></h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    {% if form_data.code == 0 %}
+                        <div style="color: #04ff0f;font-size: 24px;">{{ form_data.message }}</div>
+{#                         {% if form_data.flag == 0 %}#}
+{#                            <div><a style="color:#d73925 ;font-size: 24px;" href="/oms/redirect_construction_voucher/?id={{ form_data.id }}&production_flag=1">补打作业单</a></div>#}
+{#                        {% endif %}#}
+                    {% else %}
+                        <div style="background: #d73925;color: #ffffff;font-size: 18px;">{{ form_data.message }}</div>
+                    {% endif %}
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <!--Table-->
+    {% include 'laborder_detail_mini.pspf.html' %}
+    <!--Table end-->
+    <div id="perliminary_checking_collection" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            订单 VD:<input class="form-control" name="txt_vendor" id="txt_vendor" readonly="true"
+                         value="{{ form_data.laborder.vendor }}"></input>
+            订单 SKU:<input class="form-control" name="txt_lens_sku" id="txt_lens_sku" readonly="true"
+                          value="{{ form_data.laborder.act_lens_sku }}"></input>
+            订单镜片:<input class="form-control" name="txt_lens_name" id="txt_lens_name" readonly="true"
+                        value="{{ form_data.laborder.act_lens_name }}"></input>
+            请选择 Index:<select class="form-control" name="sel_index" id="sel_index"></select>
+            <div class="hidden">请选择 VD:<select class="form-control" name="sel_vendors" id="sel_vendors"></select></div>
+            请选择镜片:<select class="form-control" name="sel_lens_sku" id="sel_lens_sku"></select>
+        </div>
+    </div>
+    <div id="special_handling_window" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            <p style="text-align:center;font-size: 18px">
+                {{ form_data.laborder.special_handling }}
+            </p>
+        </div>
+    </div>
+    <div id="perliminary_checking_part" style="display: none;">
+        <div class="form-group" style="padding: 0 5px;">
+            <input class="form-control" type="text" value="" name="reason" id="reason" placeholder="不合格原因">
+        </div>
+    </div>
+    <!--paginator-->
+    <!--paginator end-->
+
+{% endblock %}
+
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        // 搜索
+        $("#number").bind("keypress", function (event) {
+            if (event.keyCode == "13") {
+                $("#btnSearch").click();
+            }
+        });
+
+
+        $("#btnSearch").on("click", function () {
+            entity = $("#number").val();
+            if (entity == '' || entity == null) {
+                layer.msg('Please enter a order number', {time: 3000, icon: 7});
+            }
+            else {
+                url = "{% url 'workshop_lens_registration_quick' %}";
+                obj = $("#btn_delivery");
+                var order_number = $("#number").val();
+                obj.attr("disabled", 'disabled');
+                //var index = layer.load(2); //换了种风格
+                 window.location.href = url + '?entity_id=' + order_number;
+            }
+        });
+        //初检合格按钮
+        $("#btn_qualified").on('click', function () {
+            var obj = $(this);
+            var special_handling = "{{ form_data.special_handling }}";
+            special_handling = special_handling.replace(/[\s\n\t]+$/g, "");
+            if(special_handling != null&&special_handling != 'None'&&special_handling != '0'&&special_handling != ''){
+                var index = layer.open({
+                    type: 1,
+                    shade: 0.8,
+                    anim: 4,
+                    style: {
+                        width: '600px',
+                        height: '400px'
+                    },
+                    title: '确认特殊要求是否符合', //不显示标题
+                    content: $('#special_handling_window'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                    btn: ['下一步',  '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    btn1: function () {
+                        layer.close(index);
+                        show_VD_window(obj);
+                    }
+                });
+            }else{
+                //不显示特殊要求确认直接显示分配VD
+                show_VD_window(obj);
+            }
+        });
+
+        //显示手动分配VD窗口
+        function show_VD_window(obj) {
+            var entity = obj.attr('lab_entity');
+            var type = obj.attr('obj_type');
+            var lab_number = obj.attr('lab_number');
+            var action_value = obj.attr('tag');
+            var base_sku = obj.attr('base_sku');
+            var vendor = obj.attr('vendor');
+
+            var lens_name = obj.attr('lens_name');
+
+            //$("#txt_vendor").val(vendor);
+            //$("#txt_lens_sku").val(base_sku);
+            //$("#txt_lens_name").val(lens_name);
+
+            var s_vendors = $("#sel_vendors");
+            s_vendors.empty();
+            s_vendors.append("<option value='" + '0' + "'>" + '0' + "</option>");
+            s_vendors.append("<option value='" + '2' + "'>" + '2' + "</option>");
+            s_vendors.append("<option value='" + '3' + "'>" + '3' + "</option>");
+            s_vendors.append("<option value='" + '4' + "'>" + '4' + "</option>");
+            s_vendors.append("<option value='" + '5' + "'>" + '5' + "</option>");
+            s_vendors.append("<option value='" + '6' + "'>" + '6' + "</option>");
+            s_vendors.append("<option value='" + '7' + "'>" + '7' + "</option>");
+            s_vendors.append("<option value='" + '8' + "'>" + '8' + "</option>");
+            s_vendors.append("<option value='" + '9' + "'>" + '9' + "</option>");
+            s_vendors.append("<option value='" + '10' + "'>" + '10' + "</option>");
+            s_vendors.append("<option value='" + '11' + "'>" + '11' + "</option>");
+            s_vendors.append("<option value='" + '12' + "'>" + '12' + "</option>");
+            s_vendors.append("<option value='" + '13' + "'>" + '13' + "</option>");
+            s_vendors.append("<option value='" + '14' + "'>" + '14' + "</option>");
+            s_vendors.append("<option value='" + '15' + "'>" + '15' + "</option>");
+
+            var s_index = $("#sel_index");
+            s_index.empty();
+            s_index.append("<option value='" + '1.50' + "'>" + '1.50' + "</option>");
+            s_index.append("<option value='" + '1.56' + "'>" + '1.56' + "</option>");
+            s_index.append("<option value='" + '1.59' + "'>" + '1.59' + "</option>");
+            s_index.append("<option value='" + '1.61' + "'>" + '1.61' + "</option>");
+            s_index.append("<option value='" + '1.67' + "'>" + '1.67' + "</option>");
+            s_index.append("<option value='" + '1.74' + "'>" + '1.74' + "</option>");
+
+            var index = top.layer.open({
+                type: 1,
+                shade: 0.8,
+                anim: 4,
+                style: {
+                    width: '600px',
+                    height: '400px'
+                },
+                title: '确认镜片', //不显示标题
+                content: $('#perliminary_checking_collection'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                btn: ['确定', '变更', '取消'],
+
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                },
+                btn1: function () {
+                    distribute_orders(obj, "CONFIRMED");
+                },
+                btn2: function () {
+                    distribute_orders(obj);
+                }
+            });
+        }
+
+        //初检不合格
+        $("#btn_not_qualified").on('click', function () {
+            url = "{% url 'workshop_preliminary_checking_quick' %}";
+            obj = $("#btn_not_qualified");
+            var order_number = obj.attr("order_number");
+            var qualified = obj.attr('qualified');
+            //var order_number = $("#number").val();
+            obj.attr("disabled", 'disabled');
+
+            var index = layer.open({
+                type: 1,
+                shade: false,
+                title: '填写不合格原因', //不显示标题
+                content: $('#perliminary_checking_part'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+
+                btn: ['保存', '取消'],
+
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                },
+                yes: function () {
+                    var reason = $('#reason').val();
+                    if (reason == '' || reason == null) {
+                        layer.msg('必须填写不合格原因', {icon: 5});
+                        return false;
+                    } else {
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            data: {
+                                'lab_nubmer': order_number,
+                                'qualified': qualified,
+                                'reason_code': '-1',
+                                'reason': reason
+                            },
+                            error: function () {
+                                layer.msg('添加失败，请稍后重试', {icon: 5});
+                            },
+                            success: function (arg) {
+                                //rm = JSON.stringify(arg);
+                                rm = JSON.parse(arg);
+                                layer.close(index);
+                                if (rm.code == 0) {
+                                    layer.msg('此操作已成功!');
+                                    window.location.href = url + '?entity_id=' + order_number;
+                                } else {
+                                    layer.msg(rm.code + '-' + rm.message);
+                                }
+                            }
+                        })
+
+                    }
+
+                }
+
+            });
+        });
+
+        //初检合格函数
+        function distribute_orders(obj, signed) {
+
+            var lab_number = obj.attr('lab_number');
+            var qualified = obj.attr('qualified');
+
+            // alert(qualified);
+
+            var sel_lens_sku = $("#sel_lens_sku");
+            var lens_sku = sel_lens_sku.val();
+            var lens_name = $("#sel_lens_sku option:selected").text();
+            var s_vendors = $("#sel_vendors");
+            var vendor = s_vendors.val();
+            var vendor = $('#txt_vendor').val();
+
+            // 通过signed标识，修改lens_sku&lens_name；
+            // 如果lens_sku为空，则不更新len order和lab order。
+            if (signed == "CONFIRMED") {
+                lens_sku = "";
+                lens_name = "";
+            }
+
+            var url_lens = "{% url 'distribute_lab_orders_manual_quick' %}";
+            var lens_index = layer.load();
+            $.ajax({
+                url: url_lens,
+                type: 'POST',
+                data: {
+                    'lab_number': lab_number,
+                    'qualified': qualified,
+                    'vendor': vendor,
+                    'lens_sku': lens_sku,
+                    'lens_name': lens_name,
+                },
+                success: function (arg) {
+                    resp = $.parseJSON(arg);
+                    layer.closeAll();
+
+                    if (resp.code == 0) {
+                        layer.msg("此操作已成功.", {time: 1000});
+                        window.location.href = url_lens + '?lab_number=' + lab_number+'&qualified='+qualified;
+                    } else {
+                        layer.msg("操作失败: " + resp.message);
+                    }
+                },
+                error: function (arg) {
+                    layer.msg('未知错误，操作失败: ' + arg.status);
+                    layer.close(lens_index);
+                }
+            })
+        }
+
+        //补打作业单
+        $("#laborder_work_order").click(function () {
+            url = "{% url 'construction_voucher_print' %}"
+            var lab_number = $(this).attr('lab_number');
+            production_flag = '{{ form_data.flag }}';
+            if(lab_number == ''){
+                layer.msg('订单号不能为空！');
+                return
+            }
+            if(production_flag=='0'){
+                window.open(url + '?id='+lab_number+'&flag=repair&production_flag=1');
+            }else{
+                window.open(url + '?id='+lab_number+'&flag=repair&production_flag=');
+            }
+
+        });
+
+        //装配
+        $("#laborder_assembling").click(function () {
+            var lab_number = $(this).attr('lab_number');
+            if(lab_number == ''){
+                layer.msg('订单号不能为空！');
+                return
+            }
+            var url = "{% url 'workshop_construction_voucher_finished_glasses_quick_submit' %}";
+            window.location.href = url +"?id="+lab_number;
+        });
+    </script>
+{% endblock %}
+

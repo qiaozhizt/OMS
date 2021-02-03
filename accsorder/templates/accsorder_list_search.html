@@ -1,0 +1,71 @@
+<div class="col-xs-12">
+    <div class="box-body form-inline box">
+        <div class="form-group">
+            <input type="text" name="order_number" class="form-control" id="start_date"
+                   placeholder="Date From"/>
+        </div>
+        <div class="form-group">
+            <input type="text" name="customer_name" class="form-control" id="finish_date"
+                   placeholder="Date To"/>
+        </div>
+        {% if flag == 'list' %}
+            <div class="form-group" id="filters">
+                <div class="layui-form">
+                    <select name="city" lay-verify="" lay-filter="test" id="order_status">
+                        <option value="">选择订单状态</option>
+                        {% for item in status_data %}
+                            <option value="{{ item }}">{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        {% endif %}
+    {% if flag != 'pick_list' %}
+        <div class="form-group" id="filters">
+            <div class="layui-form">
+                <select name="city" lay-verify="" lay-filter="test" id="order_wh">
+                    <option value="">选择仓库</option>
+                    {% for item in warehouses %}
+                        <option value="{{ item.code }}">{{ item.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    {% endif %}
+    {% if flag != 'print_list' and flag != 'pick_list' %}
+        <div class="form-group" id="filters">
+            <div class="layui-form">
+                <select name="city" lay-verify="" lay-filter="test" id="order_delivery">
+                    <option value="">选择发货方式</option>
+                    {% for item in ship_direction_list %}
+                        <option value="{{ item.key }}">{{ item.value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group" id="filters">
+            <div class="layui-form">
+                <select name="city" lay-verify="" lay-filter="test" id="order_rx_have">
+                    <option value="">选择RX/nRX</option>
+                    <option value="YES">YES</option>
+                    <option value="NO">NO</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <input type="text" name="frame" class="form-control" id="frame"
+                   value="{{ req.frame }}"
+                   placeholder="SKU"
+
+                   style="width:120px;"/>
+        </div>
+    {% endif %}
+        <div class="form-group">
+            <input type="text" name="accs_order_number" class="form-control" id="accs_order_number"
+                   value="{{ req.state }}"
+                   placeholder="订单号码"
+                   style="width:300px;"/>
+        </div>
+        <button id="search_btn" type="submit" class="btn btn-primary">搜索</button>
+    </div>
+</div>

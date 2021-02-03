@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <link rel="stylesheet" href="{% static 'layui/css/layui.css' %}"  media="all">
+    <script src="{% static 'layui/layui.js' %}"></script>
+    <style>
+        .span_title{
+            padding-right: 30px;
+        }
+        .stack_a{
+            cursor: pointer;
+            color: #ffffff;
+        }
+        /* 防止下拉框的下拉列表被隐藏---必须设置--- */
+        .layui-table-cell {overflow: visible !important;        }
+        /* 使得下拉框与单元格刚好合适 */
+        td .layui-form-select{
+            margin-top: -10px;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+    .input-top{
+        margin-top: 10px;
+    }
+    td .layui-table-cell{
+        height:auto;
+        overflow:visible;
+        text-overflow:inherit;
+        white-space:normal;
+    }
+    </style>
+{% endblock %}
+{% block h1 %}nRX订单管理 {% if form_data.total %}<span class="label label-info">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}nRX订单出库请求列表{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                {% include 'accsorder_list_search.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                {% include 'accsorder_list_actions.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="box box-default">
+                <div class="box-header">
+                    <h3 class="box-title">nRX订单出库请求列表：</h3>
+                </div>
+                <table class="layui-hide" id="stock_in_table" lay-filter="demo" style="overflow-x: hidden;"></table>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Lab Order</h4>
+                </div>
+                <div class="modal-body">
+                    <label>Lab Order</label>
+                    <table class="layui-table">
+                          <colgroup>
+                            <col width="150">
+                            <col width="200">
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th>Lab Number</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody id="lab_table">
+                          </tbody>
+                    </table>
+                    <label>Accs Order</label>
+                    <table class="layui-table">
+                          <colgroup>
+                            <col width="150">
+                            <col width="100">
+                            <col width="100">
+                          </colgroup>
+                          <thead>
+                            <tr>
+                              <th>Accs Order Number</th>
+                              <th>Status</th>
+                              <th>Order Number</th>
+                            </tr>
+                          </thead>
+                          <tbody id="accs_table">
+                          </tbody>
+                    </table>
+                    <div class="ckbox">
+                        <input id="accs_id" name="accs_id" type="hidden">
+                    </div>
+                    <div class="ckbox">
+                        <input id="is_laborder" name="is_laborder" type="checkbox"><label for="is_laborder">订单是否已配对</label>
+                    </div>
+                  <div style="height: 50px;">
+                    <div class="col-sm-12 input-top">
+                        <label style="line-height: 50px;">Comments:</label>
+                        <textarea  rows="3" cols="50" id="ship_comments"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="btn_submit">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <div class="modal fade" id="restockModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title" id="myModalLabel_title"></h3>
+                </div>
+                <div class="modal-body">
+                  <input type="hidden"  id="accs_order_flag">
+                  <input type="hidden" style="width: 300px; height: 30px; line-height: 30px;" id="accs_order_id" disabled="disabled">
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">Accs Order Number:</label>
+                        <input type="text" style="width: 300px; height: 30px; line-height: 30px;" id="accs_order_numbers" disabled="disabled">
+                    </div>
+                  </div>
+                    <div class="col-sm-12 input-top" id="accs_wh_div" style="display: none;">
+                        <div style="width: 400px;">
+                            <label style="width: 150px;">Warehouse:</label>
+                            <select name="accs_wh" id="accs_wh" style="width: 200px;height: 30px">
+                                <option value="">Select Warehouse</option>
+                                {% for item in warehouses %}
+                                    <option value="{{ item.code }}">{{ item.code }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                  <div class="form-group">
+                    <div class="col-sm-12 input-top">
+                        <label style="width: 150px;">Comments:</label>
+                        <textarea  rows="3" cols="50" id="restock_comments"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="btn_close_restock">关闭</button>
+                    <button type="button" class="btn btn-primary" id="btn_submit_restock">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script type="text/javascript" src="/static/layui/layui.js"></script>
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+        laydate.render({
+          elem: '#start_date'
+          ,type: 'datetime' //默认，可不填
+          ,format: 'yyyy-MM-dd HH:mm:ss'
+          ,value: new Date(new Date()- 1000*60*60*24*90)
+        });
+        laydate.render({
+          elem: '#finish_date'
+          ,type: 'datetime' //默认，可不填
+          ,format: 'yyyy-MM-dd HH:mm:ss'
+          ,value: new Date()
+        });
+        layui.use(['table', 'layer', 'element', 'jquery', 'form'], function() {
+            var table = layui.table;
+            var form = layui.form;
+            //第一个实例
+            table.render({
+                elem: '#stock_in_table'
+                ,toolbar: '#toolbarDemo'
+                , height: 'full-10'
+                , url: "{% url 'accs_order_request_list_data' %}"
+                ,data:[]
+                , where: {flag:'{{ flag }}'}
+                ,done: function(res, curr, count){
+                    console.log(res);
+                    //得到当前页码
+                    console.log(curr);
+                    //得到数据总量
+                    console.log(count);
+                }
+                , cellMinWidth: 100
+                , page: true //开启分页
+                , limit:30
+                , limits:[30,50,70,90,120,10000]
+                , even: true
+                , cols: [[ //表头
+                    {field: 'id', title: 'ID',sort: true,width:80}
+                    , {field: 'accs_order_number', title: 'Accs Order Number',width:160}
+                    , {field: 'count', title: 'Count'}
+                    , {field: 'warehouse', title: 'Warehouse'}
+                    , {field: 'created_at', title: 'Created Date', width: 170}
+                    ,{title: '操作', templet: function(row){
+                            var barBtnsHTML = '<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="save" id="sub_data">查看</a>';
+                            return barBtnsHTML;
+                    }}
+                ]]
+            });
+            table.on('tool(demo)', function (obj) {
+                 var data = obj.data; //获得当前行数据
+                 var layEvent = obj.event;
+                 console.log(layEvent);
+                 var url = "{% url 'accs_order_request_line' %}";
+                 url = url + "?id="+data.id
+                 window.open(url);
+            });
+            $("#search_btn").click(function () {
+                var accs_order_number = $("#accs_order_number").val();
+                var start_date = $("#start_date").val();
+                var finish_date = $("#finish_date").val();
+                var frame = $("#frame").val();
+                var order_status = $("#order_status").val();
+                var order_wh = $("#order_wh").val();
+                table.reload('stock_in_table',{
+                    url: "{% url 'accs_order_request_list_data' %}",
+                    where: {
+                        accs_order_number:accs_order_number,
+                        start_date:start_date,
+                        finish_date:finish_date,
+                        frame:frame,
+                        order_status:order_status,
+                        order_wh:order_wh
+
+                    },
+                    page:{
+                        curr:1
+                    }
+                })
+            });
+
+        });
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+            var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+            if (r!=null) return unescape(r[2]); return null; //返回参数值
+        }
+    </script>
+{% endblock %}

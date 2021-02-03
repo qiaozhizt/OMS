@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .reportList {
+            overflow: auto;
+        }
+
+        #tabs {
+            overflow: auto;
+        {#            display: block;#}
+        }
+
+        .trDetail {
+            display: none;
+        }
+
+        .trDetail div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .trDetail span {
+            margin-right: 10px;
+        }
+
+        .divDetail {
+            display: inline-block;
+        }
+
+        thead th {
+            text-align: center;
+        }
+
+        tbody td {
+            text-align: center;
+        }
+
+        {#     @media screen and (max-width: 800px) {#}
+        {##}
+        {#            #tabs{#}
+        {#                display: none;#}
+        {#            }#}
+        {#        }#}
+    </style>
+{% endblock %}
+{% block h1 %}Lab Orders{% endblock %}
+{% block small %}暂停&取消申请清单{% endblock %}
+{% block content %}
+    <div>
+        <div style="float: left;">{% include 'search.html' %}</div>
+        <!--Search-->
+        <div class="btn-group" style="float: left;margin-left: 10px;">
+            <a class="btn btn-default btn dropdown-toggle" type="button"
+                    {% ifequal form_data.is_handle_filter '1' %}
+                        href={{ requestUrl }}?is_handle_filter=0&action_filter={{ form_data.action_filter }}&user_filter={{ form_data.user_filter }}>
+                        显示全部
+                    {% else %}
+                        href={{ requestUrl }}?is_handle_filter=1&action_filter={{ form_data.action_filter }}&user_filter={{ form_data.user_filter }}>
+                        显示未处理
+                    {% endifequal %}
+            </a>
+        </div>
+        <div class="btn-group" style="float: left;margin-left: 10px;">
+            <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+                申请类型 <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href={{ requestUrl }}?action_filter=all&user_filter={{ form_data.user_filter }}&is_handle_filter={{ form_data.is_handle_filter }}>
+                    {% ifequal form_data.action_filter 'all' %}
+                        *{% endifequal %}全部</a></li>
+                <li>&nbsp</li>
+                <li><a href={{ requestUrl }}?action_filter=ONHOLD&user_filter={{ form_data.user_filter }}&is_handle_filter={{ form_data.is_handle_filter }}>
+                    {% ifequal form_data.action_filter 'ONHOLD' %}
+                        *{% endifequal %}暂停</a></li>
+                <li><a href={{ requestUrl }}?action_filter=CANCELLED&user_filter={{ form_data.user_filter }}&is_handle_filter={{ form_data.is_handle_filter }}>
+                    {% ifequal form_data.action_filter 'CANCELLED' %}*{% endifequal %}取消</a></li>
+            </ul>
+        </div>
+        <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+            <button class="btn btn-default btn dropdown-toggle" type="button" data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+                申请人 <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href={{ requestUrl }}?user_filter=all&action_filter={{ form_data.action_filter }}&is_handle_filter={{ form_data.is_handle_filter }}>
+                    {% ifequal form_data.user_filter 'all' %}
+                        *{% endifequal %}全部</a></li>
+                <li>&nbsp</li>
+                {% for u in form_data.user_list %}
+                    <li>
+                        <a href={{ requestUrl }}?user_filter={{ u.user_name }}&action_filter={{ form_data.action_filter }}&is_handle_filter={{ form_data.is_handle_filter }}>
+                            {% ifequal form_data.user_filter u.user_name %}
+                                *
+                            {% endifequal %}
+                            {{ u.user_name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="c1">
+            <table class="table table-striped" id="tab">
+                <thead>
+                <tr>
+                    <th>
+                        单号
+                    </th>
+                    <th>
+                        是否处理
+                    </th>
+                    <th>
+                        处理结果
+                    </th>
+                    <th>
+                        创建时间
+                    </th>
+                    <th>
+                        更新时间
+                    </th>
+                    <th>
+                        当前状态
+                    </th>
+                    <th>
+                        变更状态
+                    </th>
+                    <th>
+                        申请人
+                    </th>
+                    <th>
+                        申请原因
+                    </th>
+                    <th>
+                        回复
+                    </th>
+                    <th>
+                        处理人
+                    </th>
+                    <th>
+
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in list %}
+                    <tr>
+                        <td>
+                            {{ item.lab_number }}
+                        </td>
+                        <td>
+                            {% if item.is_handle %}
+                                <img src="{% static "image/icon-yes.svg" %}">
+                            {% else %}
+                                <img src="{% static "image/icon-no.svg" %}">
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ item.get_handle_result_display }}
+                        </td>
+                        <td>
+                            {{ item.created_at }}
+                        </td>
+                        <td>
+                            {{ item.updated_at }}
+                        </td>
+                        <td>
+                            {{ item.get_order_status_now_display }}
+                        </td>
+                        <td>
+                            {{ item.get_order_status_future_display }}
+                        </td>
+                        <td>
+                            {{ item.user_name }}
+                        </td>
+                        <td>
+                            {{ item.reason }}
+                        </td>
+                        <td>
+                            {{ item.reply }}
+                        </td>
+                        <td>
+                            {{ item.reply_username }}
+                        </td>
+                        <td>
+                            {% if perms.oms.HOLD_CANCEL_REQUEST_HANDLE %}
+                                <input type="button"
+
+                                        {% if item.is_handle %}
+                                       disabled="disabled"
+                                       class="btn-default handle_application"
+                                        {% else %}
+                                       class="btn-primary handle_application "
+                                        {% endif %}
+                                       value="处理"
+                                       application_id="{{ item.id }}"
+                                       status_future="{{ item.order_status_future }}"
+                                >
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="callBackPager" style="text-align: center;width: 100%">
+            {% include 'page_number.html' %}
+        </div>
+    </div>
+    <div id="handle_div" style="display: none;" class="text-center">
+        <p>答复内容</p>
+        <textarea rows="6" cols="40" name="message" id="reply_text"></textarea>
+    </div>
+{% endblock %}
+{% block jquery %}
+    <script>
+
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+
+        //按照单号搜索
+        $("#btnSearch").on("click", function () {
+            var order_number = $("#number").val();
+            var url = "/oms/hold_cancel_request/";
+
+            if (order_number == "") {
+                layer.msg('请输入订单号', {time: 3000, icon: 7});
+            } else {
+                url = url + "?lab_number=" + order_number
+                location.href = url;
+            }
+        })
+
+        // 处理按钮
+        $(".handle_application").click(function () {
+            var application_id = $(this).attr("application_id");
+            var status_future = $(this).attr("status_future");
+            var url = "{% url 'hold_cancel_request' %}"
+            var btn = []
+            if (status_future == 'CANCELLED') {
+                var btn = ['通过取消', '关闭订单', '取消']
+            } else {
+                var btn = ['通过', '不通过', '取消']
+            }
+            var index = layer.open({
+                type: 1,
+                shade: false,
+                title: '处理申请', //不显示标题
+                content: $('#handle_div'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+                area: ['400px', '280px'],//弹窗框的长宽
+                btn: btn,
+                cancel: function () {
+                    layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                },
+                yes: function () {
+                    var reply_text = $("#reply_text").val();
+                    var handle_result = 'ALLOW';
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: {
+                            'application_id': application_id,
+                            'reply_text': reply_text,
+                            'handle_result': handle_result,
+                        },
+                        success: function (arg) {
+                            layer.close(index);
+                            var obj = JSON.parse(arg);
+                            if (obj.code == 0) {
+                                layer.msg(obj.message, {time: 5000, icon: 6});
+                                location.reload();
+                            } else {
+                                layer.msg(obj.message, {time: 10000, icon: 5});
+                            }
+
+                        },
+                        error: function () {
+                            layer.close(index);
+                            layer.msg("遇到错误", {time: 10000, icon: 5});
+                        }
+                    });
+                },
+                btn2: function () {
+                    var reply_text = $("#reply_text").val();
+                    var handle_result = 'NOT_ALLOW';
+                    if (status_future == 'CANCELLED') {
+                        handle_result = 'CLOSE_ORDER'
+                    }
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: {
+                            'application_id': application_id,
+                            'reply_text': reply_text,
+                            'handle_result': handle_result,
+                        },
+                        success: function (arg) {
+                            layer.close(index);
+                            var obj = JSON.parse(arg);
+                            if (obj.code == 0) {
+                                layer.msg(obj.message, {time: 5000, icon: 6});
+                                location.reload();
+                            } else {
+                                layer.msg(obj.message, {time: 10000, icon: 5});
+                            }
+
+                        },
+                        error: function () {
+                            layer.close(index);
+                            layer.msg("遇到错误", {time: 10000, icon: 5});
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

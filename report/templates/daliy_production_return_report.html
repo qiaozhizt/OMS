@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+{% endblock %}
+{% block h1 %}Report{% if form_data.total %}<span class="label label-default">{{ form_data.total }}</span>
+{% endif %} {% endblock %}
+{% block small %}生产报损统计{% endblock %}
+{% block content %}
+    <style>
+    .row{
+        margin-left: 1px;
+        margin-right: 1px;
+    }
+   .table th, .table td {
+   text-align: center;
+   vertical-align: middle!important;
+}
+
+    </style>
+
+<div class="row">
+   <div class="col-md-4">
+       <div>
+        <label class="form-inline" />选择日期：
+                <input type="date" class="form-control" id="day" value="{{ day }}"/>
+        </label>
+        <button id="btnSearch"  class="btn btn-default">确认查询</button>
+       </div>
+   </div>
+</div>
+<br/>
+    <div class="row">
+        {% include 'error_message.html' %}
+    </div>
+{% for item in list %}
+         <div class="col-md-4">
+                <!-- general form elements -->
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">{{item.vendor}}</h3>
+                    </div>
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form role="form">
+                        <div class="box-body">
+                            <div class="col-xs-12 table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th>总订单</th>
+                                        <td>{{ item.all_order }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>返工单</th>
+                                        <td class="label-warning">{{ item.return_order }}</td>
+                                    </tr>
+                                      {% for ws in item.ws_list %}
+                                   <table class="table table-striped">
+                                    <thead>
+                                          <tbody>
+                                          <tr><th>WS</th>
+                                          <th>返工原因</th>
+                                          <th>订单号</th>
+                                          </tr>
+                                          </tbody>
+                                   <tr>
+                                   <td>{{ ws.workshop }}</td>
+                                   <td>{{ ws.reason }}</td>
+                                   <td>{{ ws.lab_number }}</td>
+                                  </tr>
+                    {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                        {#<div class="box-footer">#}
+                        {# </div>#}
+                    </form>
+                </div>
+                <!-- /.box -->
+            </div>
+          {% endfor %}
+</div>
+    <!-- /.row -->
+
+{#    <!--paginator-->#}
+{#    <div style="width: 100%;text-align: center;">#}
+{#        {% include 'page_number.html' %}#}
+{#    </div>#}
+
+{% endblock %}
+{% block jquery %}
+    <script>
+        $.ajaxSetup({
+            data: {csrfmiddlewaretoken: '{{ csrf_token }}'},
+        });
+
+        $("#btnSearch").on("click", function () {
+            day = $("#day").val();
+            location.href = "/report/daliy_production_return_report/" + '?day=' + day;
+        });
+        // 生成csv
+        $("#g_submit").click(function () {
+            location.href = "{% url 'report_save_shipping_speed_report_csv' %}";
+        });
+
+    </script>
+{% endblock %}

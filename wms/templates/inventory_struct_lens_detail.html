@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    <style>
+        .fixedHead {
+            position: relative;
+            top: expression(this.offsetParent.scrollTop-2);
+        }
+
+        .cl:after {
+            display: block;
+            clear: both;
+            content: "";
+        }
+
+        .cl {
+            zoom: 1
+        }
+
+        .trDetail div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .trDetail span {
+            margin-right: 10px;
+        }
+
+        .divDetail {
+            display: inline-block;
+            text-align: center !important;
+            width: 100%;
+            background: #fff;
+            margin-bottom: -1px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .positionBox {
+            display: inline-block;
+        }
+
+        .divDetail hr {
+            width: 100%;
+            border: 1px dashed #000;
+        }
+
+        tbody .ondetail {
+            cursor: pointer;
+        }
+
+        .pgorderdetail span {
+            margin-left: 20px;
+        }
+
+        div.order-imags > div {
+            padding: 15px
+        }
+
+        div.item-each-addcomments > div {
+            padding: 15px
+        }
+    </style>
+{% endblock %}
+{% block h1 %}WMS{% endblock %}
+{% block small %}镜片库存结构表{% endblock %}
+{% block content %}
+    <div class="blockContent" id="blockContent">
+
+        <!--Actions-->
+        <div class="cl">
+            <div style="float: left;margin-right: 3px">
+                <button id="backPrev" type="button" class="btn btn-default btn " role="button"
+                        onClick="javascript :location.href='{% url 'wms_inventory_struct_lens' %}';">返回
+                </button>
+            </div>
+            <!-- 仓库 -->
+            <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+                <button class="btn btn-default btn dropdown-toggle btn-flat"
+                        type="button"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false">
+                    仓库 <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href={{ requestUrl }}?sku={{ form_data.sku }}&batch_number={{ form_data.batch_number }}>
+                        {% ifequal form_data.wh_code 'all' %}
+                            *{% endifequal %}All</a></li>
+                    <li>&nbsp</li>
+
+                    {% for wh in form_data.wh_list %}
+                        {% if wh.is_enabled == 1 and wh.used_to == 'LENS' %}
+                            <li>
+                                <a href={{ requestUrl }}?sku={{ form_data.sku }}&batch_number={{ form_data.batch_number }}&wh_code={{ wh.code }}>
+                                    {% ifequal form_data.wh_code wh.code %}*{% endifequal %}
+                                    {{ wh.name }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            <!-- 批次 -->
+            <div class="btn-group" id="filters" style="float: left;margin-left: 10px;">
+                <button class="btn btn-default btn dropdown-toggle btn-flat"
+                        type="button"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false">
+                    批次 <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href={{ requestUrl }}?sku={{ form_data.sku }}&wh_code={{ form_data.wh_code }}>
+                        {% ifequal form_data.batch_number 'all' %}
+                            *{% endifequal %}All</a></li>
+                    <li>&nbsp</li>
+
+                    {% for wh in form_data.batch_number_list %}
+                        <li>
+                            <a href={{ requestUrl }}?sku={{ form_data.sku }}&batch_number={{ wh.batch_number }}&wh_code={{ form_data.wh_code }}>
+                                {% ifequal form_data.batch_number wh.batch_number %}*{% endifequal %}
+                                {{ wh.batch_number }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="btn-group" style="float: left;margin-left: 10px;">
+                <button class="btn btn-default btn  btn-flat" type="button" id="print_table">
+                    打印
+                </button>
+            </div>
+            {% if perms.wms.INVENTORY_STRUCT_LENS_CALIBRATION %}
+                <div class="btn-group" style="float: left;margin-left: 10px;">
+                    <button class="btn btn-default btn  btn-flat" type="button" id="calibration_btn">
+                        从Excel批量校准
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            {% include 'error_message.html' %}
+        </div>
+        <!--PgOrder Form-->
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-12">
+                <!-- Box Comment -->
+                <div class="box box-widget" id="i_s_table">
+                    <div class="box-header with-border">
+                        <div class="user-block">
+                            <span class="username">镜片库存结构表 — [{{ form_data.list_one.name }}]</span>
+                        </div>
+                    </div>
+                    <!-- body -->
+                    <div class="box-body with-border">
+                        <div class="user-block" id="container">
+                            <table class="table table-hover box box-default" id="" style="width: 210mm">
+                                <tr class="label-default fixedHead">
+                                    <th>光度</th>
+                                    {% for i in form_data.cyl_list %}
+                                        <th>{{ i }}</th>
+                                    {% endfor %}
+                                </tr>
+                                {% for i in form_data.quantity_list %}
+                                    <tr>
+                                        {% for q in i %}
+                                            {% if q < 0 %}
+                                                <th>{{ q }}</th>
+                                            {% else %}
+                                                {% if q > 0 %}
+                                                    <td class="label-default">{{ q }}</td>
+                                                {% else %}
+                                                    <td>{{ q }}</td>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="upload_div" style="display: none;">
+        {% csrf_token %}
+        <div id="" class="input-group">
+            <span class="input-group-addon">文件:</span>
+            <input id="input_file" name="input_file" type="file" class="form-control hidden"
+                   onchange="document.getElementById('input_file_btn').value = this.value">
+            <input id="input_file_btn" type="button" class="btn btn-default form-control" value="请选择Excel文件"
+                   onclick="document.getElementById('input_file').click()">
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-primary" id="upload_btn" onclick="postData()">上传</button>
+            </span>
+        </div>
+        <div class="text-center">
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <input id="file_name" value="" class="hidden">
+            <h4 id="upload_result_h" class="" value="">
+                上传结果
+            </h4>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block jquery %}
+    <script>
+        $("#upload_btn").click(function () {
+            var input_file_value = $("#input_file").val();
+            var patt = /.xls/
+            var patt2 = /.xlsx/
+            if (input_file_value == "") {
+                $("#upload_result_h").text("请点击上方选择文件")
+            } else if (!patt.test(input_file_value) && !patt2.test(input_file_value)) {
+                $("#upload_result_h").text("请选择excel文件")
+            } else {
+                var formData = new FormData();
+                formData.append("csrfmiddlewaretoken", $("[name='csrfmiddlewaretoken']").val());
+                formData.append("file", $("#input_file")[0].files[0]);
+                $.ajax({
+                    url: "/wms/inventory_struct_lens_calibration_upload_excel/",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        if (res.code == '0') {
+                            $("#upload_result_h").text("上传成功:" + res.message);
+                            $("#file_name").val(res.message);
+                        } else {
+                            $("#upload_result_h").text("上传失败:" + res.message);
+                        }
+                    },
+                    error: function () {
+                        $("#upload_result_h").text("上传出错");
+                    }
+                });
+            }
+            ;
+        });
+
+        //打印TABLE
+        $("#print_table").on("click", function () {
+            var newstr = document.getElementById("i_s_table").innerHTML;//得到需要打印的元素HTML
+            var oldstr = document.body.innerHTML;//保存当前页面的HTML
+            document.body.innerHTML = newstr;//替换当前页面为要打印的内容
+            window.print();//打印
+            document.body.innerHTML = oldstr;//还原当前页面
+        });
+
+        $("#calibration_btn").click(function () {
+            var sku = "{{ form_data.sku }}";
+            var batch_number = "{{ form_data.batch_number }}"
+            var wh_code = "{{ form_data.wh_code }}"
+            if(wh_code == "all" || wh_code==""){
+                layer.msg('请分仓库校准', {time: 5000});
+            }else if(batch_number != "all"){
+                layer.msg('暂不支持分批次校验', {time: 5000});
+            }else{
+                var index = layer.open({
+                    type: 1,
+                    shade: false,
+                    title: '上传Excel文件',
+                    content: $('#upload_div'), //捕获的元素，注意：最好该指定的元素要存放在body最外层，否则可能被其它的相对元素所影响
+                    area: ['500px', '380px'],//弹窗框的长宽
+                    btn: ['确认上传的文件无误，开始比对', '取消'],
+
+                    cancel: function () {
+                        layer.msg('直接关闭 什么也不会处理', {time: 5000});
+                    },
+                    yes: function () {
+                        var file_name = $("#file_name").val();
+                        var url = "{% url 'wms_inventory_struct_lens_calibration' %}"
+
+                        if (file_name == "") {
+                            layer.msg('请先上传Excel文件', {time: 5000});
+                        }else {
+                            url = url + '?sku=' + sku + '&file_name=' + file_name + '&wh_code=' + wh_code + '&batch_number=' + batch_number;
+                            location.href = url;
+                        }
+                    }
+                });
+            }
+
+        });
+    </script>
+{% endblock %}
